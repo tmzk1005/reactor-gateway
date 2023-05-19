@@ -1,0 +1,30 @@
+# IDEA ignore
+.idea
+*.iml
+*.ipr
+*.iws
+
+# vs code ingore
+.vscode
+*.suo
+*.njsproj
+**/bin/main/
+
+# vim ingore
+*.swp
+*.swo
+
+# eclipse ingore
+.project
+.settings
+.classpath
+
+# Mac OS ingore
+.DS_Store
+
+# gradle project ingore
+.gradle
+build
+qa/format/java-format.xml
+qa/format/java.importorder
+
