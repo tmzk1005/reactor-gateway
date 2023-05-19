@@ -1,0 +1,66 @@
+/*
+ * Copyright 2023 zoukang, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.nio.file.Files
+
+def createJarNameListForProject(String projectName) {
+    def theProject = project(":${projectName}")
+    def jarFileNames = []
+    jarFileNames.add(theProject.jar.archiveFileName.get())
+    for (jarFile in theProject.configurations.runtimeClasspath) {
+        jarFileNames.add(jarFile.getName())
+    }
+    Files.writeString(project.file("conf/.${projectName}.classpath").toPath(), String.join('\n', jarFileNames))
+}
+
+tasks.register("tgz", Tar) {
+    dependsOn project(":gateway").tasks.named("build")
+
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
+    doFirst {
+        createJarNameListForProject("gateway")
+    }
+
+    def releaseName = "${rootProject.name}-${rootProject.version}"
+
+    destinationDirectory = project.buildDir
+    archiveFileName = "${releaseName}.tgz"
+    compression = Compression.GZIP
+
+    into releaseName
+    from { 'bin' } { into 'bin/' fileMode 0755 }
+    from { 'conf' } { into 'conf/' fileMode 0644 }
+    from { 'static' } { into 'static/' fileMode 0644 }
+    from {
+        [
+                project(":gateway").configurations.runtimeClasspath,
+                project(":gateway").jar,
+        ]
+    } { into "libs/" fileMode 0644 }
+
+    from { rootProject.file('LICENSE') } { into '' fileMode 0644 }
+
+    doLast {
+        delete "conf/.gateway.classpath"
+    }
+}
+
+tasks.register('clean') {
+    doLast {
+        delete "build"
+    }
+}

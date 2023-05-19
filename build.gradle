@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-group = "zk.joey"
+group = "zk.rgw"
 version = "0.0.1"
 
 subprojects {

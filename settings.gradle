@@ -23,7 +23,20 @@ pluginManagement {
 }
 
 rootProject.name = "reactor-gateway"
+include 'common'
 include "plugin-api"
 include "http"
 include "gateway"
+include "release"
 
+def findAndIncludePluginsProjects() {
+    for (dirName in rootDir.toPath().resolve("plugins").resolve("filter-plugins").toFile().list()) {
+        include "plugins:filter-plugins:${dirName}"
+    }
+
+    for (dirName in rootDir.toPath().resolve("plugins").resolve("predicate-plugins").toFile().list()) {
+        include "plugins:predicate-plugins:${dirName}"
+    }
+}
+
+findAndIncludePluginsProjects()

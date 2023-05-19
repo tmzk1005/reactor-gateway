@@ -17,3 +17,18 @@
 plugins {
     id 'zk.rgw.java-base-conventions'
 }
+
+archivesBaseName = "rgw-gateway"
+
+dependencies {
+    implementation project(path: ":http", configuration: "default")
+    implementation project(path: ":common", configuration: "default")
+
+    for (dirName in rootDir.toPath().resolve("plugins").resolve("filter-plugins").toFile().list()) {
+        implementation project(path: ":plugins:filter-plugins:${dirName}", configuration: "default")
+    }
+
+    for (dirName in rootDir.toPath().resolve("plugins").resolve("predicate-plugins").toFile().list()) {
+        implementation project(path: ":plugins:predicate-plugins:${dirName}", configuration: "default")
+    }
+}

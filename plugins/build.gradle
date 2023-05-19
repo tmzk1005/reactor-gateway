@@ -1,0 +1,15 @@
+subprojects {
+    apply plugin: "java"
+    dependencies {
+        compileOnly project(path: ":plugin-api", configuration: "default")
+        compileOnly project(path: ":common", configuration: "default")
+        compileOnly 'io.projectreactor.netty:reactor-netty-http'
+        compileOnly "org.projectlombok:lombok"
+        compileOnly 'org.slf4j:slf4j-api'
+        compileOnly 'org.apache.logging.log4j:log4j-core'
+        compileOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
+        compileOnly 'com.fasterxml.jackson.core:jackson-databind'
+        compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+        compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    }
+}
