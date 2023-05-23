@@ -27,6 +27,7 @@ include 'common'
 include "plugin-api"
 include "http"
 include "gateway"
+include "dashboard"
 include "release"
 
 def findAndIncludePluginsProjects() {
