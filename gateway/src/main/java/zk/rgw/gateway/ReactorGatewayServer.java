@@ -33,8 +33,6 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     protected ReactorGatewayServer(GatewayConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
         this.configuration = configuration;
-        GatewayInternalRouteLocator gatewayInternalRouteLocator = new GatewayInternalRouteLocator();
-        this.routeLocator = new CompositeRouteLocator(gatewayInternalRouteLocator);
     }
 
     @Override
