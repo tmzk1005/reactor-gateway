@@ -19,6 +19,7 @@ package zk.rgw.gateway;
 import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
+import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.route.locator.CompositeRouteLocator;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
@@ -46,8 +47,14 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
-        GatewayInternalRouteLocator gatewayInternalRouteLocator = new GatewayInternalRouteLocator(configuration.getInternalContextPath());
-        this.routeLocator = new CompositeRouteLocator(gatewayInternalRouteLocator);
+        this.routeLocator = new CompositeRouteLocator(
+                new GatewayInternalRouteLocator(configuration.getInternalContextPath()),
+                new PullFromDashboardRouteLocator(
+                        configuration.getDashboardAddress(),
+                        configuration.getDashboardRouteSyncEndpoint(),
+                        configuration.getDashboardAuthKey()
+                )
+        );
     }
 
     @Override

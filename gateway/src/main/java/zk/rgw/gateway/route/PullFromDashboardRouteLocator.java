@@ -17,15 +17,39 @@
 package zk.rgw.gateway.route;
 
 import reactor.core.publisher.Flux;
+import reactor.netty.http.client.HttpClient;
 
 import zk.rgw.http.route.RouteEvent;
 import zk.rgw.http.route.locator.AsyncUpdatableRouteLocator;
 
 public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
 
+    private final HttpClient httpClient = HttpClient.create();
+
+    private final String dashboardAddress;
+
+    private final String dashboardRouteSyncEndpoint;
+
+    private final String dashboardAuthKey;
+
+    private long latestTimestamp = 0L;
+
+    public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardRouteSyncEndpoint, String dashboardAuthKey) {
+        this.dashboardAddress = dashboardAddress;
+        this.dashboardRouteSyncEndpoint = dashboardRouteSyncEndpoint;
+        this.dashboardAuthKey = dashboardAuthKey;
+    }
+
     @Override
     protected Flux<RouteEvent> fetchRouteChange() {
-        return null;
+        // TODO
+        System.out.println(httpClient);
+        System.out.println(dashboardAddress);
+        System.out.println(dashboardRouteSyncEndpoint);
+        System.out.println(dashboardAuthKey);
+        latestTimestamp += 1;
+        System.out.println(latestTimestamp);
+        return Flux.empty();
     }
 
 }

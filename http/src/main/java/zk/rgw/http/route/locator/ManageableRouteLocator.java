@@ -122,17 +122,17 @@ public class ManageableRouteLocator implements RouteLocator {
             targetGroup = patternPathRoutes.get(prefix);
             if (Objects.nonNull(targetGroup)) {
                 targetGroup.removeRouteById(routeId);
-            }
-            if (targetGroup.isEmpty()) {
-                patternPathRoutes.remove(prefix);
+                if (targetGroup.isEmpty()) {
+                    patternPathRoutes.remove(prefix);
+                }
             }
         } else {
             targetGroup = constantPathRoutes.get(normalizePath);
             if (Objects.nonNull(targetGroup)) {
                 targetGroup.removeRouteById(routeId);
-            }
-            if (targetGroup.isEmpty()) {
-                constantPathRoutes.remove(normalizePath);
+                if (targetGroup.isEmpty()) {
+                    constantPathRoutes.remove(normalizePath);
+                }
             }
         }
         return removedRoute;
@@ -140,7 +140,7 @@ public class ManageableRouteLocator implements RouteLocator {
 
     private static class RouteGroup {
 
-        transient volatile boolean changed = false;
+        volatile boolean changed = false;
 
         final Map<String, Route> routes = new HashMap<>(4);
 

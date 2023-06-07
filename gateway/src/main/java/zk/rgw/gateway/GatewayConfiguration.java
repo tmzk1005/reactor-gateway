@@ -45,6 +45,21 @@ public class GatewayConfiguration extends ServerConfiguration {
     @SuppressWarnings("java:S1075")
     protected String internalContextPath = "/__rgw_internal";
 
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--dashboard.address", description = "The dashboard address.")
+    private String dashboardAddress = "http://127.0.0.1:7000";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--dashboard.route.sync.endpoint", description = "The dashboard uri path for sync routes.")
+    private String dashboardRouteSyncEndpoint = "/syncRoutes";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--dashboard.auth.key", description = "The key for authorization to dashboard.")
+    private String dashboardAuthKey = "";
+
     public GatewayConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;
         this.serverPort = DEFAULT_PORT;
