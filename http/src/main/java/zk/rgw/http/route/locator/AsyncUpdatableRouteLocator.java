@@ -34,16 +34,17 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
 
     private final ScheduledExecutorService scheduledExecutorService;
 
-    public AsyncUpdatableRouteLocator() {
+    protected AsyncUpdatableRouteLocator() {
         this(DEFAULT_UPDATE_INTERVAL);
     }
 
-    public AsyncUpdatableRouteLocator(int updatePeriodInSeconds) {
+    protected AsyncUpdatableRouteLocator(int updatePeriodInSeconds) {
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         this.periodInSeconds = updatePeriodInSeconds;
     }
 
-    public void update() {
+    @Override
+    public synchronized void update() {
         apiUpdated.set(true);
     }
 
@@ -66,6 +67,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
         }
     }
 
+    @Override
     protected void doUpdate() {
         if (!apiUpdated.compareAndExchange(true, false)) {
             return;

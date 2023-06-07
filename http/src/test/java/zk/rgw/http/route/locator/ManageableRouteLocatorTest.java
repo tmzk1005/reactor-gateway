@@ -23,10 +23,10 @@ import reactor.test.StepVerifier;
 
 import zk.rgw.http.route.Route;
 
-public class ManageableRouteLocatorTest {
+class ManageableRouteLocatorTest {
 
     @Test
-    public void test() {
+    void test() {
         ManageableRouteLocator mrl = new ManageableRouteLocator();
         StepVerifier.create(mrl.getRoutes("/")).expectComplete().verify();
 
