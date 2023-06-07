@@ -28,11 +28,13 @@ def createJarNameListForProject(String projectName) {
 
 tasks.register("tgz", Tar) {
     dependsOn project(":gateway").tasks.named("build")
+    dependsOn project(":dashboard").tasks.named("build")
 
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
 
     doFirst {
         createJarNameListForProject("gateway")
+        createJarNameListForProject("dashboard")
     }
 
     def releaseName = "${rootProject.name}-${rootProject.version}"
@@ -49,6 +51,8 @@ tasks.register("tgz", Tar) {
         [
                 project(":gateway").configurations.runtimeClasspath,
                 project(":gateway").jar,
+                project(":dashboard").configurations.runtimeClasspath,
+                project(":dashboard").jar
         ]
     } { into "libs/" fileMode 0644 }
 
@@ -56,6 +60,7 @@ tasks.register("tgz", Tar) {
 
     doLast {
         delete "conf/.gateway.classpath"
+        delete "conf/.dashboard.classpath"
     }
 }
 

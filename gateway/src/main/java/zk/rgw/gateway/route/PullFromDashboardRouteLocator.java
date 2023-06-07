@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.gateway.route;
 
-archivesBaseName = "rgw-dashboard"
+import reactor.core.publisher.Flux;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+import zk.rgw.http.route.RouteEvent;
+import zk.rgw.http.route.locator.AsyncUpdatableRouteLocator;
+
+public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
+
+    @Override
+    protected Flux<RouteEvent> fetchRouteChange() {
+        return null;
+    }
+
 }
