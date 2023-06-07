@@ -19,25 +19,33 @@ import java.util.List;
 
 import reactor.core.publisher.Flux;
 
+import zk.rgw.http.path.PathUtil;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.locator.RouteLocator;
 
 public class GatewayInternalRouteLocator implements RouteLocator {
 
-    private static final Flux<Route> INTERNAL_SERVE_ROUTE;
+    private final String internalContextPath;
 
-    static {
+    private final String internalContextPathWithEndSlash;
+
+    private final Flux<Route> internalRoutes;
+
+    public GatewayInternalRouteLocator(String internalContextPath) {
+        this.internalContextPath = PathUtil.normalize(internalContextPath);
+        this.internalContextPathWithEndSlash = this.internalContextPath + PathUtil.SLASH;
         Route route = new Route();
-        route.setId("__rgw_gateway_internal");
-        route.setPath(GatewayInternalEndpoint.CONTEXT_PATH);
+        route.setId("__rgw_internal");
+        route.setPath(internalContextPath);
         route.setFilters(List.of(new GatewayInternalEndpoint()));
-        INTERNAL_SERVE_ROUTE = Flux.just(route);
+        this.internalRoutes = Flux.just(route);
     }
 
     @Override
     public Flux<Route> getRoutes(String path) {
-        if (path.startsWith(GatewayInternalEndpoint.CONTEXT_PATH)) {
-            return INTERNAL_SERVE_ROUTE;
+        String normalizePath = PathUtil.normalize(path);
+        if (normalizePath.startsWith(internalContextPathWithEndSlash) || normalizePath.equals(internalContextPath)) {
+            return internalRoutes;
         }
         return Flux.empty();
     }

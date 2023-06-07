@@ -25,8 +25,6 @@ import zk.rgw.plugin.util.ResponseUtil;
 
 public class GatewayInternalEndpoint implements Filter {
 
-    public static final String CONTEXT_PATH = "/__internal";
-
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         return ResponseUtil.send(exchange.getResponse(), "Hello, reactor gateway server works fine!");

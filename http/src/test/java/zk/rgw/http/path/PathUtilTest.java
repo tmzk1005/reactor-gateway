@@ -18,12 +18,13 @@ package zk.rgw.http.path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PathUtilTest {
+class PathUtilTest {
 
     @Test
     void testNormalize() {
         Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/bar"));
         Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/./bar"));
+        Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/bar/"));
     }
 
     @Test
