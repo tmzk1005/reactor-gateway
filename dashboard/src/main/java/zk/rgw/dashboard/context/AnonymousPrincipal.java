@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.exception;
+package zk.rgw.dashboard.context;
 
-public class RgwException extends Exception {
+import java.security.Principal;
 
-    public RgwException(String message) {
-        super(message);
+import lombok.Getter;
+
+public class AnonymousPrincipal implements Principal {
+
+    private static final String DEFAULT_NAME = "__anonymous__";
+
+    @Getter
+    private final String name;
+
+    public AnonymousPrincipal() {
+        this(DEFAULT_NAME);
     }
 
-    public RgwException(String message, Throwable throwable) {
-        super(message, throwable);
+    public AnonymousPrincipal(String name) {
+        this.name = name;
     }
 
 }

@@ -18,7 +18,7 @@ package zk.rgw.dashboard;
 
 import lombok.extern.slf4j.Slf4j;
 
-import zk.rgw.http.route.locator.ManageableRouteLocator;
+import zk.rgw.dashboard.route.DashboardRoutes;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 
@@ -45,7 +45,7 @@ public class DashboardServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
-        this.routeLocator = new ManageableRouteLocator();
+        this.routeLocator = new DashboardRoutes();
     }
 
     @Override

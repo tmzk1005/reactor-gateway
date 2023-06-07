@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.exception;
+package zk.rgw.http.context;
 
-public class RgwException extends Exception {
+import zk.rgw.plugin.api.AttributesHolder;
+import zk.rgw.plugin.api.Exchange;
 
-    public RgwException(String message) {
-        super(message);
-    }
+public interface RequestContext extends AttributesHolder {
 
-    public RgwException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
+    Exchange getExchange();
 
 }

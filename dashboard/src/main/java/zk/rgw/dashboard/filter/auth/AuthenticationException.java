@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.exception;
+package zk.rgw.dashboard.filter.auth;
 
-public class RgwException extends Exception {
+import zk.rgw.common.exception.RgwException;
 
-    public RgwException(String message) {
+public class AuthenticationException extends RgwException {
+
+    public AuthenticationException(String message) {
         super(message);
-    }
-
-    public RgwException(String message, Throwable throwable) {
-        super(message, throwable);
     }
 
 }

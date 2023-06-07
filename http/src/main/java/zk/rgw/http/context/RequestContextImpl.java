@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.exception;
+package zk.rgw.http.context;
 
-public class RgwException extends Exception {
+import java.util.HashMap;
+import java.util.Map;
 
-    public RgwException(String message) {
-        super(message);
-    }
+import lombok.Getter;
 
-    public RgwException(String message, Throwable throwable) {
-        super(message, throwable);
+import zk.rgw.plugin.api.Exchange;
+
+public class RequestContextImpl implements RequestContext {
+
+    @Getter
+    private final Exchange exchange;
+
+    @Getter
+    private final Map<String, Object> attributes = new HashMap<>();
+
+    public RequestContextImpl(Exchange exchange) {
+        this.exchange = exchange;
     }
 
 }

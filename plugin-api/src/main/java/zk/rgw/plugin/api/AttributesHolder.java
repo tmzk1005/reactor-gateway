@@ -16,23 +16,27 @@
 
 package zk.rgw.plugin.api;
 
-import reactor.netty.http.server.HttpServerRequest;
-import reactor.netty.http.server.HttpServerResponse;
+import java.util.Map;
+import java.util.Objects;
 
-public interface Exchange extends AttributesHolder {
+public interface AttributesHolder {
 
-    HttpServerRequest getRequest();
+    Map<String, Object> getAttributes();
 
-    HttpServerResponse getResponse();
+    @SuppressWarnings("unchecked")
+    default <T> T getAttribute(String name) {
+        return (T) getAttributes().get(name);
+    }
 
-    interface Builder {
+    default <T> T getRequiredAttribute(String name) {
+        T value = getAttribute(name);
+        Objects.requireNonNull(value, "Required attribute '" + name + "' is missing");
+        return value;
+    }
 
-        Builder request(HttpServerRequest request);
-
-        Builder response(HttpServerResponse response);
-
-        Exchange build();
-
+    @SuppressWarnings("unchecked")
+    default <T> T getAttributeOrDefault(String name, T defaultValue) {
+        return (T) getAttributes().getOrDefault(name, defaultValue);
     }
 
 }

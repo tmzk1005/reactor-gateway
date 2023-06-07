@@ -25,6 +25,9 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 
+import zk.rgw.http.context.ReactiveRequestContextHolder;
+import zk.rgw.http.context.RequestContext;
+import zk.rgw.http.context.RequestContextImpl;
 import zk.rgw.http.exchange.ChainBasedExchangeHandler;
 import zk.rgw.http.exchange.ExchangeImpl;
 import zk.rgw.http.route.Route;
@@ -64,7 +67,12 @@ public class HttpHandler implements BiFunction<HttpServerRequest, HttpServerResp
                 )
                 .switchIfEmpty(Mono.just(ROUTE_404))
                 .next()
-                .flatMap(route -> new ChainBasedExchangeHandler(route.getFilters()).handle(exchange))
+                .flatMap(route -> {
+                    Mono<RequestContext> requestContext = Mono.just(new RequestContextImpl(exchange));
+                    return new ChainBasedExchangeHandler(route.getFilters())
+                            .handle(exchange)
+                            .contextWrite(ReactiveRequestContextHolder.withRequestContext(requestContext));
+                })
                 .onErrorResume(throwable -> {
                     log.error("Request handle failed.", throwable);
                     return ResponseUtil.sendError(response);

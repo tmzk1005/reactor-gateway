@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.exception;
+package zk.rgw.dashboard.route;
 
-public class RgwException extends Exception {
+import zk.rgw.http.route.locator.ManageableRouteLocator;
 
-    public RgwException(String message) {
-        super(message);
+public class DashboardRoutes extends ManageableRouteLocator {
+
+    public DashboardRoutes() {
+        initRoutes();
     }
 
-    public RgwException(String message, Throwable throwable) {
-        super(message, throwable);
+    private void initRoutes() {
+        //
     }
 
 }

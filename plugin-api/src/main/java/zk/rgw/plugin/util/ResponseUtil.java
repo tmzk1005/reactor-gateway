@@ -55,6 +55,10 @@ public class ResponseUtil {
         return send(response, status, status.code(), status.reasonPhrase());
     }
 
+    public static Mono<Void> sendStatus(HttpServerResponse response, HttpResponseStatus status, String message) {
+        return send(response, status, status.code(), message);
+    }
+
     public static Mono<Void> sendOk(HttpServerResponse response) {
         return sendStatus(response, HttpResponseStatus.OK);
     }
