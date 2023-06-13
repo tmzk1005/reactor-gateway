@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.dashboard.filter;
 
-archivesBaseName = "rgw-dashboard"
+import reactor.core.publisher.Mono;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+import zk.rgw.plugin.api.Exchange;
+import zk.rgw.plugin.api.filter.Filter;
+import zk.rgw.plugin.api.filter.FilterChain;
+import zk.rgw.plugin.util.ResponseUtil;
 
-    implementation "com.auth0:java-jwt"
+public class ControllerMethodInvokeFilter implements Filter {
+
+    @Override
+    public Mono<Void> filter(Exchange exchange, FilterChain chain) {
+        // TODO
+        return ResponseUtil.sendOk(exchange.getResponse());
+    }
+
 }

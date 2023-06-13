@@ -55,6 +55,7 @@ def slf4jApiVersion = "1.7.36"
 def log4j2Version = "2.20.0"
 def picocliVersion = "4.7.3"
 def junitJupiterVersion = "5.9.3"
+def jwtLibVersion = "4.4.0"
 
 dependencies {
     implementation platform("org.projectlombok:lombok:${lombokVersion}")
@@ -64,6 +65,7 @@ dependencies {
     implementation platform("org.slf4j:slf4j-api:${slf4jApiVersion}")
     implementation platform("org.apache.logging.log4j:log4j-bom:${log4j2Version}")
     implementation platform("info.picocli:picocli:${picocliVersion}")
+    implementation platform("com.auth0:java-jwt:${jwtLibVersion}")
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}"

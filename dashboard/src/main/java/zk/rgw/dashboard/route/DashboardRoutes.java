@@ -16,16 +16,53 @@
 
 package zk.rgw.dashboard.route;
 
-import zk.rgw.http.route.locator.ManageableRouteLocator;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class DashboardRoutes extends ManageableRouteLocator {
+import reactor.core.publisher.Flux;
 
-    public DashboardRoutes() {
-        initRoutes();
+import zk.rgw.dashboard.filter.ControllerMethodInvokeFilter;
+import zk.rgw.dashboard.filter.auth.JwtAuthenticationFilter;
+import zk.rgw.http.path.PathUtil;
+import zk.rgw.http.route.Route;
+import zk.rgw.http.route.locator.RouteLocator;
+
+public class DashboardRoutes implements RouteLocator {
+
+    private static final List<String> NO_NEED_LOGIN_PATHS = List.of("/login");
+
+    private final String apiContextPath;
+
+    private final String apiContextPathWithEndSlash;
+
+    private final Flux<Route> internalRoutes;
+
+    public DashboardRoutes(String apiContextPath, String hmac256Secret) {
+        this.apiContextPath = PathUtil.normalize(apiContextPath);
+        this.apiContextPathWithEndSlash = this.apiContextPath + PathUtil.SLASH;
+
+        Route route = new Route();
+        route.setId("__dashboard_internal");
+        route.setPath(apiContextPath);
+
+        List<String> finalNoNeedLoginPaths = NO_NEED_LOGIN_PATHS.stream().map(path -> apiContextPath + path).collect(Collectors.toList());
+
+        route.setFilters(
+                List.of(
+                        new JwtAuthenticationFilter(finalNoNeedLoginPaths, hmac256Secret),
+                        new ControllerMethodInvokeFilter()
+                )
+        );
+        this.internalRoutes = Flux.just(route);
     }
 
-    private void initRoutes() {
-        //
+    @Override
+    public Flux<Route> getRoutes(String path) {
+        String normalizePath = PathUtil.normalize(path);
+        if (normalizePath.startsWith(apiContextPathWithEndSlash) || normalizePath.equals(apiContextPath)) {
+            return internalRoutes;
+        }
+        return Flux.empty();
     }
 
 }

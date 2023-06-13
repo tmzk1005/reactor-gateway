@@ -16,8 +16,12 @@
 
 package zk.rgw.dashboard;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 
+import zk.rgw.common.util.StringUtil;
 import zk.rgw.dashboard.route.DashboardRoutes;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
@@ -45,7 +49,11 @@ public class DashboardServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
-        this.routeLocator = new DashboardRoutes();
+        String jwtHmac256Secret = configuration.getJwtHmac256Secret();
+        if (Objects.isNull(jwtHmac256Secret) || !StringUtil.hasText(jwtHmac256Secret)) {
+            jwtHmac256Secret = UUID.randomUUID().toString();
+        }
+        this.routeLocator = new DashboardRoutes(configuration.getApiContextPath(), jwtHmac256Secret);
     }
 
     @Override

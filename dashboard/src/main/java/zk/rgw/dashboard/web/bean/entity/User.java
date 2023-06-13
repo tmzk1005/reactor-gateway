@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.dashboard.web.bean.entity;
 
-archivesBaseName = "rgw-dashboard"
+import java.security.Principal;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+import lombok.Getter;
+import lombok.Setter;
 
-    implementation "com.auth0:java-jwt"
+public class User implements Principal {
+
+    @Getter
+    @Setter
+    private String name;
+
 }
