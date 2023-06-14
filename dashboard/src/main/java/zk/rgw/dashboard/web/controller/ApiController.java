@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.controller;
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+import zk.rgw.dashboard.framework.annotation.Controller;
 
-archivesBaseName = "rgw-common"
-
-dependencies {
-    compileOnly "org.projectlombok:lombok"
-    compileOnly 'org.slf4j:slf4j-api'
-    compileOnly 'org.apache.logging.log4j:log4j-core'
-    compileOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
-    compileOnly 'info.picocli:picocli'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+@Controller("api")
+public class ApiController {
 }

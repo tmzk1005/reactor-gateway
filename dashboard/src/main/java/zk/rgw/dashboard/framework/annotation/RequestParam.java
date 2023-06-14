@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.dashboard.framework.annotation;
 
-archivesBaseName = "rgw-common"
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-dependencies {
-    compileOnly "org.projectlombok:lombok"
-    compileOnly 'org.slf4j:slf4j-api'
-    compileOnly 'org.apache.logging.log4j:log4j-core'
-    compileOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
-    compileOnly 'info.picocli:picocli'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface RequestParam {
+
+    String NULL = "-^-null-^-";
+
+    String value() default "";
+
+    String name();
+
+    boolean required() default true;
+
+    String defaultValue() default NULL;
+
 }

@@ -17,7 +17,6 @@
 package zk.rgw.dashboard.route;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import reactor.core.publisher.Flux;
 
@@ -29,7 +28,7 @@ import zk.rgw.http.route.locator.RouteLocator;
 
 public class DashboardRoutes implements RouteLocator {
 
-    private static final List<String> NO_NEED_LOGIN_PATHS = List.of("/login");
+    private static final List<String> NO_NEED_LOGIN_PATHS = List.of("/user/_login");
 
     private final String apiContextPath;
 
@@ -45,12 +44,12 @@ public class DashboardRoutes implements RouteLocator {
         route.setId("__dashboard_internal");
         route.setPath(apiContextPath);
 
-        List<String> finalNoNeedLoginPaths = NO_NEED_LOGIN_PATHS.stream().map(path -> apiContextPath + path).collect(Collectors.toList());
+        List<String> finalNoNeedLoginPaths = NO_NEED_LOGIN_PATHS.stream().map(path -> apiContextPath + path).toList();
 
         route.setFilters(
                 List.of(
                         new JwtAuthenticationFilter(finalNoNeedLoginPaths, hmac256Secret),
-                        new ControllerMethodInvokeFilter()
+                        new ControllerMethodInvokeFilter(this.apiContextPath)
                 )
         );
         this.internalRoutes = Flux.just(route);

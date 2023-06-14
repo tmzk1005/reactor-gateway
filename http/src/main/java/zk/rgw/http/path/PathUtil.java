@@ -27,7 +27,7 @@ public class PathUtil {
 
     public static String normalize(String path) {
         String newPath = Paths.get(path).normalize().toString();
-        if (newPath.length() == 0) {
+        if (newPath.isEmpty()) {
             return SLASH;
         }
         if (!newPath.startsWith(SLASH)) {
@@ -66,6 +66,15 @@ public class PathUtil {
             --index;
         }
         return normalizePath.substring(0, index);
+    }
+
+    public static String getFirstPart(String normalizePath) {
+        final int secondSlashIndex = normalizePath.indexOf(SLASH, 1);
+        if (secondSlashIndex == -1) {
+            return normalizePath;
+        } else {
+            return normalizePath.substring(0, secondSlashIndex);
+        }
     }
 
 }

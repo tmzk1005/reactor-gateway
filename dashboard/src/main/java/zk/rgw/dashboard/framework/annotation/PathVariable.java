@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.annotation;
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-archivesBaseName = "rgw-common"
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface PathVariable {
 
-dependencies {
-    compileOnly "org.projectlombok:lombok"
-    compileOnly 'org.slf4j:slf4j-api'
-    compileOnly 'org.apache.logging.log4j:log4j-core'
-    compileOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
-    compileOnly 'info.picocli:picocli'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    String value();
+
 }
