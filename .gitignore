@@ -27,4 +27,5 @@
 build
 qa/format/java-format.xml
 qa/format/java.importorder
+logs/
 
