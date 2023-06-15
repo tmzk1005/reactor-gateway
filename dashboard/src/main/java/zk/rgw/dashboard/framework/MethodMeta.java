@@ -143,7 +143,7 @@ public class MethodMeta {
         if (requestBodyParamIndex >= 0) {
             Mono<?> requestBodyMono;
             try {
-                requestBodyMono = ((Mono<?>) argValueSuppliers[requestBodyParamIndex].get(request, null, null));
+                requestBodyMono = (Mono<?>) argValueSuppliers[requestBodyParamIndex].get(request, null, null);
             } catch (BadRequestException exception) {
                 return Mono.error(exception);
             }
