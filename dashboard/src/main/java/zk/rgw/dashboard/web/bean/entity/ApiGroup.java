@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.Dto;
+import zk.rgw.dashboard.web.bean.BaseAuditableEntity;
 
 @Getter
 @Setter
-public class LoginDto implements Dto {
+public class ApiGroup extends BaseAuditableEntity {
 
-    @JsonProperty(required = true)
-    private String username;
+    private String id;
 
-    @JsonProperty(required = true)
-    private String password;
+    private String name;
 
 }

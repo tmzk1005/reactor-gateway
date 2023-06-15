@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+public interface OperatorAuditable {
 
-import zk.rgw.dashboard.web.bean.Dto;
+    String getCreatedBy();
 
-@Getter
-@Setter
-public class LoginDto implements Dto {
+    void setCreatedBy(String operatorId);
 
-    @JsonProperty(required = true)
-    private String username;
+    String getLastModifiedBy();
 
-    @JsonProperty(required = true)
-    private String password;
+    void setLastModifiedBy(String operatorId);
 
 }

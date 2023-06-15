@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+public enum Role {
 
-import zk.rgw.dashboard.web.bean.Dto;
-
-@Getter
-@Setter
-public class LoginDto implements Dto {
-
-    @JsonProperty(required = true)
-    private String username;
-
-    @JsonProperty(required = true)
-    private String password;
+    SYSTEM_ADMIN, SECURITY_ADMIN, AUDIT_ADMIN, NORMAL_USER, ORGANIZATION_ADMIN
 
 }

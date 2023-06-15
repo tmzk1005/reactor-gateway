@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.service;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.web.bean.Dto;
+import zk.rgw.dashboard.web.bean.dto.LoginDto;
+import zk.rgw.dashboard.web.bean.entity.User;
 
-@Getter
-@Setter
-public class LoginDto implements Dto {
+public interface UserService {
 
-    @JsonProperty(required = true)
-    private String username;
-
-    @JsonProperty(required = true)
-    private String password;
+    Mono<User> login(LoginDto loginDto);
 
 }

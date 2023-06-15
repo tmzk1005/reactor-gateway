@@ -14,22 +14,27 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.Dto;
-
 @Getter
 @Setter
-public class LoginDto implements Dto {
+public class BaseAuditableEntity implements Auditable {
 
-    @JsonProperty(required = true)
-    private String username;
+    public BaseAuditableEntity() {
+        long timestamp = System.currentTimeMillis();
+        this.createdDate = timestamp;
+        this.lastModifiedDate = timestamp;
+    }
 
-    @JsonProperty(required = true)
-    private String password;
+    protected String createdBy;
+
+    protected String lastModifiedBy;
+
+    protected long createdDate;
+
+    protected long lastModifiedDate;
 
 }

@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.exception;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import zk.rgw.common.exception.RgwException;
 
-import zk.rgw.dashboard.web.bean.Dto;
+public class BizException extends RgwException {
 
-@Getter
-@Setter
-public class LoginDto implements Dto {
+    public BizException(String message) {
+        super(message);
+    }
 
-    @JsonProperty(required = true)
-    private String username;
-
-    @JsonProperty(required = true)
-    private String password;
+    public static BizException of(String message) {
+        return new BizException(message);
+    }
 
 }

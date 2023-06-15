@@ -21,16 +21,21 @@ import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
-import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.bean.vo.UserVo;
+import zk.rgw.dashboard.web.exception.BizException;
+import zk.rgw.dashboard.web.service.UserService;
+import zk.rgw.dashboard.web.service.impl.UserServiceImpl;
 
 @Controller("user")
 public class UserController {
 
+    private final UserService userService = new UserServiceImpl();
+
     @RequestMapping(path = "/_login", method = RequestMapping.Method.POST)
-    public Mono<User> login(@RequestBody LoginDto loginDto) {
-        User user = new User();
-        user.setName(loginDto.getUsername());
-        return Mono.just(user);
+    public Mono<UserVo> login(@RequestBody LoginDto loginDto) {
+        return userService.login(loginDto)
+                .map(new UserVo()::initFromPo)
+                .switchIfEmpty(Mono.error(BizException.of("登录失败!用户名或密码错误.")));
     }
 
     @RequestMapping(path = "/name")

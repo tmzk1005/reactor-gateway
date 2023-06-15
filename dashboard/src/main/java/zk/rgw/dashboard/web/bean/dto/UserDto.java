@@ -16,20 +16,24 @@
 
 package zk.rgw.dashboard.web.bean.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import zk.rgw.dashboard.web.bean.Dto;
+import zk.rgw.dashboard.web.bean.Role;
 
 @Getter
 @Setter
-public class LoginDto implements Dto {
+public class UserDto implements Dto {
 
-    @JsonProperty(required = true)
-    private String username;
+    private String name;
 
-    @JsonProperty(required = true)
+    private String nickname;
+
     private String password;
+
+    private Role role;
+
+    private String organizationId;
 
 }

@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.entity;
-
-import java.security.Principal;
+package zk.rgw.dashboard.web.bean.vo;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.BaseAuditableEntity;
-import zk.rgw.dashboard.web.bean.Po;
 import zk.rgw.dashboard.web.bean.Role;
-import zk.rgw.dashboard.web.bean.dto.UserDto;
+import zk.rgw.dashboard.web.bean.Vo;
+import zk.rgw.dashboard.web.bean.entity.User;
 
 @Getter
 @Setter
-public class User extends BaseAuditableEntity implements Principal, Po<UserDto> {
+public class UserVo implements Vo<User> {
 
     private String id;
 
@@ -44,14 +41,14 @@ public class User extends BaseAuditableEntity implements Principal, Po<UserDto> 
 
     @SuppressWarnings("unchecked")
     @Override
-    public User initFromDto(UserDto dto) {
-        User user = new User();
-        user.setName(dto.getName());
-        user.setNickname(dto.getNickname());
-        user.setPassword(dto.getPassword());
-        user.setOrganizationId(dto.getOrganizationId());
-        user.setRole(dto.getRole());
-        return user;
+    public UserVo initFromPo(User user) {
+        this.setId(user.getId());
+        this.setName(user.getName());
+        this.setPassword(user.getPassword());
+        this.setNickname(user.getNickname());
+        this.setRole(user.getRole());
+        this.setOrganizationId(user.getOrganizationId());
+        return this;
     }
 
 }

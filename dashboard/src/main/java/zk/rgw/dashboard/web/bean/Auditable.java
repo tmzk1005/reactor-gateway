@@ -14,22 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-
-import zk.rgw.dashboard.web.bean.Dto;
-
-@Getter
-@Setter
-public class LoginDto implements Dto {
-
-    @JsonProperty(required = true)
-    private String username;
-
-    @JsonProperty(required = true)
-    private String password;
-
+public interface Auditable extends OperatorAuditable, TimeAuditable {
 }
