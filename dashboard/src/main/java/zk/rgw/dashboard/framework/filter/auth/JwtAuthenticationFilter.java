@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.filter.auth;
+package zk.rgw.dashboard.framework.filter.auth;
 
 import java.security.Principal;
 import java.util.List;
@@ -29,7 +29,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-import zk.rgw.dashboard.context.ContextUtil;
+import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public class JwtAuthenticationFilter extends AbstractAuthenticationFilter {

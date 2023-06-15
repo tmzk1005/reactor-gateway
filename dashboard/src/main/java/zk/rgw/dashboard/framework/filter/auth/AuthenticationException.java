@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.context;
+package zk.rgw.dashboard.framework.filter.auth;
 
-import java.security.Principal;
+import zk.rgw.common.exception.RgwException;
 
-import lombok.Getter;
+public class AuthenticationException extends RgwException {
 
-public class AnonymousPrincipal implements Principal {
-
-    private static final String DEFAULT_NAME = "__anonymous__";
-
-    @Getter
-    private final String name;
-
-    public AnonymousPrincipal() {
-        this(DEFAULT_NAME);
-    }
-
-    public AnonymousPrincipal(String name) {
-        this.name = name;
+    public AuthenticationException(String message) {
+        super(message);
     }
 
 }

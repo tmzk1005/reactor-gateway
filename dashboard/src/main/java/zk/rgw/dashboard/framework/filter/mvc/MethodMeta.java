@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.framework;
+package zk.rgw.dashboard.framework.filter.mvc;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -40,6 +40,8 @@ import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.annotation.PathVariable;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.exception.BadRequestException;
+import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.validate.ParameterValidator;
 import zk.rgw.http.path.AntPathMatcher;
 import zk.rgw.plugin.api.Exchange;
@@ -189,6 +191,8 @@ public class MethodMeta {
     private Mono<Void> handleException(Throwable throwable, Exchange exchange) {
         if (throwable instanceof BadRequestException) {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.BAD_REQUEST, throwable.getMessage());
+        } else if (throwable instanceof BizException bizException) {
+            return ResponseUtil.send(exchange.getResponse(), bizException.getCode(), bizException.getMessage());
         }
         return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
@@ -293,14 +297,6 @@ public class MethodMeta {
                     return Mono.error(new BadRequestException("请求体JSON反序列化异常"));
                 }
             }).switchIfEmpty(Mono.error(new BadRequestException("需要请求体")));
-        }
-
-    }
-
-    static class BadRequestException extends Exception {
-
-        public BadRequestException(String message) {
-            super(message);
         }
 
     }

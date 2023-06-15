@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.filter.auth;
+package zk.rgw.dashboard.framework.filter.auth;
 
 import java.security.Principal;
 import java.util.List;
@@ -24,8 +24,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-import zk.rgw.dashboard.context.AnonymousPrincipal;
-import zk.rgw.dashboard.context.ContextUtil;
+import zk.rgw.dashboard.framework.context.AnonymousPrincipal;
+import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.http.path.AntPathMatcher;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.context;
+package zk.rgw.dashboard.framework.context;
 
 import java.security.Principal;
 import java.util.Objects;

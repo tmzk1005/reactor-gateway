@@ -20,9 +20,9 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.vo.UserVo;
-import zk.rgw.dashboard.web.exception.BizException;
 import zk.rgw.dashboard.web.service.UserService;
 import zk.rgw.dashboard.web.service.impl.UserServiceImpl;
 

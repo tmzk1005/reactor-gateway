@@ -20,8 +20,8 @@ import java.util.List;
 
 import reactor.core.publisher.Flux;
 
-import zk.rgw.dashboard.filter.ControllerMethodInvokeFilter;
-import zk.rgw.dashboard.filter.auth.JwtAuthenticationFilter;
+import zk.rgw.dashboard.framework.filter.auth.JwtAuthenticationFilter;
+import zk.rgw.dashboard.framework.filter.mvc.ControllerMethodInvokeFilter;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.locator.RouteLocator;

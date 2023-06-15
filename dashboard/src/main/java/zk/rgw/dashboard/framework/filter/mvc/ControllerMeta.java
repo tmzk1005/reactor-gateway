@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.framework;
+package zk.rgw.dashboard.framework.filter.mvc;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
