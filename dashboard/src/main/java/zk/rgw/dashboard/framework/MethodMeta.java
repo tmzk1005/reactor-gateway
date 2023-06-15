@@ -40,6 +40,7 @@ import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.annotation.PathVariable;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.validate.ParameterValidator;
 import zk.rgw.http.path.AntPathMatcher;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.util.ResponseUtil;
@@ -103,10 +104,25 @@ public class MethodMeta {
     }
 
     public Mono<Void> invoke(Exchange exchange, String requestPath) {
-        return invoke0(exchange, requestPath).onErrorResume(throwable -> this.handleException(throwable, exchange));
+        return parseOutArgs(exchange, requestPath).map(theArgs -> {
+            if (theArgs.length > 0) {
+                // 校验参数
+                ParameterValidator parameterValidator = new ParameterValidator();
+                parameterValidator.validate(method.getParameters(), theArgs);
+                if (parameterValidator.hasError()) {
+                    return Mono.error(new BadRequestException(parameterValidator.getErrorMessage()));
+                }
+            }
+            try {
+                return method.invoke(controller, theArgs);
+            } catch (Exception exception) {
+                return Mono.error(exception);
+            }
+        }).flatMap(invokeResult -> this.handleInvokeResult(invokeResult, exchange.getResponse()))
+                .onErrorResume(throwable -> this.handleException(throwable, exchange));
     }
 
-    private Mono<Void> invoke0(Exchange exchange, String requestPath) {
+    private Mono<Object[]> parseOutArgs(Exchange exchange, String requestPath) {
         HttpServerRequest request = exchange.getRequest();
         Map<String, String> pathVariables = AntPathMatcher.getDefaultInstance().extractUriTemplateVariables(mappingPath, requestPath);
         Map<String, List<String>> requestParameters = new QueryStringDecoder(request.uri()).parameters();
@@ -138,14 +154,7 @@ public class MethodMeta {
         } else {
             argsMono = Mono.just(args);
         }
-
-        return argsMono.map(theArgs -> {
-            try {
-                return method.invoke(controller, theArgs);
-            } catch (Exception exception) {
-                return Mono.error(exception);
-            }
-        }).flatMap(invokeResult -> this.handleInvokeResult(invokeResult, exchange.getResponse()));
+        return argsMono;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
