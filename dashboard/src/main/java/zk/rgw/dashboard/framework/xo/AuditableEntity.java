@@ -13,17 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.xo;
 
-package zk.rgw.dashboard.web.bean;
-
-public interface OperatorAuditable {
-
-    String getCreatedBy();
-
-    void setCreatedBy(String operatorId);
-
-    String getLastModifiedBy();
-
-    void setLastModifiedBy(String operatorId);
-
+public interface AuditableEntity<D extends Dto> extends Po<D>, Auditable {
 }

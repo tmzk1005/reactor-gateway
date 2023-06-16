@@ -20,16 +20,24 @@ import java.security.Principal;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.BsonType;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
-import zk.rgw.dashboard.web.bean.BaseAuditableEntity;
-import zk.rgw.dashboard.web.bean.Po;
+import zk.rgw.dashboard.framework.mongodb.Document;
+import zk.rgw.dashboard.framework.mongodb.Index;
+import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
 import zk.rgw.dashboard.web.bean.Role;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
 
 @Getter
 @Setter
-public class User extends BaseAuditableEntity implements Principal, Po<UserDto> {
+@Document(collection = "User")
+@Index(name = "User-name-index", unique = true, def = "{\"name\": 1}")
+public class User extends BaseAuditableEntity<UserDto> implements Principal {
 
+    @BsonId
+    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
     private String name;

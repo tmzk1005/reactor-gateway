@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.entity;
+package zk.rgw.dashboard.framework.xo;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.framework.xo.NoDtoEntity;
-
 @Getter
 @Setter
-public class ReleasedApi extends NoDtoEntity {
+public abstract class BaseAuditableEntity<D extends Dto> implements AuditableEntity<D> {
 
-    private String id;
+    public BaseAuditableEntity() {
+        long timestamp = System.currentTimeMillis();
+        this.createdDate = timestamp;
+        this.lastModifiedDate = timestamp;
+    }
 
-    private String apiId;
+    protected String createdBy;
+
+    protected String lastModifiedBy;
+
+    protected long createdDate;
+
+    protected long lastModifiedDate;
 
 }

@@ -19,14 +19,20 @@ package zk.rgw.dashboard.web.bean.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.BaseAuditableEntity;
+import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.web.bean.dto.OrganizationDto;
 
 @Getter
 @Setter
-public class Organization extends BaseAuditableEntity {
+public class Organization extends BaseAuditableEntity<OrganizationDto> {
 
     private String id;
 
     private String name;
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public Organization initFromDto(OrganizationDto dto) {
+        return this;
+    }
 }

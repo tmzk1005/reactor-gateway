@@ -22,7 +22,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.util.StringUtil;
-import zk.rgw.dashboard.route.DashboardRoutes;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 

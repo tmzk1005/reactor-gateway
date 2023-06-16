@@ -13,28 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.bean.dto;
 
-package zk.rgw.dashboard.web.bean;
+import zk.rgw.dashboard.framework.xo.Dto;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class BaseAuditableEntity implements Auditable {
-
-    public BaseAuditableEntity() {
-        long timestamp = System.currentTimeMillis();
-        this.createdDate = timestamp;
-        this.lastModifiedDate = timestamp;
-    }
-
-    protected String createdBy;
-
-    protected String lastModifiedBy;
-
-    protected long createdDate;
-
-    protected long lastModifiedDate;
-
+public class ApiDto implements Dto {
 }

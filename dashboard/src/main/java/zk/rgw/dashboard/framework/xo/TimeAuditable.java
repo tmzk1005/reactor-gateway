@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean;
+package zk.rgw.dashboard.framework.xo;
 
-public interface Auditable extends OperatorAuditable, TimeAuditable {
+public interface TimeAuditable {
+
+    long getCreatedDate();
+
+    void setCreatedDate(long timestamp);
+
+    long getLastModifiedDate();
+
+    void setLastModifiedDate(long timestamp);
+
 }

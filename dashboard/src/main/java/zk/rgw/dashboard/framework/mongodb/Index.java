@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.mongodb;
 
-package zk.rgw.dashboard.web.bean.entity;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import lombok.Getter;
-import lombok.Setter;
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+public @interface Index {
 
-import zk.rgw.dashboard.framework.xo.NoDtoEntity;
+    String def();
 
-@Getter
-@Setter
-public class ReleasedApi extends NoDtoEntity {
+    boolean unique() default false;
 
-    private String id;
-
-    private String apiId;
+    String name();
 
 }

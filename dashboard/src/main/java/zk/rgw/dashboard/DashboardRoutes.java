@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.route;
+package zk.rgw.dashboard;
 
 import java.util.List;
 

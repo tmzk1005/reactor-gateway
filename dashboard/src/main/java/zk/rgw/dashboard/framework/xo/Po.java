@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean;
+package zk.rgw.dashboard.framework.xo;
 
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 
 public interface Po<D extends Dto> extends Serializable {
 
@@ -26,16 +25,5 @@ public interface Po<D extends Dto> extends Serializable {
     void setId(String id);
 
     <P extends Po<D>> P initFromDto(D dto);
-
-    static <P extends Po<D>, D extends Dto> P fromDto(Class<P> poClass, D dtoInstance) {
-        Constructor<P> constructor;
-        try {
-            constructor = poClass.getConstructor();
-            P poInstance = constructor.newInstance();
-            return poInstance.initFromDto(dtoInstance);
-        } catch (ReflectiveOperationException reflectiveOperationException) {
-            throw new IllegalArgumentException("Class " + poClass.getName() + " does not has an default constructor.", reflectiveOperationException);
-        }
-    }
 
 }

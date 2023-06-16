@@ -13,17 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.repository;
 
-package zk.rgw.dashboard.web.bean;
-
-public interface TimeAuditable {
-
-    long getCreatedDate();
-
-    void setCreatedDate(long timestamp);
-
-    long getLastModifiedDate();
-
-    void setLastModifiedDate(long timestamp);
-
+public class UserRepository {
 }

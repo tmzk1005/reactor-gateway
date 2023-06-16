@@ -14,19 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean.entity;
+package zk.rgw.dashboard.framework.xo;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import zk.rgw.dashboard.framework.xo.NoDtoEntity;
-
-@Getter
-@Setter
-public class ReleasedApi extends NoDtoEntity {
-
-    private String id;
-
-    private String apiId;
-
+public interface Auditable extends OperatorAuditable, TimeAuditable {
 }

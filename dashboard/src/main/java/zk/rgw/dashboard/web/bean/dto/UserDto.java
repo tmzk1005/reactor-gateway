@@ -19,7 +19,7 @@ package zk.rgw.dashboard.web.bean.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.Dto;
+import zk.rgw.dashboard.framework.xo.Dto;
 import zk.rgw.dashboard.web.bean.Role;
 
 @Getter

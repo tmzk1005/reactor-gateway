@@ -19,14 +19,21 @@ package zk.rgw.dashboard.web.bean.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.BaseAuditableEntity;
+import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.web.bean.dto.ApiDto;
 
 @Getter
 @Setter
-public class Api extends BaseAuditableEntity {
+public class Api extends BaseAuditableEntity<ApiDto> {
 
     private String id;
 
     private String name;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Api initFromDto(ApiDto dto) {
+        return this;
+    }
 
 }

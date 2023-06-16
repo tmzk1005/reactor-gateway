@@ -13,20 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.xo;
 
-package zk.rgw.dashboard.web.bean.entity;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import zk.rgw.dashboard.framework.xo.NoDtoEntity;
-
-@Getter
-@Setter
-public class ReleasedApi extends NoDtoEntity {
-
-    private String id;
-
-    private String apiId;
-
+public class NoDto implements Dto {
 }
