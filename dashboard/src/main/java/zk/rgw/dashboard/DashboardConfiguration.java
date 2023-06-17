@@ -32,21 +32,25 @@ import zk.rgw.http.conf.ServerConfiguration;
         showDefaultValues = true
 )
 // @formatter:on
+@Getter
+@Setter
 public class DashboardConfiguration extends ServerConfiguration {
 
     private static final String DEFAULT_CONF_FILE = "conf/rgw-dashboard.properties";
 
     private static final int DEFAULT_PORT = 7000;
 
-    @Getter
-    @Setter
     @CommandLine.Option(names = "--jwt.hmac256.secret", description = "The secret key for hmac256 algorithm, if not specified, a random string is used.")
     private String jwtHmac256Secret;
 
-    @Getter
-    @Setter
     @CommandLine.Option(names = "--api.context.path", description = "The api context path.")
     private String apiContextPath = "/api";
+
+    @CommandLine.Option(names = "--mongodb.database", description = "Mongodb database name to store api manager information.")
+    private String mongodbDatabaseName = "rgw";
+
+    @CommandLine.Option(names = "--mongodb.connection", description = "Mongodb connection string used to connect to mongo.")
+    private String mongodbConnectString = "mongodb://127.0.0.1:27017";
 
     public DashboardConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;
