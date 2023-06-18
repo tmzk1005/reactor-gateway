@@ -20,3 +20,10 @@ version = "0.0.1"
 subprojects {
     group = rootProject.group
 }
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def task = taskGraph.allTasks.find { it.name.endsWith(".main()") }
+    if (task instanceof JavaExec) {
+        task.executable = task.javaLauncher.get().executablePath.asFile.absolutePath
+    }
+}
