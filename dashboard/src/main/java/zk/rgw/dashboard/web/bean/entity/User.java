@@ -16,8 +16,6 @@
 
 package zk.rgw.dashboard.web.bean.entity;
 
-import java.security.Principal;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.BsonType;
@@ -26,15 +24,16 @@ import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
 import zk.rgw.dashboard.framework.mongodb.Index;
+import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
-import zk.rgw.dashboard.web.bean.Role;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
 
 @Getter
 @Setter
 @Document(collection = "User")
 @Index(name = "User-name-index", unique = true, def = "{\"name\": 1}")
-public class User extends BaseAuditableEntity<UserDto> implements Principal {
+public class User extends BaseAuditableEntity<UserDto> implements PrincipalWithRoles {
 
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
@@ -60,6 +59,11 @@ public class User extends BaseAuditableEntity<UserDto> implements Principal {
         user.setOrganizationId(dto.getOrganizationId());
         user.setRole(dto.getRole());
         return user;
+    }
+
+    @Override
+    public Role[] getRoles() {
+        return new Role[0];
     }
 
 }

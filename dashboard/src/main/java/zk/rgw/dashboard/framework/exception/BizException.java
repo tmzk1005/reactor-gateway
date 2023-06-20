@@ -18,11 +18,11 @@ package zk.rgw.dashboard.framework.exception;
 
 import lombok.Getter;
 
-import zk.rgw.common.exception.RgwException;
+import zk.rgw.common.exception.RgwRuntimeException;
 
-public class BizException extends RgwException {
+@Getter
+public class BizException extends RgwRuntimeException {
 
-    @Getter
     private final int code;
 
     public BizException(String message) {

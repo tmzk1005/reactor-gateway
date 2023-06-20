@@ -16,15 +16,16 @@
 
 package zk.rgw.dashboard.framework.context;
 
-import java.security.Principal;
-
 import lombok.Getter;
 
-public class AnonymousPrincipal implements Principal {
+import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
+import zk.rgw.dashboard.framework.security.Role;
+
+@Getter
+public class AnonymousPrincipal implements PrincipalWithRoles {
 
     private static final String DEFAULT_NAME = "__anonymous__";
 
-    @Getter
     private final String name;
 
     public AnonymousPrincipal() {
@@ -33,6 +34,11 @@ public class AnonymousPrincipal implements Principal {
 
     public AnonymousPrincipal(String name) {
         this.name = name;
+    }
+
+    @Override
+    public Role[] getRoles() {
+        return new Role[0];
     }
 
 }

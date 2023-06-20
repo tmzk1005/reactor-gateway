@@ -24,12 +24,12 @@ import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.vo.UserVo;
 import zk.rgw.dashboard.web.service.UserService;
-import zk.rgw.dashboard.web.service.impl.UserServiceImpl;
+import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
 @Controller("user")
 public class UserController {
 
-    private final UserService userService = new UserServiceImpl();
+    private final UserService userService = ServiceFactory.get(UserService.class);
 
     @RequestMapping(path = "/_login", method = RequestMapping.Method.POST)
     public Mono<UserVo> login(@RequestBody LoginDto loginDto) {

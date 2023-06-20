@@ -13,27 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.exception;
 
-package zk.rgw.dashboard.web.bean.dto;
+import zk.rgw.dashboard.framework.annotation.ResponseStatus;
 
-import lombok.Getter;
-import lombok.Setter;
+@ResponseStatus(code = 403)
+public class AccessDeniedException extends BizException {
 
-import zk.rgw.dashboard.framework.security.Role;
-import zk.rgw.dashboard.framework.xo.Dto;
-
-@Getter
-@Setter
-public class UserDto implements Dto {
-
-    private String name;
-
-    private String nickname;
-
-    private String password;
-
-    private Role role;
-
-    private String organizationId;
+    public AccessDeniedException(String message) {
+        super(message);
+    }
 
 }

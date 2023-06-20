@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.annotation;
 
-package zk.rgw.dashboard.web.bean.dto;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import lombok.Getter;
-import lombok.Setter;
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface ResponseStatus {
 
-import zk.rgw.dashboard.framework.security.Role;
-import zk.rgw.dashboard.framework.xo.Dto;
+    int code() default 500;
 
-@Getter
-@Setter
-public class UserDto implements Dto {
-
-    private String name;
-
-    private String nickname;
-
-    private String password;
-
-    private Role role;
-
-    private String organizationId;
+    String message() default "";
 
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.web.bean;
+package zk.rgw.dashboard.framework.security;
 
 public enum Role {
 

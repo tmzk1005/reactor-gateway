@@ -18,7 +18,7 @@ package zk.rgw.dashboard.web.service.impl;
 
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.web.bean.Role;
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.service.UserService;

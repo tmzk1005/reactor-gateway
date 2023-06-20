@@ -40,6 +40,7 @@ import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.annotation.PathVariable;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.annotation.ResponseStatus;
 import zk.rgw.dashboard.framework.exception.BadRequestException;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.validate.ParameterValidator;
@@ -192,7 +193,9 @@ public class MethodMeta {
         if (throwable instanceof BadRequestException) {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.BAD_REQUEST, throwable.getMessage());
         } else if (throwable instanceof BizException bizException) {
-            return ResponseUtil.send(exchange.getResponse(), bizException.getCode(), bizException.getMessage());
+            ResponseStatus annotation = bizException.getClass().getAnnotation(ResponseStatus.class);
+            HttpResponseStatus httpResponseStatus = Objects.nonNull(annotation) ? HttpResponseStatus.valueOf(annotation.code()) : HttpResponseStatus.OK;
+            return ResponseUtil.send(exchange.getResponse(), httpResponseStatus, bizException.getCode(), bizException.getMessage());
         }
         return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }

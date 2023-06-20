@@ -19,8 +19,8 @@ package zk.rgw.dashboard.web.bean.vo;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.xo.Vo;
-import zk.rgw.dashboard.web.bean.Role;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 @Getter

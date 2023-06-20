@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.security;
 
-package zk.rgw.dashboard.web.bean.dto;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
-import lombok.Getter;
-import lombok.Setter;
+public interface PrincipalWithRoles extends Principal {
 
-import zk.rgw.dashboard.framework.security.Role;
-import zk.rgw.dashboard.framework.xo.Dto;
+    Role[] getRoles();
 
-@Getter
-@Setter
-public class UserDto implements Dto {
-
-    private String name;
-
-    private String nickname;
-
-    private String password;
-
-    private Role role;
-
-    private String organizationId;
+    default Set<Role> roleSet() {
+        Role[] roles = getRoles();
+        if (Objects.isNull(roles) || roles.length == 0) {
+            return new HashSet<>(0);
+        }
+        Set<Role> roleSet = new HashSet<>(2 * roles.length);
+        roleSet.addAll(Arrays.asList(roles));
+        return roleSet;
+    }
 
 }

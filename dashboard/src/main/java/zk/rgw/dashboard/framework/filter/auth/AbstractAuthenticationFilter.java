@@ -16,7 +16,6 @@
 
 package zk.rgw.dashboard.framework.filter.auth;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +25,7 @@ import reactor.netty.http.server.HttpServerRequest;
 
 import zk.rgw.dashboard.framework.context.AnonymousPrincipal;
 import zk.rgw.dashboard.framework.context.ContextUtil;
+import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
 import zk.rgw.http.path.AntPathMatcher;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;
@@ -42,7 +42,7 @@ public abstract class AbstractAuthenticationFilter implements Filter {
 
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
-        Mono<Principal> principalMono;
+        Mono<PrincipalWithRoles> principalMono;
         try {
             principalMono = doAuthorization(exchange.getRequest());
         } catch (AuthenticationException exception) {
@@ -60,7 +60,7 @@ public abstract class AbstractAuthenticationFilter implements Filter {
         });
     }
 
-    protected abstract Mono<Principal> doAuthorization(HttpServerRequest request) throws AuthenticationException;
+    protected abstract Mono<PrincipalWithRoles> doAuthorization(HttpServerRequest request) throws AuthenticationException;
 
     private Mono<Void> handleAnonymousRequest(Exchange exchange, FilterChain chain) {
         if (noNeedLogin(exchange.getRequest())) {

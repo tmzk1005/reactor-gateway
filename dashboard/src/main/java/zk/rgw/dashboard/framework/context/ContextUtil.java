@@ -16,30 +16,47 @@
 
 package zk.rgw.dashboard.framework.context;
 
-import java.security.Principal;
 import java.util.Objects;
+import java.util.Set;
 
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.http.context.ReactiveRequestContextHolder;
 
 public class ContextUtil {
 
     private static final String ATTR_NAME_PRINCIPAL = "__principal";
 
-    public static final Mono<Principal> ANONYMOUS_PRINCIPAL = Mono.just(new AnonymousPrincipal());
+    public static final Mono<PrincipalWithRoles> ANONYMOUS_PRINCIPAL = Mono.just(new AnonymousPrincipal());
 
     private ContextUtil() {
     }
 
-    public static Mono<Principal> getPrincipal() {
+    public static Mono<PrincipalWithRoles> getPrincipal() {
         return ReactiveRequestContextHolder.getContext()
                 .flatMap(requestContext -> requestContext.getAttributeOrDefault(ATTR_NAME_PRINCIPAL, ANONYMOUS_PRINCIPAL));
     }
 
-    public static void setPrincipal(Mono<Principal> principal) {
+    public static void setPrincipal(Mono<PrincipalWithRoles> principal) {
         Objects.requireNonNull(principal);
         ReactiveRequestContextHolder.getContext().doOnNext(requestContext -> requestContext.getAttributes().put(ATTR_NAME_PRINCIPAL, principal));
+    }
+
+    public static Mono<Boolean> hasRoles(Role... roles) {
+        return getPrincipal().map(principal -> {
+            Set<Role> roleSet = principal.roleSet();
+            if (Objects.isNull(roleSet) || roleSet.isEmpty()) {
+                return false;
+            }
+            for (Role r : roles) {
+                if (!roleSet.contains(r)) {
+                    return false;
+                }
+            }
+            return false;
+        }).switchIfEmpty(Mono.just(false));
     }
 
 }
