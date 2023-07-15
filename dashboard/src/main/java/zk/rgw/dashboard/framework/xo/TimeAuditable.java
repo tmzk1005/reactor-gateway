@@ -16,14 +16,16 @@
 
 package zk.rgw.dashboard.framework.xo;
 
-public interface TimeAuditable {
+import java.time.temporal.TemporalAccessor;
 
-    long getCreatedDate();
+public interface TimeAuditable<T extends TemporalAccessor> {
 
-    void setCreatedDate(long timestamp);
+    T getCreatedDate();
 
-    long getLastModifiedDate();
+    void setCreatedDate(T timestamp);
 
-    void setLastModifiedDate(long timestamp);
+    T getLastModifiedDate();
+
+    void setLastModifiedDate(T timestamp);
 
 }

@@ -16,5 +16,7 @@
 
 package zk.rgw.dashboard.framework.xo;
 
-public interface Auditable extends OperatorAuditable, TimeAuditable {
+import java.time.temporal.TemporalAccessor;
+
+public interface Auditable<U, T extends TemporalAccessor> extends OperatorAuditable<U>, TimeAuditable<T> {
 }

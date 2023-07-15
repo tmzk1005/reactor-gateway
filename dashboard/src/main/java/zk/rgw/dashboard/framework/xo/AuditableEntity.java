@@ -15,5 +15,7 @@
  */
 package zk.rgw.dashboard.framework.xo;
 
-public interface AuditableEntity<D extends Dto> extends Po<D>, Auditable {
+import java.time.temporal.TemporalAccessor;
+
+public interface AuditableEntity<U, T extends TemporalAccessor, D extends Dto> extends Po<D>, Auditable<U, T> {
 }

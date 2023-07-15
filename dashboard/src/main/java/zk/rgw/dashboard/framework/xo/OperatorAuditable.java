@@ -16,14 +16,14 @@
 
 package zk.rgw.dashboard.framework.xo;
 
-public interface OperatorAuditable {
+public interface OperatorAuditable<U> {
 
-    String getCreatedBy();
+    U getCreatedBy();
 
-    void setCreatedBy(String operatorId);
+    void setCreatedBy(U user);
 
-    String getLastModifiedBy();
+    U getLastModifiedBy();
 
-    void setLastModifiedBy(String operatorId);
+    void setLastModifiedBy(U user);
 
 }

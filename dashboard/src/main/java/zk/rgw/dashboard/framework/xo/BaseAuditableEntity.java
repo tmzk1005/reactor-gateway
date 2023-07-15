@@ -16,25 +16,29 @@
 
 package zk.rgw.dashboard.framework.xo;
 
+import java.time.Instant;
+
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.dashboard.web.bean.entity.User;
+
 @Getter
 @Setter
-public abstract class BaseAuditableEntity<D extends Dto> implements AuditableEntity<D> {
+public abstract class BaseAuditableEntity<D extends Dto> implements AuditableEntity<User, Instant, D> {
 
     public BaseAuditableEntity() {
-        long timestamp = System.currentTimeMillis();
-        this.createdDate = timestamp;
-        this.lastModifiedDate = timestamp;
+        Instant now = Instant.now();
+        this.createdDate = now;
+        this.lastModifiedDate = now;
     }
 
-    protected String createdBy;
+    protected User createdBy;
 
-    protected String lastModifiedBy;
+    protected User lastModifiedBy;
 
-    protected long createdDate;
+    protected Instant createdDate;
 
-    protected long lastModifiedDate;
+    protected Instant lastModifiedDate;
 
 }
