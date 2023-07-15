@@ -21,31 +21,36 @@ import java.util.Set;
 
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.http.context.ReactiveRequestContextHolder;
 
 public class ContextUtil {
 
     private static final String ATTR_NAME_PRINCIPAL = "__principal";
 
-    public static final Mono<PrincipalWithRoles> ANONYMOUS_PRINCIPAL = Mono.just(new AnonymousPrincipal());
+    public static final Mono<User> ANONYMOUS_USER;
+
+    static {
+        User user = new User();
+        ANONYMOUS_USER = Mono.just(user);
+    }
 
     private ContextUtil() {
     }
 
-    public static Mono<PrincipalWithRoles> getPrincipal() {
+    public static Mono<User> getUser() {
         return ReactiveRequestContextHolder.getContext()
-                .flatMap(requestContext -> requestContext.getAttributeOrDefault(ATTR_NAME_PRINCIPAL, ANONYMOUS_PRINCIPAL));
+                .flatMap(requestContext -> requestContext.getAttributeOrDefault(ATTR_NAME_PRINCIPAL, ANONYMOUS_USER));
     }
 
-    public static void setPrincipal(Mono<PrincipalWithRoles> principal) {
+    public static void setUser(Mono<User> principal) {
         Objects.requireNonNull(principal);
         ReactiveRequestContextHolder.getContext().doOnNext(requestContext -> requestContext.getAttributes().put(ATTR_NAME_PRINCIPAL, principal));
     }
 
     public static Mono<Boolean> hasRoles(Role... roles) {
-        return getPrincipal().map(principal -> {
+        return getUser().map(principal -> {
             Set<Role> roleSet = principal.roleSet();
             if (Objects.isNull(roleSet) || roleSet.isEmpty()) {
                 return false;

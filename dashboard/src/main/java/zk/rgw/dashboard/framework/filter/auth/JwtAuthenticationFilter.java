@@ -29,7 +29,6 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
-import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public class JwtAuthenticationFilter extends AbstractAuthenticationFilter {
@@ -43,10 +42,10 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationFilter {
     }
 
     @Override
-    protected Mono<PrincipalWithRoles> doAuthorization(HttpServerRequest request) throws AuthenticationException {
+    protected Mono<User> doAuthorization(HttpServerRequest request) throws AuthenticationException {
         String authorizationKey = request.requestHeaders().get(HttpHeaderNames.AUTHORIZATION);
         if (Objects.isNull(authorizationKey)) {
-            return ContextUtil.ANONYMOUS_PRINCIPAL;
+            return ContextUtil.ANONYMOUS_USER;
         }
         DecodedJWT jwt;
         try {

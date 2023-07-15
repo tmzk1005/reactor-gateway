@@ -23,9 +23,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
-import zk.rgw.dashboard.framework.context.AnonymousPrincipal;
 import zk.rgw.dashboard.framework.context.ContextUtil;
-import zk.rgw.dashboard.framework.security.PrincipalWithRoles;
+import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.http.path.AntPathMatcher;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;
@@ -42,25 +41,25 @@ public abstract class AbstractAuthenticationFilter implements Filter {
 
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
-        Mono<PrincipalWithRoles> principalMono;
+        Mono<User> userMono;
         try {
-            principalMono = doAuthorization(exchange.getRequest());
+            userMono = doAuthorization(exchange.getRequest());
         } catch (AuthenticationException exception) {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, exception.getMessage());
         }
 
-        Objects.requireNonNull(principalMono);
-        return principalMono.flatMap(principal -> {
-            if (principal instanceof AnonymousPrincipal) {
+        Objects.requireNonNull(userMono);
+        return userMono.flatMap(user -> {
+            if (Objects.isNull(user.getId()) && Objects.isNull(user.getName())) {
                 return handleAnonymousRequest(exchange, chain);
             } else {
-                ContextUtil.setPrincipal(principalMono);
+                ContextUtil.setUser(userMono);
                 return chain.filter(exchange);
             }
         });
     }
 
-    protected abstract Mono<PrincipalWithRoles> doAuthorization(HttpServerRequest request) throws AuthenticationException;
+    protected abstract Mono<User> doAuthorization(HttpServerRequest request) throws AuthenticationException;
 
     private Mono<Void> handleAnonymousRequest(Exchange exchange, FilterChain chain) {
         if (noNeedLogin(exchange.getRequest())) {
