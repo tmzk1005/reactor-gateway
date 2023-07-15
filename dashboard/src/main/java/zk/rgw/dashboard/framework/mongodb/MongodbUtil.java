@@ -17,7 +17,12 @@ package zk.rgw.dashboard.framework.mongodb;
 
 import java.util.Objects;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
 import zk.rgw.common.util.ObjectUtil;
+import zk.rgw.dashboard.framework.exception.NotObjectIdException;
 
 public class MongodbUtil {
 
@@ -35,6 +40,16 @@ public class MongodbUtil {
             collectionName = clazz.getSimpleName();
         }
         return collectionName;
+    }
+
+    public static Bson createFilterById(String id) throws NotObjectIdException {
+        try {
+            ObjectId objectId = new ObjectId(id);
+            return Filters.eq("_id", objectId);
+        } catch (IllegalArgumentException exception) {
+            throw new NotObjectIdException(id);
+        }
+
     }
 
 }
