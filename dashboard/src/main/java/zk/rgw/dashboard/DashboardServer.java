@@ -22,6 +22,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.util.StringUtil;
+import zk.rgw.dashboard.framework.mongodb.MongodbContext;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 
@@ -31,6 +32,8 @@ public class DashboardServer extends ReactorHttpServer {
     private final DashboardConfiguration configuration;
 
     private RouteLocator routeLocator;
+
+    private MongodbContext mongodbContext;
 
     public DashboardServer(DashboardConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
@@ -45,6 +48,7 @@ public class DashboardServer extends ReactorHttpServer {
     @Override
     protected void beforeStart() {
         initRouteLocator();
+        initMongodb();
     }
 
     private void initRouteLocator() {
@@ -53,6 +57,11 @@ public class DashboardServer extends ReactorHttpServer {
             jwtHmac256Secret = UUID.randomUUID().toString();
         }
         this.routeLocator = new DashboardRoutes(configuration.getApiContextPath(), jwtHmac256Secret);
+    }
+
+    private void initMongodb() {
+        mongodbContext = new MongodbContext(configuration.getMongodbConnectString(), configuration.getMongodbDatabaseName());
+        mongodbContext.init();
     }
 
     @Override

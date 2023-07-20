@@ -32,7 +32,7 @@ import zk.rgw.dashboard.web.bean.dto.UserDto;
 @Getter
 @Setter
 @Document(collection = "User")
-@Index(name = "User-name-index", unique = true, def = "{\"name\": 1}")
+@Index(name = "UserIndex-name", unique = true, def = "{\"name\": 1}")
 public class User extends BaseAuditableEntity<UserDto> implements PrincipalWithRoles {
 
     @BsonId

@@ -19,11 +19,15 @@ package zk.rgw.dashboard.web.bean.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.dashboard.framework.mongodb.Document;
+import zk.rgw.dashboard.framework.mongodb.Index;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
 import zk.rgw.dashboard.web.bean.dto.OrganizationDto;
 
 @Getter
 @Setter
+@Document(collection = "Organization")
+@Index(name = "OrganizationIndex-name", unique = true, def = "{\"name\": 1}")
 public class Organization extends BaseAuditableEntity<OrganizationDto> {
 
     private String id;
