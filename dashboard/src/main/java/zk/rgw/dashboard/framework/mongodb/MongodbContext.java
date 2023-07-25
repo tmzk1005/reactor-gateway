@@ -39,6 +39,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.UserRepository;
@@ -123,7 +124,7 @@ public class MongodbContext {
                     User user = new User();
                     user.setName(username);
                     user.setNickname(nickname);
-                    user.setPassword(password);
+                    user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
                     user.setRole(role);
                     return userRepository.insert(user).doOnNext(newUser -> {
                         log.info("Create a user named {}, generated id is {}", newUser.getName(), newUser.getId());
