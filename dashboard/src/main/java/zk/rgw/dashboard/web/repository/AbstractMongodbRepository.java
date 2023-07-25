@@ -19,6 +19,7 @@ import java.time.Instant;
 
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
+import com.mongodb.reactivestreams.client.MongoDatabase;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.conversions.Bson;
 import reactor.core.publisher.Flux;
@@ -36,18 +37,17 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
 
     protected final MongoClient mongoClient;
 
-    protected final String databaseName;
+    protected final MongoDatabase database;
 
     protected final Class<E> entityClass;
 
     protected final MongoCollection<E> mongoCollection;
 
-    protected AbstractMongodbRepository(MongoClient mongoClient, String databaseName, Class<E> entityClass) {
+    protected AbstractMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
         this.mongoClient = mongoClient;
-        this.databaseName = databaseName;
+        this.database = database;
         this.entityClass = entityClass;
-        String collectionName = MongodbUtil.getCollectionName(entityClass);
-        this.mongoCollection = this.mongoClient.getDatabase(databaseName).getCollection(collectionName, entityClass);
+        this.mongoCollection = this.database.getCollection(MongodbUtil.getCollectionName(entityClass), entityClass);
     }
 
     public Mono<E> insert(E entity) {

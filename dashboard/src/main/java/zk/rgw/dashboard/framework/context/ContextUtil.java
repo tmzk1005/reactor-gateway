@@ -17,7 +17,6 @@
 package zk.rgw.dashboard.framework.context;
 
 import java.util.Objects;
-import java.util.Set;
 
 import reactor.core.publisher.Mono;
 
@@ -50,14 +49,14 @@ public class ContextUtil {
     }
 
     public static Mono<Boolean> hasRoles(Role... roles) {
-        return getUser().map(principal -> {
-            Set<Role> roleSet = principal.roleSet();
-            if (Objects.isNull(roleSet) || roleSet.isEmpty()) {
+        return getUser().map(user -> {
+            Role role = user.getRole();
+            if (Objects.isNull(role)) {
                 return false;
             }
             for (Role r : roles) {
-                if (!roleSet.contains(r)) {
-                    return false;
+                if (role.equals(r)) {
+                    return true;
                 }
             }
             return false;

@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
@@ -30,8 +31,11 @@ import org.bson.Document;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.UserRepository;
+import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 
 @Slf4j
 @Getter
@@ -60,6 +64,10 @@ public class MongodbContext {
         initCollectionForEntity(User.class)
                 .then(initCollectionForEntity(Organization.class))
                 .subscribe();
+        RepositoryFactory.init(this.mongoClient, this.database);
+        initUser("admin", "Admin", "admin@rgw", Role.SYSTEM_ADMIN)
+                .then(initUser("rgw", "Rgw", "rgw@rgw", Role.NORMAL_USER))
+                .subscribe();
     }
 
     private Mono<Void> initCollectionForEntity(Class<?> entityClass) {
@@ -81,6 +89,20 @@ public class MongodbContext {
     private static Mono<Void> createIndex(MongoCollection<Document> collection, String name, boolean unique, String definition) {
         IndexOptions indexOptions = new IndexOptions().name(name).unique(unique);
         return Mono.from(collection.createIndex(Document.parse(definition), indexOptions)).then();
+    }
+
+    private static Mono<Void> initUser(String username, String nickname, String password, Role role) {
+        UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
+        return userRepository.findOne(Filters.eq("username", username))
+                .switchIfEmpty(Mono.defer(() -> {
+                    User user = new User();
+                    user.setName(username);
+                    user.setNickname(nickname);
+                    user.setPassword(password);
+                    user.setRole(role);
+                    return userRepository.insert(user);
+                }))
+                .then();
     }
 
 }

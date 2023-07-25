@@ -13,17 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.repository;
+package zk.rgw.dashboard.web.repository.factory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.UserRepository;
 
-public class UserRepository extends AbstractMongodbRepository<User> {
+public class RepositoryFactory {
 
-    public UserRepository(MongoClient mongoClient, MongoDatabase database, Class<User> entityClass) {
-        super(mongoClient, database, entityClass);
+    private static final Map<Class<?>, Object> REPOSITORY_MAP = new HashMap<>();
+
+    private RepositoryFactory() {
+    }
+
+    public static void init(MongoClient mongoClient, MongoDatabase mongoDatabase) {
+        Objects.requireNonNull(mongoClient);
+        Objects.requireNonNull(mongoDatabase);
+        REPOSITORY_MAP.put(UserRepository.class, new UserRepository(mongoClient, mongoDatabase, User.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <R> R get(Class<R> repositoryClass) {
+        return (R) REPOSITORY_MAP.get(repositoryClass);
     }
 
 }
