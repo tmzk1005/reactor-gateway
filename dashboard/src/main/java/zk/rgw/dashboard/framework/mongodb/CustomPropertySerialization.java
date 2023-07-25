@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.mongodb;
 
-package zk.rgw.common.exception;
+import org.bson.codecs.pojo.PropertySerialization;
 
-public class RgwRuntimeException extends RuntimeException {
+public class CustomPropertySerialization<T> implements PropertySerialization<T> {
 
-    public RgwRuntimeException(String message) {
-        super(message);
-    }
-
-    public RgwRuntimeException(Throwable throwable) {
-        super(throwable);
-    }
-
-    public RgwRuntimeException(String message, Throwable throwable) {
-        super(message, throwable);
+    @Override
+    public boolean shouldSerialize(T value) {
+        return true;
     }
 
 }

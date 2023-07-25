@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.mongodb;
 
-package zk.rgw.common.exception;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class RgwRuntimeException extends RuntimeException {
-
-    public RgwRuntimeException(String message) {
-        super(message);
-    }
-
-    public RgwRuntimeException(Throwable throwable) {
-        super(throwable);
-    }
-
-    public RgwRuntimeException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
-
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.FIELD })
+public @interface DocumentReference {
 }

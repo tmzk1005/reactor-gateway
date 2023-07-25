@@ -15,6 +15,8 @@
  */
 package zk.rgw.dashboard.framework.mongodb;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.mongodb.ConnectionString;
@@ -28,6 +30,11 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.Convention;
+import org.bson.codecs.pojo.Conventions;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -43,20 +50,38 @@ public class MongodbContext {
 
     private final String connectionString;
 
-    private final MongoClientSettings mongoClientSettings;
-
-    private final MongoClient mongoClient;
-
     private final String databaseName;
 
-    private final MongoDatabase database;
+    private MongoClientSettings mongoClientSettings;
+
+    private MongoClient mongoClient;
+
+    private MongoDatabase database;
+
+    private CodecRegistry codecRegistry;
 
     public MongodbContext(String connectionString, String databaseName) {
         this.connectionString = connectionString;
-        ConnectionString cs = new ConnectionString(connectionString);
-        this.mongoClientSettings = MongoClientSettings.builder().applyConnectionString(cs).build();
-        this.mongoClient = MongoClients.create(mongoClientSettings);
         this.databaseName = databaseName;
+        init0();
+    }
+
+    private void initCodecRegistry() {
+        List<Convention> conventions = new ArrayList<>(Conventions.DEFAULT_CONVENTIONS);
+        CustomConvention customConvention = new CustomConvention();
+        conventions.add(customConvention);
+        codecRegistry = CodecRegistries.fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).conventions(conventions).build())
+        );
+        customConvention.setCodecRegistry(codecRegistry);
+    }
+
+    private void init0() {
+        initCodecRegistry();
+        ConnectionString cs = new ConnectionString(connectionString);
+        this.mongoClientSettings = MongoClientSettings.builder().applyConnectionString(cs).codecRegistry(codecRegistry).build();
+        this.mongoClient = MongoClients.create(mongoClientSettings);
         this.database = mongoClient.getDatabase(databaseName);
     }
 
