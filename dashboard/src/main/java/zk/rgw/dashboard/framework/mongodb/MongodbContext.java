@@ -125,7 +125,9 @@ public class MongodbContext {
                     user.setNickname(nickname);
                     user.setPassword(password);
                     user.setRole(role);
-                    return userRepository.insert(user);
+                    return userRepository.insert(user).doOnNext(newUser -> {
+                        log.info("Create a user named {}, generated id is {}", newUser.getName(), newUser.getId());
+                    });
                 }))
                 .then();
     }
