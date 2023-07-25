@@ -16,27 +16,32 @@
 
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.Objects;
+
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.UserRepository;
+import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.UserService;
 
 public class UserServiceImpl implements UserService {
 
+    private final UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
+
     @Override
     public Mono<User> login(LoginDto loginDto) {
-        String expectName = "alice";
-        if (!expectName.equals(loginDto.getUsername())) {
-            return Mono.empty();
+        return userRepository.findOneByUsername(loginDto.getUsername())
+                .filter(user -> passwordMatch(loginDto.getPassword(), user.getPassword()));
+    }
+
+    private static boolean passwordMatch(String dtoPassword, String hashedPassword) {
+        if (Objects.isNull(dtoPassword) || Objects.isNull(hashedPassword)) {
+            return false;
         }
-        User user = new User();
-        user.setName(expectName);
-        user.setNickname(expectName.toUpperCase());
-        user.setRole(Role.NORMAL_USER);
-        user.setOrganizationId("123");
-        return Mono.just(user);
+        return Pbkdf2PasswordEncoder.getDefaultInstance().matches(dtoPassword, hashedPassword);
     }
 
 }

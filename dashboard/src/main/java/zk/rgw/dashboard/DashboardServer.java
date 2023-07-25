@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.util.StringUtil;
 import zk.rgw.dashboard.framework.mongodb.MongodbContext;
+import zk.rgw.dashboard.web.bean.vo.LoginVo;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 
@@ -62,6 +63,7 @@ public class DashboardServer extends ReactorHttpServer {
     private void initMongodb() {
         mongodbContext = new MongodbContext(configuration.getMongodbConnectString(), configuration.getMongodbDatabaseName());
         mongodbContext.init();
+        LoginVo.initAlgorithm(configuration.getJwtHmac256Secret());
     }
 
     @Override

@@ -22,7 +22,7 @@ import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
-import zk.rgw.dashboard.web.bean.vo.UserVo;
+import zk.rgw.dashboard.web.bean.vo.LoginVo;
 import zk.rgw.dashboard.web.service.UserService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -32,9 +32,9 @@ public class UserController {
     private final UserService userService = ServiceFactory.get(UserService.class);
 
     @RequestMapping(path = "/_login", method = RequestMapping.Method.POST)
-    public Mono<UserVo> login(@RequestBody LoginDto loginDto) {
+    public Mono<LoginVo> login(@RequestBody LoginDto loginDto) {
         return userService.login(loginDto)
-                .map(new UserVo()::initFromPo)
+                .map(new LoginVo()::initFromPo)
                 .switchIfEmpty(Mono.error(BizException.of("登录失败!用户名或密码错误.")));
     }
 
