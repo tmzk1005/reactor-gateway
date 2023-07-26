@@ -20,16 +20,20 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.bean.entity.Organization;
 
-public class UserRepository extends AbstractMongodbRepository<User> {
+public class OrganizationRepository extends AbstractMongodbRepository<Organization> {
 
-    public UserRepository(MongoClient mongoClient, MongoDatabase database) {
-        super(mongoClient, database, User.class);
+    public OrganizationRepository(MongoClient mongoClient, MongoDatabase database) {
+        super(mongoClient, database, Organization.class);
     }
 
-    public Mono<User> findOneByUsername(String username) {
-        return findOne(Filters.eq("username", username));
+    public Mono<Organization> findOneByName(String name) {
+        return findOne(Filters.eq("name", name));
+    }
+
+    public Mono<Boolean> existOneByName(String name) {
+        return exists(Filters.eq("name", name));
     }
 
 }

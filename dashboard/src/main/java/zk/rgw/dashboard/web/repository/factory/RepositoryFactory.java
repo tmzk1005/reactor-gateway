@@ -22,7 +22,7 @@ import java.util.Objects;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
-import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 
 public class RepositoryFactory {
@@ -35,7 +35,8 @@ public class RepositoryFactory {
     public static void init(MongoClient mongoClient, MongoDatabase mongoDatabase) {
         Objects.requireNonNull(mongoClient);
         Objects.requireNonNull(mongoDatabase);
-        REPOSITORY_MAP.put(UserRepository.class, new UserRepository(mongoClient, mongoDatabase, User.class));
+        REPOSITORY_MAP.put(UserRepository.class, new UserRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(OrganizationRepository.class, new OrganizationRepository(mongoClient, mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")

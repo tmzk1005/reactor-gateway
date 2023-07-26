@@ -88,6 +88,10 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
         return MongodbOperations.findOne(mongoCollection, filter);
     }
 
+    public Mono<Boolean> exists(Bson filter) {
+        return MongodbOperations.count(mongoCollection, filter).map(num -> num > 0);
+    }
+
     public Flux<E> find(Bson filter) {
         return MongodbOperations.find(mongoCollection, filter);
     }

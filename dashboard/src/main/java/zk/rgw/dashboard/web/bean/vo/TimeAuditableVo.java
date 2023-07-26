@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean.vo;
+
+import java.time.Instant;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.framework.xo.Dto;
+import zk.rgw.dashboard.framework.xo.TimeAuditable;
 
 @Getter
 @Setter
-public class OrganizationDto implements Dto {
+public abstract class TimeAuditableVo {
 
-    private String name;
+    protected Instant createdDate;
+
+    protected Instant lastModifiedDate;
+
+    public void copyTimeAuditInfo(TimeAuditable<Instant> entity) {
+        this.createdDate = entity.getCreatedDate();
+        this.lastModifiedDate = entity.getLastModifiedDate();
+    }
 
 }
