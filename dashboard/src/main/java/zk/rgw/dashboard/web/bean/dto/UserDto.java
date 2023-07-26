@@ -26,7 +26,7 @@ import zk.rgw.dashboard.framework.xo.Dto;
 @Setter
 public class UserDto implements Dto {
 
-    private String name;
+    private String username;
 
     private String nickname;
 

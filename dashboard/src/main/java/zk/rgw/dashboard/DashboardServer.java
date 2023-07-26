@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.util.StringUtil;
 import zk.rgw.dashboard.framework.mongodb.MongodbContext;
-import zk.rgw.dashboard.web.bean.vo.LoginVo;
+import zk.rgw.dashboard.framework.security.UserJwtUtil;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 
@@ -55,18 +55,19 @@ public class DashboardServer extends ReactorHttpServer {
             jwtHmac256Secret = UUID.randomUUID().toString();
             configuration.setJwtHmac256Secret(jwtHmac256Secret);
         }
-        initRouteLocator();
+        UserJwtUtil.init(configuration.getJwtHmac256Secret());
+        // 先初始化mongodb，背后会初始化Repository相关类，然后在初始化RouteLocator时背后会初始化Controller和Service时才能引用到非null的Repository
         initMongodb();
+        initRouteLocator();
     }
 
     private void initRouteLocator() {
-        this.routeLocator = new DashboardRoutes(configuration.getApiContextPath(), configuration.getJwtHmac256Secret());
+        this.routeLocator = new DashboardRoutes(configuration.getApiContextPath());
     }
 
     private void initMongodb() {
         mongodbContext = new MongodbContext(configuration.getMongodbConnectString(), configuration.getMongodbDatabaseName());
         mongodbContext.init();
-        LoginVo.initAlgorithm(configuration.getJwtHmac256Secret());
     }
 
     @Override

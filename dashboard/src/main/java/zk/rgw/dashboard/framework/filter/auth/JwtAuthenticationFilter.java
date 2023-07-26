@@ -19,26 +19,18 @@ package zk.rgw.dashboard.framework.filter.auth;
 import java.util.List;
 import java.util.Objects;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
+import zk.rgw.dashboard.framework.security.UserJwtUtil;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public class JwtAuthenticationFilter extends AbstractAuthenticationFilter {
 
-    private final JWTVerifier jwtVerifier;
-
-    public JwtAuthenticationFilter(List<String> noNeedLoginPaths, String hmac256Secret) {
+    public JwtAuthenticationFilter(List<String> noNeedLoginPaths) {
         super(noNeedLoginPaths);
-        Objects.requireNonNull(hmac256Secret);
-        this.jwtVerifier = JWT.require(Algorithm.HMAC256(hmac256Secret)).build();
     }
 
     @Override
@@ -47,14 +39,7 @@ public class JwtAuthenticationFilter extends AbstractAuthenticationFilter {
         if (Objects.isNull(authorizationKey)) {
             return ContextUtil.ANONYMOUS_USER;
         }
-        DecodedJWT jwt;
-        try {
-            jwt = this.jwtVerifier.verify(authorizationKey);
-        } catch (JWTVerificationException jwtVerificationException) {
-            throw new AuthenticationException("认证失败");
-        }
-        User user = new User();
-        user.setName(jwt.getClaim("name").asString());
+        User user = UserJwtUtil.decode(authorizationKey);
         return Mono.just(user);
     }
 

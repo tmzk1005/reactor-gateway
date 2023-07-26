@@ -15,15 +15,11 @@
  */
 package zk.rgw.dashboard.web.bean.vo;
 
-import java.time.Instant;
-import java.util.Objects;
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import lombok.Getter;
 import lombok.Setter;
 
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.framework.security.UserJwtUtil;
 import zk.rgw.dashboard.framework.xo.Vo;
 import zk.rgw.dashboard.web.bean.entity.User;
 
@@ -31,11 +27,9 @@ import zk.rgw.dashboard.web.bean.entity.User;
 @Setter
 public class LoginVo implements Vo<User> {
 
-    private static Algorithm algorithm;
-
     private String id;
 
-    private String name;
+    private String username;
 
     private String nickname;
 
@@ -49,24 +43,12 @@ public class LoginVo implements Vo<User> {
     @Override
     public LoginVo initFromPo(User user) {
         this.id = user.getId();
-        this.name = user.getName();
+        this.username = user.getUsername();
         this.nickname = user.getNickname();
         this.role = user.getRole();
         this.organizationId = user.getOrganizationId();
-        generateJwtToken();
+        this.jwtToken = UserJwtUtil.encode(user);
         return this;
-    }
-
-    private void generateJwtToken() {
-        Objects.requireNonNull(algorithm);
-        this.jwtToken = JWT.create()
-                .withExpiresAt(Instant.now().plusSeconds(500))
-                .withClaim("name", "alice")
-                .withClaim("age", 18).sign(algorithm);
-    }
-
-    public static void initAlgorithm(String secret) {
-        algorithm = Algorithm.HMAC256(secret);
     }
 
 }

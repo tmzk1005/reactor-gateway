@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
@@ -119,15 +118,15 @@ public class MongodbContext {
 
     private static Mono<Void> initUser(String username, String nickname, String password, Role role) {
         UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
-        return userRepository.findOne(Filters.eq("name", username))
+        return userRepository.findOneByUsername(username)
                 .switchIfEmpty(Mono.defer(() -> {
                     User user = new User();
-                    user.setName(username);
+                    user.setUsername(username);
                     user.setNickname(nickname);
                     user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
                     user.setRole(role);
                     return userRepository.insert(user).doOnNext(newUser -> {
-                        log.info("Create a user named {}, generated id is {}", newUser.getName(), newUser.getId());
+                        log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId());
                     });
                 }))
                 .then();

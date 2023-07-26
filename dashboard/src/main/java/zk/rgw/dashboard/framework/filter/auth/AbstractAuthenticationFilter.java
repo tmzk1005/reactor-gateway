@@ -50,7 +50,7 @@ public abstract class AbstractAuthenticationFilter implements Filter {
 
         Objects.requireNonNull(userMono);
         return userMono.flatMap(user -> {
-            if (Objects.isNull(user.getId()) && Objects.isNull(user.getName())) {
+            if (Objects.isNull(user.getId()) && Objects.isNull(user.getUsername())) {
                 return handleAnonymousRequest(exchange, chain);
             } else {
                 ContextUtil.setUser(userMono);

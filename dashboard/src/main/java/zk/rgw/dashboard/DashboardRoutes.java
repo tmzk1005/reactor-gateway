@@ -36,7 +36,7 @@ public class DashboardRoutes implements RouteLocator {
 
     private final Flux<Route> internalRoutes;
 
-    public DashboardRoutes(String apiContextPath, String hmac256Secret) {
+    public DashboardRoutes(String apiContextPath) {
         this.apiContextPath = PathUtil.normalize(apiContextPath);
         this.apiContextPathWithEndSlash = this.apiContextPath + PathUtil.SLASH;
 
@@ -48,7 +48,7 @@ public class DashboardRoutes implements RouteLocator {
 
         route.setFilters(
                 List.of(
-                        new JwtAuthenticationFilter(finalNoNeedLoginPaths, hmac256Secret),
+                        new JwtAuthenticationFilter(finalNoNeedLoginPaths),
                         new ControllerMethodInvokeFilter(this.apiContextPath)
                 )
         );

@@ -31,14 +31,14 @@ import zk.rgw.dashboard.web.bean.dto.UserDto;
 @Getter
 @Setter
 @Document(collection = "User")
-@Index(name = "UserIndex-name", unique = true, def = "{\"name\": 1}")
+@Index(name = "UserIndex-username", unique = true, def = "{\"username\": 1}")
 public class User extends BaseAuditableEntity<UserDto> {
 
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    private String name;
+    private String username;
 
     private String nickname;
 
@@ -52,7 +52,7 @@ public class User extends BaseAuditableEntity<UserDto> {
     @Override
     public User initFromDto(UserDto dto) {
         User user = new User();
-        user.setName(dto.getName());
+        user.setUsername(dto.getUsername());
         user.setNickname(dto.getNickname());
         user.setPassword(dto.getPassword());
         user.setOrganizationId(dto.getOrganizationId());

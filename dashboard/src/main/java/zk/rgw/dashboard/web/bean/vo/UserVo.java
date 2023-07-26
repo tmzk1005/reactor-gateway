@@ -29,7 +29,7 @@ public class UserVo implements Vo<User> {
 
     private String id;
 
-    private String name;
+    private String username;
 
     private String nickname;
 
@@ -43,7 +43,7 @@ public class UserVo implements Vo<User> {
     @Override
     public UserVo initFromPo(User user) {
         this.setId(user.getId());
-        this.setName(user.getName());
+        this.setUsername(user.getUsername());
         this.setPassword(user.getPassword());
         this.setNickname(user.getNickname());
         this.setRole(user.getRole());
