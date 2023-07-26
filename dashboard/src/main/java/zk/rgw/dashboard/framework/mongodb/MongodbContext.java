@@ -119,7 +119,7 @@ public class MongodbContext {
 
     private static Mono<Void> initUser(String username, String nickname, String password, Role role) {
         UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
-        return userRepository.findOne(Filters.eq("username", username))
+        return userRepository.findOne(Filters.eq("name", username))
                 .switchIfEmpty(Mono.defer(() -> {
                     User user = new User();
                     user.setName(username);
