@@ -197,6 +197,7 @@ public class MethodMeta {
             HttpResponseStatus httpResponseStatus = Objects.nonNull(annotation) ? HttpResponseStatus.valueOf(annotation.code()) : HttpResponseStatus.OK;
             return ResponseUtil.send(exchange.getResponse(), httpResponseStatus, bizException.getCode(), bizException.getMessage());
         }
+        log.error("Failed to invoke method of controller.", throwable);
         return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
