@@ -36,7 +36,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             } else {
                 Organization organization = new Organization();
                 organization.setName(organizationDto.getName());
-                return organizationRepository.save(organization);
+                return organizationRepository.insert(organization);
             }
         });
     }

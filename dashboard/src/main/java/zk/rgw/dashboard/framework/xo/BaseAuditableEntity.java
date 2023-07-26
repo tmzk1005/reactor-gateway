@@ -21,6 +21,7 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 @Getter
@@ -33,8 +34,10 @@ public abstract class BaseAuditableEntity<D extends Dto> implements AuditableEnt
         this.lastModifiedDate = now;
     }
 
+    @DocumentReference
     protected User createdBy;
 
+    @DocumentReference
     protected User lastModifiedBy;
 
     protected Instant createdDate;

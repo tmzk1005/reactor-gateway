@@ -53,8 +53,7 @@ public abstract class AbstractAuthenticationFilter implements Filter {
             if (Objects.isNull(user.getId()) && Objects.isNull(user.getUsername())) {
                 return handleAnonymousRequest(exchange, chain);
             } else {
-                ContextUtil.setUser(userMono);
-                return chain.filter(exchange);
+                return ContextUtil.setUser(userMono).then(chain.filter(exchange));
             }
         });
     }

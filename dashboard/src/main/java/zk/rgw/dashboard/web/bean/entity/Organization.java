@@ -18,6 +18,9 @@ package zk.rgw.dashboard.web.bean.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.BsonType;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
 import zk.rgw.dashboard.framework.mongodb.Index;
@@ -30,6 +33,8 @@ import zk.rgw.dashboard.web.bean.dto.OrganizationDto;
 @Index(name = "OrganizationIndex-name", unique = true, def = "{\"name\": 1}")
 public class Organization extends BaseAuditableEntity<OrganizationDto> {
 
+    @BsonId
+    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
     private String name;
@@ -37,6 +42,7 @@ public class Organization extends BaseAuditableEntity<OrganizationDto> {
     @Override
     @SuppressWarnings("unchecked")
     public Organization initFromDto(OrganizationDto dto) {
+        this.name = dto.getName();
         return this;
     }
 }

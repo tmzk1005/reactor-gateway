@@ -43,9 +43,9 @@ public class ContextUtil {
                 .flatMap(requestContext -> requestContext.getAttributeOrDefault(ATTR_NAME_PRINCIPAL, ANONYMOUS_USER));
     }
 
-    public static void setUser(Mono<User> principal) {
+    public static Mono<Void> setUser(Mono<User> principal) {
         Objects.requireNonNull(principal);
-        ReactiveRequestContextHolder.getContext().doOnNext(requestContext -> requestContext.getAttributes().put(ATTR_NAME_PRINCIPAL, principal));
+        return ReactiveRequestContextHolder.getContext().doOnNext(requestContext -> requestContext.getAttributes().put(ATTR_NAME_PRINCIPAL, principal)).then();
     }
 
     public static Mono<Boolean> hasRoles(Role... roles) {

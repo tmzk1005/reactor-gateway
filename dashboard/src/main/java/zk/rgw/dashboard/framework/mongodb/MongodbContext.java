@@ -41,6 +41,7 @@ import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 
@@ -117,19 +118,30 @@ public class MongodbContext {
     }
 
     private static Mono<Void> initUser(String username, String nickname, String password, Role role) {
+        OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
         UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
-        return userRepository.findOneByUsername(username)
-                .switchIfEmpty(Mono.defer(() -> {
-                    User user = new User();
-                    user.setUsername(username);
-                    user.setNickname(nickname);
-                    user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
-                    user.setRole(role);
-                    return userRepository.insert(user).doOnNext(newUser -> {
-                        log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId());
-                    });
-                }))
-                .then();
+
+        final String orgName = "系统管理组";
+
+        return organizationRepository.findOneByName(orgName).switchIfEmpty(Mono.defer(() -> {
+            Organization organization = new Organization();
+            organization.setName(orgName);
+            log.info("Create a organization named {}", orgName);
+            return organizationRepository.insert(organization);
+        })).flatMap(
+                organization -> userRepository.findOneByUsername(username)
+                        .switchIfEmpty(Mono.defer(() -> {
+                            User user = new User();
+                            user.setUsername(username);
+                            user.setNickname(nickname);
+                            user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
+                            user.setRole(role);
+                            user.setOrganizationId(organization.getId());
+                            return userRepository.insert(user).doOnNext(newUser -> {
+                                log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId());
+                            });
+                        }))
+        ).then();
     }
 
 }
