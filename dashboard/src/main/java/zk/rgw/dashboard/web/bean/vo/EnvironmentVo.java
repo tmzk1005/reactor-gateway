@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.bean.vo;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.framework.xo.Dto;
+import zk.rgw.dashboard.framework.xo.Vo;
+import zk.rgw.dashboard.web.bean.entity.Environment;
 
 @Getter
 @Setter
-public class EnvironmentDto implements Dto {
+public class EnvironmentVo extends TimeAuditableVo implements Vo<Environment> {
+
+    private String id;
 
     private String name;
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public EnvironmentVo initFromPo(Environment environment) {
+        this.id = environment.getId();
+        this.name = environment.getName();
+        return this;
+    }
 
 }

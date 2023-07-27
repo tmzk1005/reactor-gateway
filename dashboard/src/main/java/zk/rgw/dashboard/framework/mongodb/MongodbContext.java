@@ -39,8 +39,10 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
+import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
@@ -89,10 +91,19 @@ public class MongodbContext {
     public void init() {
         initCollectionForEntity(User.class)
                 .then(initCollectionForEntity(Organization.class))
+                .then(initCollectionForEntity(Environment.class))
                 .subscribe();
+
         RepositoryFactory.init(this.mongoClient, this.database);
+
         initUser("admin", "Admin", "admin@rgw", Role.SYSTEM_ADMIN)
                 .then(initUser("rgw", "Rgw", "rgw@rgw", Role.NORMAL_USER))
+                .subscribe();
+
+        createEnvironment("开发环境")
+                .then(createEnvironment("测试环境"))
+                .then(createEnvironment("预生产环境"))
+                .then(createEnvironment("生产环境"))
                 .subscribe();
     }
 
@@ -142,6 +153,16 @@ public class MongodbContext {
                             });
                         }))
         ).then();
+    }
+
+    private static Mono<Void> createEnvironment(String envName) {
+        EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
+        return environmentRepository.findOneByName(envName).switchIfEmpty(Mono.defer(() -> {
+            Environment environment = new Environment();
+            environment.setName(envName);
+            log.info("Create an environment named {}", envName);
+            return environmentRepository.insert(environment);
+        })).then();
     }
 
 }

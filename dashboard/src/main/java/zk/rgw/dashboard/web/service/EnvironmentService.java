@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean.dto;
+package zk.rgw.dashboard.web.service;
 
-import lombok.Getter;
-import lombok.Setter;
+import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.xo.Dto;
+import zk.rgw.dashboard.framework.security.HasRole;
+import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
+import zk.rgw.dashboard.web.bean.entity.Environment;
 
-@Getter
-@Setter
-public class EnvironmentDto implements Dto {
+public interface EnvironmentService {
 
-    private String name;
+    @HasRole(Role.SYSTEM_ADMIN)
+    Mono<Environment> createEnvironment(EnvironmentDto environmentDto);
 
 }
