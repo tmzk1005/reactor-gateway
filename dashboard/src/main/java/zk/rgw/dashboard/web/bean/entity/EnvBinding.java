@@ -13,35 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package zk.rgw.dashboard.web.bean.entity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bson.BsonType;
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
-import zk.rgw.dashboard.framework.mongodb.Index;
+import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
-import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
+import zk.rgw.dashboard.framework.xo.NoDto;
 
 @Getter
 @Setter
-@Document(collection = "Environment")
-@Index(name = "EnvironmentIndex-name", unique = true, def = "{\"name\": 1}")
-public class Environment extends BaseAuditableEntity<EnvironmentDto> {
+@Document(collection = "EnvBinding")
+public class EnvBinding extends BaseAuditableEntity<NoDto> {
 
-    @BsonId
-    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    private String name;
+    @DocumentReference
+    private Environment environment;
+
+    @DocumentReference
+    private Organization organization;
+
+    private Map<String, String> variables = new HashMap<>();
 
     @Override
     @SuppressWarnings("unchecked")
-    public Environment initFromDto(EnvironmentDto dto) {
-        return this;
+    public EnvBinding initFromDto(NoDto dto) {
+        throw new UnsupportedOperationException();
     }
+
 }
