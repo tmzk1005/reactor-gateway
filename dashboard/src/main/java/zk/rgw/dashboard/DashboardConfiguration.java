@@ -44,7 +44,7 @@ public class DashboardConfiguration extends ServerConfiguration {
     private String jwtHmac256Secret;
 
     @CommandLine.Option(names = "--api.context.path", description = "The api context path.")
-    private String apiContextPath = "/api";
+    private String apiContextPath = "/rgw/api";
 
     @CommandLine.Option(names = "--mongodb.database", description = "Mongodb database name to store api manager information.")
     private String mongodbDatabaseName = "rgw";
