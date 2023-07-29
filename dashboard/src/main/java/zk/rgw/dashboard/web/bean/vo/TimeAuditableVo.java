@@ -17,17 +17,22 @@ package zk.rgw.dashboard.web.bean.vo;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.xo.TimeAuditable;
 
 @Getter
 @Setter
 public abstract class TimeAuditableVo {
 
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     protected Instant createdDate;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     protected Instant lastModifiedDate;
 
     public void copyTimeAuditInfo(TimeAuditable<Instant> entity) {
