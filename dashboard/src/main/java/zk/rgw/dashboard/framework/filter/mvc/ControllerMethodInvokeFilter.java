@@ -80,7 +80,7 @@ public class ControllerMethodInvokeFilter implements Filter {
             return ResponseUtil.sendNotFound(exchange.getResponse());
         }
         ControllerMeta controllerMeta = controllers.get(prefix);
-        reqPath = reqPath.substring(prefix.length());
+        reqPath = PathUtil.normalize(reqPath.substring(prefix.length()));
 
         MethodMeta methodMeta = controllerMeta.getMethod(exchange.getRequest().method(), reqPath);
 
