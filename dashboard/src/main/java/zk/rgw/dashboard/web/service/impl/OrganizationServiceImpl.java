@@ -15,6 +15,8 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import com.mongodb.client.model.Filters;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.exception.BizException;
@@ -39,6 +41,11 @@ public class OrganizationServiceImpl implements OrganizationService {
                 return organizationRepository.insert(organization);
             }
         });
+    }
+
+    @Override
+    public Flux<Organization> getOrganizations() {
+        return organizationRepository.find(Filters.empty());
     }
 
 }

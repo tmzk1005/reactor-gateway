@@ -15,6 +15,7 @@
  */
 package zk.rgw.dashboard.web.service;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
@@ -26,5 +27,8 @@ public interface OrganizationService {
 
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<Organization> createOrganization(OrganizationDto organizationDto);
+
+    @HasRole(Role.SYSTEM_ADMIN)
+    Flux<Organization> getOrganizations();
 
 }

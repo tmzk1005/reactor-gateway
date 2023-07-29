@@ -15,6 +15,7 @@
  */
 package zk.rgw.dashboard.web.controller;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
@@ -33,6 +34,11 @@ public class OrganizationController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<OrganizationVo> createOrganization(@RequestBody OrganizationDto organizationDto) {
         return organizationService.createOrganization(organizationDto).map(new OrganizationVo()::initFromPo);
+    }
+
+    @RequestMapping(method = RequestMapping.Method.GET)
+    public Flux<OrganizationVo> getOrganizations() {
+        return organizationService.getOrganizations().map(new OrganizationVo()::initFromPo);
     }
 
 }
