@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright 2023 zoukang, All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,8 @@ public class LoginVo implements Vo<User> {
 
     private String jwtToken;
 
+    private int jwtExpireSeconds;
+
     @SuppressWarnings("unchecked")
     @Override
     public LoginVo initFromPo(User user) {
@@ -48,6 +50,7 @@ public class LoginVo implements Vo<User> {
         this.role = user.getRole();
         this.organizationId = user.getOrganizationId();
         this.jwtToken = UserJwtUtil.encode(user);
+        this.jwtExpireSeconds = UserJwtUtil.getJwtExpireSeconds();
         return this;
     }
 

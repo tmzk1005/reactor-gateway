@@ -32,6 +32,9 @@ public class UserJwtUtil {
 
     public static final String CLAIM_USER_ID = "userId";
     public static final String CLAIM_USERNAME = "username";
+
+    public static final String CLAIM_NICKNAME = "nickname";
+
     public static final String CLAIM_ORGANIZATION_ID = "organizationId";
     public static final String CLAIM_ROLE = "role";
 
@@ -41,20 +44,25 @@ public class UserJwtUtil {
     @Getter
     private static JWTVerifier jwtVerifier;
 
+    @Getter
+    private static int jwtExpireSeconds = 60 * 60;
+
     private UserJwtUtil() {
     }
 
-    public static void init(String secret) {
+    public static void init(String secret, int jwtExpireSeconds) {
         algorithm = Algorithm.HMAC256(secret);
         jwtVerifier = JWT.require(algorithm).build();
+        UserJwtUtil.jwtExpireSeconds = jwtExpireSeconds;
     }
 
     public static String encode(User user) {
         Objects.requireNonNull(algorithm);
         return JWT.create()
-                .withExpiresAt(Instant.now().plusSeconds(500))
+                .withExpiresAt(Instant.now().plusSeconds(jwtExpireSeconds))
                 .withClaim(CLAIM_USER_ID, user.getId())
                 .withClaim(CLAIM_USERNAME, user.getUsername())
+                .withClaim(CLAIM_NICKNAME, user.getNickname())
                 .withClaim(CLAIM_ORGANIZATION_ID, user.getOrganizationId())
                 .withClaim(CLAIM_ROLE, user.getRole().toString())
                 .sign(algorithm);
@@ -71,6 +79,7 @@ public class UserJwtUtil {
         User user = new User();
         user.setId(jwt.getClaim(CLAIM_USER_ID).asString());
         user.setUsername(jwt.getClaim(CLAIM_USERNAME).asString());
+        user.setNickname(jwt.getClaim(CLAIM_NICKNAME).asString());
         user.setOrganizationId(jwt.getClaim(CLAIM_ORGANIZATION_ID).asString());
         try {
             user.setRole(Role.valueOf(jwt.getClaim(CLAIM_ROLE).asString()));

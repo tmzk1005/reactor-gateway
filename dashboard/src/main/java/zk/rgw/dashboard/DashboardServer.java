@@ -55,7 +55,7 @@ public class DashboardServer extends ReactorHttpServer {
             jwtHmac256Secret = UUID.randomUUID().toString();
             configuration.setJwtHmac256Secret(jwtHmac256Secret);
         }
-        UserJwtUtil.init(configuration.getJwtHmac256Secret());
+        UserJwtUtil.init(configuration.getJwtHmac256Secret(), configuration.getJwtExpireSeconds());
         // 先初始化mongodb，背后会初始化Repository相关类，然后在初始化RouteLocator时背后会初始化Controller和Service时才能引用到非null的Repository
         initMongodb();
         initRouteLocator();

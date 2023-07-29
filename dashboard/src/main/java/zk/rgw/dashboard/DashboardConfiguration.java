@@ -52,6 +52,9 @@ public class DashboardConfiguration extends ServerConfiguration {
     @CommandLine.Option(names = "--mongodb.connection", description = "Mongodb connection string used to connect to mongo.")
     private String mongodbConnectString = "mongodb://127.0.0.1:27017";
 
+    @CommandLine.Option(names = "--jwt.expire.seconds", description = "Jwt expire time in seconds.")
+    private int jwtExpireSeconds = 60 * 60 * 24;
+
     public DashboardConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;
         this.serverPort = DEFAULT_PORT;
