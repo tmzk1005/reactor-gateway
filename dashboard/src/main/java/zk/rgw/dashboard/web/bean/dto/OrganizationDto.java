@@ -18,12 +18,19 @@ package zk.rgw.dashboard.web.bean.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.dashboard.framework.xo.Dto;
+import zk.rgw.dashboard.framework.validate.NotBlank;
+import zk.rgw.dashboard.framework.validate.Pattern;
+import zk.rgw.dashboard.framework.validate.Size;
+import zk.rgw.dashboard.framework.validate.ValidatableDto;
+import zk.rgw.dashboard.utils.Patters;
 
 @Getter
 @Setter
-public class OrganizationDto implements Dto {
+public class OrganizationDto implements ValidatableDto {
 
+    @NotBlank(message = "组织名称不能为空")
+    @Size(min = 3, max = 32, message = "组织名称不能超过32个字符长度，且最少需要3个字符长度")
+    @Pattern(regexp = Patters.IDENTIFIER_ZH, message = "组织名称只能包含字母，数字和下划线")
     private String name;
 
 }
