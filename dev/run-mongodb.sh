@@ -17,10 +17,19 @@
 
 # 作用：启动一个开发阶段用于测试的mongodb
 
+if [ ! -d .tmp ]; then
+    mkdir .tmp
+fi
+
 if [ ! -d .tmp/mongodb ]; then
     # 只支持较新版本的ubuntu,其他的linux如果缺少同版本的so库的话可能运行失败
     if [ ! -f .tmp/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz ]; then
-        wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz --output-file .tmp/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz
+        echo "Going to download mongodb installer, please wait!"
+        wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz --output-document .tmp/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz
+        if [ $? != 0 ]; then
+            echo "Download mongodb failed, please try again later!"
+            exit 1
+        fi
     fi
     tar -zxvf .tmp/mongodb-linux-x86_64-ubuntu2204-6.0.5.tgz -C .tmp/
     mv .tmp/mongodb-linux-x86_64-ubuntu2204-6.0.5 .tmp/mongodb

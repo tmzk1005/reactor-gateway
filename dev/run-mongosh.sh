@@ -30,8 +30,11 @@ if [ $(lsb_release -d  | grep Ubuntu | wc -l) -eq "0" ]; then
     exit 1
 else
     echo "Try to install mongoshell ..."
+    if [ ! -d .tmp ]; then
+        mkdir .tmp
+    fi
     if [ ! -f .tmp/mongodb-mongosh_1.10.0_amd64.deb ]; then
-        wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.0_amd64.deb --output-file .tmp/mongodb-mongosh_1.10.0_amd64.deb
+        wget https://downloads.mongodb.com/compass/mongodb-mongosh_1.10.0_amd64.deb --output-document .tmp/mongodb-mongosh_1.10.0_amd64.deb
     fi
     sudo dpkg -i .tmp/mongodb-mongosh_1.10.0_amd64.deb
     exec mongosh "$@"
