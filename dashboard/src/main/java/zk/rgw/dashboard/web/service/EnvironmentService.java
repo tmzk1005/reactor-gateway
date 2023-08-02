@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.dto.EnvVariables;
 import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
 import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
@@ -33,5 +34,7 @@ public interface EnvironmentService {
     Flux<Environment> getEnvironments();
 
     Mono<EnvBinding> getOneEnvBinding(String envId, String orgId);
+
+    Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables);
 
 }

@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.repository;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
@@ -62,6 +63,9 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
     }
 
     public Mono<E> save(E entity) {
+        if (Objects.isNull(entity.getId())) {
+            return insert(entity);
+        }
         Instant now = Instant.now();
         entity.setLastModifiedDate(now);
         return ContextUtil.getUser().flatMap(user -> {

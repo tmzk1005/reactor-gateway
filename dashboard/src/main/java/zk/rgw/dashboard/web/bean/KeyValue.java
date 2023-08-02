@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.bean;
 
-package zk.rgw.dashboard.framework.annotation;
+import lombok.Data;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+@Data
+public class KeyValue {
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface RequestMapping {
+    private String key;
 
-    String path() default "";
-
-    Method method() default Method.GET;
-
-    enum Method {
-        GET, POST, PATCH, DELETE
-    }
+    private String value;
 
 }

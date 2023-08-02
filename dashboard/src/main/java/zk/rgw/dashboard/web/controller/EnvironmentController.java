@@ -22,6 +22,7 @@ import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.web.bean.dto.EnvVariables;
 import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
 import zk.rgw.dashboard.web.bean.vo.EnvBindingVo;
 import zk.rgw.dashboard.web.bean.vo.EnvironmentVo;
@@ -49,6 +50,15 @@ public class EnvironmentController {
             @RequestParam(name = "orgId") String orgId
     ) {
         return environmentService.getOneEnvBinding(envId, orgId).map(new EnvBindingVo()::initFromPo);
+    }
+
+    @RequestMapping(path = "/binding", method = RequestMapping.Method.PATCH)
+    public Mono<EnvBindingVo> setEnvironment(
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "orgId") String orgId,
+            @RequestBody EnvVariables envVariables
+    ) {
+        return environmentService.setEnvVariables(envId, orgId, envVariables).map(new EnvBindingVo()::initFromPo);
     }
 
 }

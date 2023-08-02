@@ -21,6 +21,9 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.bson.BsonType;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonRepresentation;
 import zk.rgw.dashboard.framework.mongodb.Document;
 import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
@@ -31,6 +34,8 @@ import zk.rgw.dashboard.framework.xo.NoDto;
 @Document(collection = "EnvBinding")
 public class EnvBinding extends BaseAuditableEntity<NoDto> {
 
+    @BsonId
+    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
     @DocumentReference

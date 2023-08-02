@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,7 +51,7 @@ public class MongodbOperations {
         if (Objects.isNull(entity.getId())) {
             throw new IllegalArgumentException("Entity to save(update) to mongodb should has an id.");
         }
-        Bson filter = Filters.eq("_id", entity.getId());
+        Bson filter = Filters.eq("_id", new ObjectId(entity.getId()));
         return Mono.from(collection.replaceOne(filter, entity))
                 .flatMap(updateResult -> findOne(collection, filter));
     }
