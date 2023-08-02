@@ -86,7 +86,7 @@ public class ServiceFactory {
                 return method.invoke(serviceNormalInstance, args);
             }
             Mono<Boolean> hasRolesMono = ContextUtil.hasRoles(needRoles).map(hasRoles -> {
-                if (!hasRoles) {
+                if (Boolean.FALSE.equals(hasRoles)) {
                     throw new AccessDeniedException("没有访问权限!");
                 }
                 return true;

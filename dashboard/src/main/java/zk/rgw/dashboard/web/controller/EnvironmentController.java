@@ -21,7 +21,9 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.framework.annotation.RequestParam;
 import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
+import zk.rgw.dashboard.web.bean.vo.EnvBindingVo;
 import zk.rgw.dashboard.web.bean.vo.EnvironmentVo;
 import zk.rgw.dashboard.web.service.EnvironmentService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
@@ -39,6 +41,14 @@ public class EnvironmentController {
     @RequestMapping(method = RequestMapping.Method.GET)
     public Flux<EnvironmentVo> getEnvironments() {
         return environmentService.getEnvironments().map(po -> new EnvironmentVo().initFromPo(po));
+    }
+
+    @RequestMapping(path = "/binding", method = RequestMapping.Method.GET)
+    public Mono<EnvBindingVo> getOneEnvBinding(
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "orgId") String orgId
+    ) {
+        return environmentService.getOneEnvBinding(envId, orgId).map(new EnvBindingVo()::initFromPo);
     }
 
 }

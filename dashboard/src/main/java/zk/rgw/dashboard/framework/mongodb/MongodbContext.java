@@ -39,6 +39,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
+import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
@@ -92,6 +93,7 @@ public class MongodbContext {
         initCollectionForEntity(User.class)
                 .then(initCollectionForEntity(Organization.class))
                 .then(initCollectionForEntity(Environment.class))
+                .then(initCollectionForEntity(EnvBinding.class))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);

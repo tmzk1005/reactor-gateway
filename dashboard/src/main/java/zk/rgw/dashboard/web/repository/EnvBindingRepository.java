@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
+package zk.rgw.dashboard.web.repository;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoDatabase;
 
-import zk.rgw.dashboard.framework.security.HasRole;
-import zk.rgw.dashboard.framework.security.Role;
-import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
 import zk.rgw.dashboard.web.bean.entity.EnvBinding;
-import zk.rgw.dashboard.web.bean.entity.Environment;
 
-public interface EnvironmentService {
+public class EnvBindingRepository extends AbstractMongodbRepository<EnvBinding> {
 
-    @HasRole(Role.SYSTEM_ADMIN)
-    Mono<Environment> createEnvironment(EnvironmentDto environmentDto);
-
-    @HasRole(Role.SYSTEM_ADMIN)
-    Flux<Environment> getEnvironments();
-
-    Mono<EnvBinding> getOneEnvBinding(String envId, String orgId);
+    public EnvBindingRepository(MongoClient mongoClient, MongoDatabase database) {
+        super(mongoClient, database, EnvBinding.class);
+    }
 
 }

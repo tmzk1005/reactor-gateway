@@ -60,4 +60,8 @@ public class User extends BaseAuditableEntity<UserDto> {
         return user;
     }
 
+    public boolean isSystemAdmin() {
+        return Role.SYSTEM_ADMIN == this.role;
+    }
+
 }
