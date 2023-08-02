@@ -15,6 +15,8 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import com.mongodb.client.model.Filters;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.exception.BizException;
@@ -39,6 +41,11 @@ public class EnvironmentServiceImpl implements EnvironmentService {
                 return environmentRepository.insert(environment);
             }
         });
+    }
+
+    @Override
+    public Flux<Environment> getEnvironments() {
+        return environmentRepository.find(Filters.empty());
     }
 
 }

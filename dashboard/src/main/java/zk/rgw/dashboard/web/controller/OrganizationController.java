@@ -38,7 +38,7 @@ public class OrganizationController {
 
     @RequestMapping(method = RequestMapping.Method.GET)
     public Flux<OrganizationVo> getOrganizations() {
-        return organizationService.getOrganizations().map((po) -> new OrganizationVo().initFromPo(po));
+        return organizationService.getOrganizations().map(po -> new OrganizationVo().initFromPo(po));
     }
 
 }

@@ -34,6 +34,7 @@ public class EnvironmentVo extends TimeAuditableVo implements Vo<Environment> {
     public EnvironmentVo initFromPo(Environment environment) {
         this.id = environment.getId();
         this.name = environment.getName();
+        copyTimeAuditInfo(environment);
         return this;
     }
 

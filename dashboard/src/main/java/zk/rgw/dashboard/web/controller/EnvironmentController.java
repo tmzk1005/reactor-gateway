@@ -15,6 +15,7 @@
  */
 package zk.rgw.dashboard.web.controller;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
@@ -33,6 +34,11 @@ public class EnvironmentController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<EnvironmentVo> createEnvironment(@RequestBody EnvironmentDto environmentDto) {
         return environmentService.createEnvironment(environmentDto).map(new EnvironmentVo()::initFromPo);
+    }
+
+    @RequestMapping(method = RequestMapping.Method.GET)
+    public Flux<EnvironmentVo> getEnvironments() {
+        return environmentService.getEnvironments().map(po -> new EnvironmentVo().initFromPo(po));
     }
 
 }
