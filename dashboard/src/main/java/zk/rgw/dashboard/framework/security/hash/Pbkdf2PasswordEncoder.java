@@ -85,7 +85,7 @@ public class Pbkdf2PasswordEncoder implements PasswordEncoder {
     private byte[] encode(CharSequence rawPassword, byte[] salt) {
         try {
             PBEKeySpec spec = new PBEKeySpec(
-                rawPassword.toString().toCharArray(), EncodingUtils.concatenate(salt, this.secret), this.iterations, this.hashWidth
+                    rawPassword.toString().toCharArray(), EncodingUtils.concatenate(salt, this.secret), this.iterations, this.hashWidth
             );
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
             return EncodingUtils.concatenate(salt, skf.generateSecret(spec).getEncoded());

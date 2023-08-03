@@ -28,7 +28,6 @@ import zk.rgw.dashboard.framework.xo.TimeAuditable;
 @Setter
 public abstract class TimeAuditableVo {
 
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     protected Instant createdDate;
 
