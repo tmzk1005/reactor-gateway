@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.framework.xo;
+package zk.rgw.common.definition;
 
-public interface Po<D extends Dto> {
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-    String getId();
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class IdRouteDefinition extends RouteDefinition {
 
-    void setId(String id);
+    private String id;
 
-    <P extends Po<D>> P initFromDto(D dto);
+    private String orgId;
 
 }

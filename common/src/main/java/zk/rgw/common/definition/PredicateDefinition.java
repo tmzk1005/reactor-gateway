@@ -21,7 +21,9 @@ import lombok.Data;
 @Data
 public class PredicateDefinition {
 
-    private String className;
+    private String name;
+
+    private String version;
 
     private String jsonConf;
 

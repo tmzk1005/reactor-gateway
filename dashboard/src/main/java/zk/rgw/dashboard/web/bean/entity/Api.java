@@ -16,19 +16,47 @@
 
 package zk.rgw.dashboard.web.bean.entity;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.BsonType;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
+import zk.rgw.common.definition.RouteDefinition;
+import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 
 @Getter
 @Setter
 public class Api extends BaseAuditableEntity<ApiDto> {
 
+    @BsonId
+    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
+    @DocumentReference
+    private Organization organization;
+
     private String name;
+
+    private String description;
+
+    private Set<String> tags;
+
+    private RouteDefinition routeDefinition;
+
+    private Instant routeDefinitionLastModifiedDate;
+
+    /**
+     * 发布到各个环境的快照，Key是环境ID
+     */
+    private Map<String, RouteDefinitionPublishSnapshot> publishSnapshots;
 
     @Override
     @SuppressWarnings("unchecked")

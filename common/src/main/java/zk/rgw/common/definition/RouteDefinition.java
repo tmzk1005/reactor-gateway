@@ -25,14 +25,12 @@ import lombok.Data;
 @Data
 public class RouteDefinition {
 
-    private String id;
-
     private Set<String> methods;
 
     private String path;
 
     private List<PredicateDefinition> predicateDefinitions = new ArrayList<>(1);
 
-    private List<PluginDefinition> pluginDefinitions = new ArrayList<>(1);
+    private List<PluginDefinition> pluginDefinitions = new ArrayList<>(4);
 
 }

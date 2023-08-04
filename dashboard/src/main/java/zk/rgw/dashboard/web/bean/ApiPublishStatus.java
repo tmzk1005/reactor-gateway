@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package zk.rgw.dashboard.framework.xo;
+package zk.rgw.dashboard.web.bean;
 
-public interface Po<D extends Dto> {
+public enum ApiPublishStatus {
 
-    String getId();
-
-    void setId(String id);
-
-    <P extends Po<D>> P initFromDto(D dto);
+    UNPUBLISHED, PUBLISHED, NOT_UPDATED
 
 }

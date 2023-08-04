@@ -16,9 +16,7 @@
 
 package zk.rgw.dashboard.framework.xo;
 
-import java.io.Serializable;
-
-public interface Vo<P extends Po<?>> extends Serializable {
+public interface Vo<P extends Po<?>> {
 
     <V extends Vo<P>> V initFromPo(P poInstance);
 

@@ -15,7 +15,24 @@
  */
 package zk.rgw.dashboard.web.bean.dto;
 
+import java.util.Set;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import zk.rgw.common.definition.RouteDefinition;
 import zk.rgw.dashboard.framework.xo.Dto;
 
+@Getter
+@Setter
 public class ApiDto implements Dto {
+
+    private String name;
+
+    private String description;
+
+    private Set<String> tags;
+
+    private RouteDefinition routeDefinition;
+
 }

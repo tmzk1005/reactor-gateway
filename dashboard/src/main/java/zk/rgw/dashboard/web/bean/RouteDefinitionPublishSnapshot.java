@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.bean;
 
-package zk.rgw.dashboard.framework.xo;
+import java.time.Instant;
 
-public interface Po<D extends Dto> {
+import lombok.Getter;
+import lombok.Setter;
 
-    String getId();
+import zk.rgw.common.definition.RouteDefinition;
 
-    void setId(String id);
+@Getter
+@Setter
+public class RouteDefinitionPublishSnapshot {
 
-    <P extends Po<D>> P initFromDto(D dto);
+    private String publisherId;
+
+    private Instant lastModifiedDate;
+
+    private ApiPublishStatus publishStatus = ApiPublishStatus.UNPUBLISHED;
+
+    private RouteDefinition routeDefinition;
 
 }

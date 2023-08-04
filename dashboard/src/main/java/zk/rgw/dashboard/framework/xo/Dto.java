@@ -16,7 +16,5 @@
 
 package zk.rgw.dashboard.framework.xo;
 
-import java.io.Serializable;
-
-public interface Dto extends Serializable {
+public interface Dto {
 }

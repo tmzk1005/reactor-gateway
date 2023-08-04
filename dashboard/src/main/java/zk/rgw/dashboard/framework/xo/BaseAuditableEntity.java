@@ -28,7 +28,7 @@ import zk.rgw.dashboard.web.bean.entity.User;
 @Setter
 public abstract class BaseAuditableEntity<D extends Dto> implements AuditableEntity<User, Instant, D> {
 
-    public BaseAuditableEntity() {
+    protected BaseAuditableEntity() {
         Instant now = Instant.now();
         this.createdDate = now;
         this.lastModifiedDate = now;
