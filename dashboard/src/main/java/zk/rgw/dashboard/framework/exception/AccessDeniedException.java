@@ -24,4 +24,8 @@ public class AccessDeniedException extends BizException {
         super(message);
     }
 
+    public AccessDeniedException() {
+        this("没有权限");
+    }
+
 }

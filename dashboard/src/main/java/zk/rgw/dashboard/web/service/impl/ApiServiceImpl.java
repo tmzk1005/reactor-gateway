@@ -25,7 +25,9 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
+import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.Page;
@@ -67,7 +69,15 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public Mono<PageData<Api>> listApis(int pageNum, int pageSize) {
-        return apiRepository.find(Filters.empty(), null, Page.of(pageNum, pageSize));
+        return ContextUtil.getUser().map(user -> {
+            if (user.isSystemAdmin()) {
+                return Filters.empty();
+            } else if (user.getRole().equals(Role.AUDIT_ADMIN) || user.getRole().equals(Role.SECURITY_ADMIN)) {
+                throw new AccessDeniedException();
+            } else {
+                return Filters.eq("organization", new ObjectId(user.getOrganizationId()));
+            }
+        }).flatMap(filter -> apiRepository.find(filter, null, Page.of(pageNum, pageSize)));
     }
 
     @Override
