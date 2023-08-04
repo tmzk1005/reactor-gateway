@@ -25,15 +25,13 @@ import zk.rgw.dashboard.web.bean.entity.User;
 
 @Getter
 @Setter
-public class UserVo implements Vo<User> {
+public class UserVo extends TimeAuditableVo implements Vo<User> {
 
     private String id;
 
     private String username;
 
     private String nickname;
-
-    private String password;
 
     private Role role;
 
@@ -44,10 +42,10 @@ public class UserVo implements Vo<User> {
     public UserVo initFromPo(User user) {
         this.setId(user.getId());
         this.setUsername(user.getUsername());
-        this.setPassword(user.getPassword());
         this.setNickname(user.getNickname());
         this.setRole(user.getRole());
         this.setOrganizationId(user.getOrganizationId());
+        copyTimeAuditInfo(user);
         return this;
     }
 

@@ -15,8 +15,11 @@
  */
 package zk.rgw.dashboard.framework.mongodb;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import org.bson.conversions.Bson;
@@ -25,6 +28,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.web.bean.Page;
 
 public class MongodbOperations {
 
@@ -37,6 +41,26 @@ public class MongodbOperations {
 
     public static <T extends BaseAuditableEntity<?>> Flux<T> find(MongoCollection<T> collection, Bson filter) {
         return Flux.from(collection.find(filter));
+    }
+
+    public static <T extends BaseAuditableEntity<?>> Flux<T> find(MongoCollection<T> collection, Bson filter, Bson sorts, Page page) {
+        List<Bson> aggPipelines = new ArrayList<>(4);
+        if (Objects.nonNull(filter)) {
+            aggPipelines.add(Aggregates.match(filter));
+        }
+        if (Objects.nonNull(sorts)) {
+            aggPipelines.add(Aggregates.sort(sorts));
+        }
+        if (Objects.nonNull(page)) {
+            aggPipelines.add(Aggregates.skip(page.getOffset()));
+            aggPipelines.add(Aggregates.limit(page.getPageSize()));
+        }
+        if (aggPipelines.isEmpty()) {
+            // just find, no aggregate
+            return find(collection, Filters.empty());
+        } else {
+            return Flux.from(collection.aggregate(aggPipelines));
+        }
     }
 
     public static <T extends BaseAuditableEntity<?>> Mono<T> insert(MongoCollection<T> collection, T entity) {

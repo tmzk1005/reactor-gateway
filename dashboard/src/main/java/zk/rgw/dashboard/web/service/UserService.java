@@ -18,11 +18,17 @@ package zk.rgw.dashboard.web.service;
 
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.security.HasRole;
+import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public interface UserService {
 
     Mono<User> login(LoginDto loginDto);
+
+    @HasRole(Role.SYSTEM_ADMIN)
+    Mono<PageData<User>> listUsers(int pageNum, int pageSize);
 
 }

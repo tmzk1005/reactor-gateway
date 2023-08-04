@@ -20,9 +20,14 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.framework.annotation.RequestParam;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.framework.validate.PageNum;
+import zk.rgw.dashboard.framework.validate.PageSize;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.vo.LoginVo;
+import zk.rgw.dashboard.web.bean.vo.UserVo;
 import zk.rgw.dashboard.web.service.UserService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -38,9 +43,12 @@ public class UserController {
                 .switchIfEmpty(Mono.error(BizException.of("登录失败!用户名或密码错误.")));
     }
 
-    @RequestMapping(path = "/name")
-    public Mono<String> getName() {
-        return Mono.just("alice");
+    @RequestMapping
+    public Mono<PageData<UserVo>> listUsers(
+            @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ) {
+        return userService.listUsers(pageNum, pageSize).map(page -> page.map(user -> new UserVo().initFromPo(user)));
     }
 
 }

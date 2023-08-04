@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -32,6 +33,8 @@ import zk.rgw.dashboard.framework.exception.NotObjectIdException;
 import zk.rgw.dashboard.framework.mongodb.MongodbOperations;
 import zk.rgw.dashboard.framework.mongodb.MongodbUtil;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.web.bean.Page;
+import zk.rgw.dashboard.web.bean.PageData;
 
 @Slf4j
 public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
@@ -98,6 +101,13 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
 
     public Flux<E> find(Bson filter) {
         return MongodbOperations.find(mongoCollection, filter);
+    }
+
+    public Mono<PageData<E>> find(Bson filter, Bson sorts, Page page) {
+        Mono<List<E>> dataMono = MongodbOperations.find(mongoCollection, filter, sorts, page).collectList();
+        Mono<Long> countMono = MongodbOperations.count(mongoCollection, filter);
+        return Mono.zip(dataMono, countMono)
+                .map(tuple -> new PageData<>(tuple.getT1(), tuple.getT2(), page.getPageNum(), page.getPageSize()));
     }
 
     public Mono<E> findOneById(String id) {
