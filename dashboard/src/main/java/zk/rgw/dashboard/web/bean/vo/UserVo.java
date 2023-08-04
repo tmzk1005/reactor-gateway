@@ -16,6 +16,7 @@
 
 package zk.rgw.dashboard.web.bean.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,6 +37,28 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
     private Role role;
 
     private String organizationId;
+
+    @JsonProperty
+    public String getRoleDisplay() {
+        switch (role) {
+            case SYSTEM_ADMIN -> {
+                return "系统管理员";
+            }
+            case NORMAL_USER -> {
+                return "普通用户";
+            }
+            case ORGANIZATION_ADMIN -> {
+                return "组织管理员";
+            }
+            case SECURITY_ADMIN -> {
+                return "安全管理员";
+            }
+            case AUDIT_ADMIN -> {
+                return "审计管理员";
+            }
+        }
+        return "";
+    }
 
     @SuppressWarnings("unchecked")
     @Override
