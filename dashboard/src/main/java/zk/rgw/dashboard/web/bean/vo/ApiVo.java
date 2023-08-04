@@ -13,40 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package zk.rgw.dashboard.web.bean.entity;
+package zk.rgw.dashboard.web.bean.vo;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
-import org.bson.BsonType;
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.common.definition.RouteDefinition;
-import zk.rgw.dashboard.framework.mongodb.Document;
-import zk.rgw.dashboard.framework.mongodb.DocumentReference;
-import zk.rgw.dashboard.framework.mongodb.Index;
-import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.common.util.JsonUtil;
+import zk.rgw.dashboard.framework.xo.Vo;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
-import zk.rgw.dashboard.web.bean.dto.ApiDto;
+import zk.rgw.dashboard.web.bean.entity.Api;
 
 @Getter
 @Setter
-@Document
-@Index(name = "ApiIndex-name-org", unique = true, def = "{\"name\": 1, \"organization\": 1}")
-public class Api extends BaseAuditableEntity<ApiDto> {
+public class ApiVo implements Vo<Api> {
 
-    @BsonId
-    @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    @DocumentReference
-    private Organization organization;
+    private OrganizationVo organization;
 
     private String name;
 
@@ -56,23 +45,22 @@ public class Api extends BaseAuditableEntity<ApiDto> {
 
     private RouteDefinition routeDefinition;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     private Instant routeDefinitionLastModifiedDate;
 
-    /**
-     * 发布到各个环境的快照，Key是环境ID
-     */
     private Map<String, RouteDefinitionPublishSnapshot> publishSnapshots;
 
-    @Override
     @SuppressWarnings("unchecked")
-    public Api initFromDto(ApiDto dto) {
-        this.name = dto.getName();
-        this.description = dto.getDescription();
-        this.tags = dto.getTags();
-        if (!Objects.equals(this.routeDefinition, dto.getRouteDefinition())) {
-            this.routeDefinitionLastModifiedDate = Instant.now();
-            this.routeDefinition = dto.getRouteDefinition();
-        }
+    @Override
+    public ApiVo initFromPo(Api poInstance) {
+        this.id = poInstance.getId();
+        this.organization = new OrganizationVo().initFromPo(poInstance.getOrganization());
+        this.name = poInstance.getName();
+        this.description = poInstance.getDescription();
+        this.tags = poInstance.getTags();
+        this.routeDefinition = poInstance.getRouteDefinition();
+        this.routeDefinitionLastModifiedDate = poInstance.getRouteDefinitionLastModifiedDate();
+        this.publishSnapshots = poInstance.getPublishSnapshots();
         return this;
     }
 

@@ -13,28 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean;
+package zk.rgw.dashboard.web.service;
 
-import java.time.Instant;
+import reactor.core.publisher.Mono;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Getter;
-import lombok.Setter;
+import zk.rgw.dashboard.framework.security.HasRole;
+import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.dto.ApiDto;
+import zk.rgw.dashboard.web.bean.entity.Api;
 
-import zk.rgw.common.definition.RouteDefinition;
-import zk.rgw.common.util.JsonUtil;
+public interface ApiService {
 
-@Getter
-@Setter
-public class RouteDefinitionPublishSnapshot {
-
-    private String publisherId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
-    private Instant lastModifiedDate;
-
-    private ApiPublishStatus publishStatus = ApiPublishStatus.UNPUBLISHED;
-
-    private RouteDefinition routeDefinition;
+    @HasRole(Role.NORMAL_USER)
+    Mono<Api> createApi(ApiDto apiDto);
 
 }

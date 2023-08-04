@@ -15,8 +15,24 @@
  */
 package zk.rgw.dashboard.web.controller;
 
+import reactor.core.publisher.Mono;
+
 import zk.rgw.dashboard.framework.annotation.Controller;
+import zk.rgw.dashboard.framework.annotation.RequestBody;
+import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.web.bean.dto.ApiDto;
+import zk.rgw.dashboard.web.bean.vo.ApiVo;
+import zk.rgw.dashboard.web.service.ApiService;
+import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
 @Controller("api")
 public class ApiController {
+
+    private final ApiService apiService = ServiceFactory.get(ApiService.class);
+
+    @RequestMapping(method = RequestMapping.Method.POST)
+    public Mono<ApiVo> createApi(@RequestBody ApiDto apiDto) {
+        return apiService.createApi(apiDto).map(new ApiVo()::initFromPo);
+    }
+
 }

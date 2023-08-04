@@ -22,6 +22,7 @@ import java.util.Objects;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
+import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
@@ -41,6 +42,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(OrganizationRepository.class, new OrganizationRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(EnvironmentRepository.class, new EnvironmentRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(EnvBindingRepository.class, new EnvBindingRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(ApiRepository.class, new ApiRepository(mongoClient, mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")

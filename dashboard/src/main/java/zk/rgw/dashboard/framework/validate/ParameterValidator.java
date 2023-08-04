@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,9 +58,14 @@ public class ParameterValidator {
 
     private void validateParameter(Parameter parameter, Object value) {
         if (parameter.getAnnotations().length > 0) {
-            if (parameter.getType().isArray()) {
+            Class<?> type = parameter.getType();
+            if (type.isArray()) {
                 for (int i = 0; i < Array.getLength(value); ++i) {
                     validateAnnotatedElement(parameter, Array.get(value, i));
+                }
+            } else if (value instanceof Collection<?> collection) {
+                for (Object item : collection) {
+                    validateAnnotatedElement(parameter, item);
                 }
             } else {
                 validateAnnotatedElement(parameter, value);
