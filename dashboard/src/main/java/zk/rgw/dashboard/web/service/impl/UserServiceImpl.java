@@ -21,11 +21,14 @@ import java.util.Objects;
 import com.mongodb.client.model.Filters;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
+import zk.rgw.dashboard.web.bean.dto.UserDto;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.UserService;
@@ -33,6 +36,8 @@ import zk.rgw.dashboard.web.service.UserService;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
+
+    private final OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
 
     @Override
     public Mono<User> login(LoginDto loginDto) {
@@ -43,6 +48,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<PageData<User>> listUsers(int pageNum, int pageSize) {
         return userRepository.find(Filters.empty(), null, Page.of(pageNum, pageSize));
+    }
+
+    @Override
+    public Mono<User> createUser(UserDto userDto) {
+        return organizationRepository.existsById(userDto.getOrganizationId()).flatMap(orgExists -> {
+            if (Boolean.FALSE.equals(orgExists)) {
+                return Mono.error(BizException.of("不存在ID为" + userDto.getOrganizationId() + "的组织"));
+            } else {
+                return userRepository.existByUsername(userDto.getUsername()).flatMap(useExists -> {
+                    if (Boolean.TRUE.equals(useExists)) {
+                        return Mono.error(BizException.of("已经存在username为" + userDto.getUsername() + "的用户"));
+                    } else {
+                        User user = new User().initFromDto(userDto);
+                        String hashedPassword = Pbkdf2PasswordEncoder.getDefaultInstance().encode(userDto.getPassword());
+                        user.setPassword(hashedPassword);
+                        return userRepository.insert(user);
+                    }
+                });
+            }
+        });
     }
 
     private static boolean passwordMatch(String dtoPassword, String hashedPassword) {

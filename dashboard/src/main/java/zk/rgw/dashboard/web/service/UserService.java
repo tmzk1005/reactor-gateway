@@ -22,6 +22,7 @@ import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
+import zk.rgw.dashboard.web.bean.dto.UserDto;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public interface UserService {
@@ -30,5 +31,7 @@ public interface UserService {
 
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<PageData<User>> listUsers(int pageNum, int pageSize);
+
+    Mono<User> createUser(UserDto userDto);
 
 }

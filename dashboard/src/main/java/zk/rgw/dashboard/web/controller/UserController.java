@@ -26,6 +26,7 @@ import zk.rgw.dashboard.framework.validate.PageNum;
 import zk.rgw.dashboard.framework.validate.PageSize;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
+import zk.rgw.dashboard.web.bean.dto.UserDto;
 import zk.rgw.dashboard.web.bean.vo.LoginVo;
 import zk.rgw.dashboard.web.bean.vo.UserVo;
 import zk.rgw.dashboard.web.service.UserService;
@@ -49,6 +50,11 @@ public class UserController {
             @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
     ) {
         return userService.listUsers(pageNum, pageSize).map(page -> page.map(user -> new UserVo().initFromPo(user)));
+    }
+
+    @RequestMapping(method = RequestMapping.Method.POST)
+    public Mono<UserVo> createUser(@RequestBody UserDto userDto) {
+        return userService.createUser(userDto).map(new UserVo()::initFromPo);
     }
 
 }

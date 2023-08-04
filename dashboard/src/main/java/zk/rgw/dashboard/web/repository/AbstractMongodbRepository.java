@@ -99,6 +99,16 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
         return MongodbOperations.count(mongoCollection, filter).map(num -> num > 0);
     }
 
+    public Mono<Boolean> existsById(String id) {
+        Bson filter;
+        try {
+            filter = MongodbUtil.createFilterById(id);
+        } catch (NotObjectIdException exception) {
+            return Mono.just(false);
+        }
+        return exists(filter);
+    }
+
     public Flux<E> find(Bson filter) {
         return MongodbOperations.find(mongoCollection, filter);
     }

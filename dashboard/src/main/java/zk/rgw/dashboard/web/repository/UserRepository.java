@@ -32,4 +32,8 @@ public class UserRepository extends AbstractMongodbRepository<User> {
         return findOne(Filters.eq("username", username));
     }
 
+    public Mono<Boolean> existByUsername(String username) {
+        return exists(Filters.eq("username", username));
+    }
+
 }

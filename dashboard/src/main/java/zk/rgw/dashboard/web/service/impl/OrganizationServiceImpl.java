@@ -33,7 +33,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public Mono<Organization> createOrganization(OrganizationDto organizationDto) {
         return organizationRepository.existOneByName(organizationDto.getName()).flatMap(exists -> {
-            if (exists) {
+            if (Boolean.TRUE.equals(exists)) {
                 return Mono.error(new BizException("已经存在具有相同名称的组织"));
             } else {
                 Organization organization = new Organization();
