@@ -15,10 +15,13 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import com.mongodb.client.model.Filters;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.web.bean.Page;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.Organization;
@@ -46,6 +49,11 @@ public class ApiServiceImpl implements ApiService {
                             }
                         })
         );
+    }
+
+    @Override
+    public Mono<PageData<Api>> listApis(int pageNum, int pageSize) {
+        return apiRepository.find(Filters.empty(), null, Page.of(pageNum, pageSize));
     }
 
 }

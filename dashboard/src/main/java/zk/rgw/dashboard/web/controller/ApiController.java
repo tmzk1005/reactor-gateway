@@ -20,6 +20,10 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.validate.PageNum;
+import zk.rgw.dashboard.framework.validate.PageSize;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.vo.ApiVo;
 import zk.rgw.dashboard.web.service.ApiService;
@@ -33,6 +37,14 @@ public class ApiController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<ApiVo> createApi(@RequestBody ApiDto apiDto) {
         return apiService.createApi(apiDto).map(new ApiVo()::initFromPo);
+    }
+
+    @RequestMapping
+    public Mono<PageData<ApiVo>> listApis(
+            @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ) {
+        return apiService.listApis(pageNum, pageSize).map(page -> page.map(api -> new ApiVo().initFromPo(api)));
     }
 
 }

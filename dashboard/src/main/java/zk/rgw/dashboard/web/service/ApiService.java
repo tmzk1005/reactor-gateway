@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 
@@ -26,5 +27,7 @@ public interface ApiService {
 
     @HasRole(Role.NORMAL_USER)
     Mono<Api> createApi(ApiDto apiDto);
+
+    Mono<PageData<Api>> listApis(int pageNum, int pageSize);
 
 }
