@@ -16,8 +16,10 @@
 package zk.rgw.dashboard.web.bean;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,5 +38,10 @@ public class RouteDefinitionPublishSnapshot {
     private ApiPublishStatus publishStatus = ApiPublishStatus.UNPUBLISHED;
 
     private RouteDefinition routeDefinition;
+
+    @JsonIgnore
+    public boolean isStatusPublished() {
+        return Objects.equals(ApiPublishStatus.PUBLISHED, publishStatus);
+    }
 
 }

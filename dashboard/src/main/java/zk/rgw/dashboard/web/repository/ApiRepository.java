@@ -15,6 +15,9 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.Map;
+import java.util.Objects;
+
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -22,6 +25,8 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.web.bean.ApiPublishStatus;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
 
 public class ApiRepository extends AbstractMongodbRepository<Api> {
@@ -36,6 +41,23 @@ public class ApiRepository extends AbstractMongodbRepository<Api> {
                 Filters.eq("organization", new ObjectId(orgId))
         );
         return exists(filer);
+    }
+
+    @Override
+    public Mono<Api> findOneById(String id) {
+        return super.findOneById(id).doOnNext(api -> {
+            Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
+            if (Objects.nonNull(publishSnapshots) && !publishSnapshots.isEmpty()) {
+                for (RouteDefinitionPublishSnapshot publishSnapshot : publishSnapshots.values()) {
+                    if (
+                        ApiPublishStatus.PUBLISHED.equals(publishSnapshot.getPublishStatus())
+                                && !Objects.equals(publishSnapshot.getRouteDefinition(), api.getRouteDefinition())
+                    ) {
+                        publishSnapshot.setPublishStatus(ApiPublishStatus.NOT_UPDATED);
+                    }
+                }
+            }
+        });
     }
 
 }

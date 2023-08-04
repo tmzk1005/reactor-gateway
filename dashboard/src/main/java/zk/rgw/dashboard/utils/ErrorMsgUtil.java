@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
 
-import reactor.core.publisher.Mono;
+package zk.rgw.dashboard.utils;
 
-import zk.rgw.dashboard.framework.security.HasRole;
-import zk.rgw.dashboard.framework.security.Role;
-import zk.rgw.dashboard.web.bean.PageData;
-import zk.rgw.dashboard.web.bean.dto.ApiDto;
-import zk.rgw.dashboard.web.bean.entity.Api;
+public class ErrorMsgUtil {
 
-public interface ApiService {
+    private ErrorMsgUtil() {
+    }
 
-    @HasRole(Role.NORMAL_USER)
-    Mono<Api> createApi(ApiDto apiDto);
+    public static String apiNotExist(String apiId) {
+        return "不存在id为" + apiId + "的API";
+    }
 
-    Mono<PageData<Api>> listApis(int pageNum, int pageSize);
+    public static String noApiRights(String apiId) {
+        return "没有权限操作id为" + apiId + "的API";
+    }
 
-    @HasRole(Role.NORMAL_USER)
-    Mono<Api> publishApi(String apiId, String envId);
+    public static String envNotExist(String apiId) {
+        return "不存在id为" + apiId + "的环境";
+    }
 
 }

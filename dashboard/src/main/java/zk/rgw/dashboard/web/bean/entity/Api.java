@@ -17,6 +17,7 @@
 package zk.rgw.dashboard.web.bean.entity;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class Api extends BaseAuditableEntity<ApiDto> {
     /**
      * 发布到各个环境的快照，Key是环境ID
      */
-    private Map<String, RouteDefinitionPublishSnapshot> publishSnapshots;
+    private Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = new HashMap<>();
 
     @Override
     @SuppressWarnings("unchecked")

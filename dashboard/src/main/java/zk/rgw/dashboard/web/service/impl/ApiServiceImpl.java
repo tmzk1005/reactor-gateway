@@ -15,23 +15,37 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import com.mongodb.client.model.Filters;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.utils.ErrorMsgUtil;
+import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
+import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
+import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.ApiRepository;
+import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiService;
 
 public class ApiServiceImpl implements ApiService {
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
+
+    private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
 
     @Override
     public Mono<Api> createApi(ApiDto apiDto) {
@@ -54,6 +68,57 @@ public class ApiServiceImpl implements ApiService {
     @Override
     public Mono<PageData<Api>> listApis(int pageNum, int pageSize) {
         return apiRepository.find(Filters.empty(), null, Page.of(pageNum, pageSize));
+    }
+
+    @Override
+    public Mono<Api> publishApi(String apiId, String envId) {
+        try {
+            new ObjectId(apiId);
+        } catch (Exception exception) {
+            return Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId)));
+        }
+        try {
+            new ObjectId(envId);
+        } catch (Exception exception) {
+            return Mono.error(BizException.of(ErrorMsgUtil.envNotExist(apiId)));
+        }
+        try {
+            new ObjectId(apiId);
+        } catch (Exception exception) {
+            return Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId)));
+        }
+        Mono<Api> apiMono = apiRepository.findOneById(apiId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
+        Mono<User> userMono = ContextUtil.getUser();
+        Mono<Environment> envMono = environmentRepository.findOneById(envId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
+
+        return Mono.zip(apiMono, userMono, envMono).flatMap(tuple3 -> {
+            if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT2().getOrganizationId())) {
+                return Mono.error(BizException.of(ErrorMsgUtil.noApiRights(apiId)));
+            } else {
+                return doPublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3());
+            }
+        });
+    }
+
+    private Mono<Api> doPublishApi(Api api, User user, Environment environment) {
+        String envId = environment.getId();
+        Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
+        if (Objects.isNull(publishSnapshots)) {
+            publishSnapshots = new HashMap<>();
+            api.setPublishSnapshots(publishSnapshots);
+        } else if (publishSnapshots.containsKey(envId) && publishSnapshots.get(envId).isStatusPublished()) {
+            // 已经处于发布状态，且API的信息其实并没有改变
+            return Mono.error(BizException.of("无需重复发布，API已处于最新发布状态"));
+        }
+
+        RouteDefinitionPublishSnapshot publishSnapshot = new RouteDefinitionPublishSnapshot();
+        publishSnapshot.setRouteDefinition(api.getRouteDefinition());
+        publishSnapshot.setPublisherId(user.getId());
+        publishSnapshot.setPublishStatus(ApiPublishStatus.PUBLISHED);
+        publishSnapshot.setLastModifiedDate(Instant.now());
+
+        publishSnapshots.put(envId, publishSnapshot);
+        return apiRepository.save(api);
     }
 
 }

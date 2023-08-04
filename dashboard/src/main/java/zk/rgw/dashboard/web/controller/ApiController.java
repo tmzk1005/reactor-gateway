@@ -18,9 +18,11 @@ package zk.rgw.dashboard.web.controller;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
+import zk.rgw.dashboard.framework.annotation.PathVariable;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.validate.NotBlank;
 import zk.rgw.dashboard.framework.validate.PageNum;
 import zk.rgw.dashboard.framework.validate.PageSize;
 import zk.rgw.dashboard.web.bean.PageData;
@@ -45,6 +47,14 @@ public class ApiController {
             @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
     ) {
         return apiService.listApis(pageNum, pageSize).map(page -> page.map(api -> new ApiVo().initFromPo(api)));
+    }
+
+    @RequestMapping(path = "/_publish/{apiId}", method = RequestMapping.Method.POST)
+    public Mono<ApiVo> publishApi(
+            @PathVariable("apiId") @NotBlank(message = "参数apiId不能为空") String apiId,
+            @RequestParam(name = "envId") @NotBlank(message = "参数envId不能为空") String envId
+    ) {
+        return apiService.publishApi(apiId, envId).map(new ApiVo()::initFromPo);
     }
 
 }
