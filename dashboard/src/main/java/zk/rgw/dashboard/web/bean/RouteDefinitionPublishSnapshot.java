@@ -44,4 +44,9 @@ public class RouteDefinitionPublishSnapshot {
         return Objects.equals(ApiPublishStatus.PUBLISHED, publishStatus);
     }
 
+    @JsonIgnore
+    public boolean isStatusUnpublished() {
+        return Objects.equals(ApiPublishStatus.UNPUBLISHED, publishStatus);
+    }
+
 }

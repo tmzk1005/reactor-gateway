@@ -57,4 +57,12 @@ public class ApiController {
         return apiService.publishApi(apiId, envId).map(new ApiVo()::initFromPo);
     }
 
+    @RequestMapping(path = "/_unpublish/{apiId}", method = RequestMapping.Method.POST)
+    public Mono<ApiVo> unpublishApi(
+            @PathVariable("apiId") @NotBlank(message = "参数apiId不能为空") String apiId,
+            @RequestParam(name = "envId") @NotBlank(message = "参数envId不能为空") String envId
+    ) {
+        return apiService.unpublishApi(apiId, envId).map(new ApiVo()::initFromPo);
+    }
+
 }

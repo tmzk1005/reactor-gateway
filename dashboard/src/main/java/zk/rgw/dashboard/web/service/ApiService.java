@@ -33,4 +33,7 @@ public interface ApiService {
     @HasRole(Role.NORMAL_USER)
     Mono<Api> publishApi(String apiId, String envId);
 
+    @HasRole(Role.NORMAL_USER)
+    Mono<Api> unpublishApi(String apiId, String envId);
+
 }

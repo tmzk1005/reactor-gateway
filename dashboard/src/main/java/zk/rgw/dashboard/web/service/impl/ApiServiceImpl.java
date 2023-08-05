@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple3;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
@@ -82,6 +83,10 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public Mono<Api> publishApi(String apiId, String envId) {
+        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doPublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()));
+    }
+
+    private Mono<Tuple3<Api, User, Environment>> prepareApiForOperate(String apiId, String envId) {
         try {
             new ObjectId(apiId);
         } catch (Exception exception) {
@@ -92,20 +97,14 @@ public class ApiServiceImpl implements ApiService {
         } catch (Exception exception) {
             return Mono.error(BizException.of(ErrorMsgUtil.envNotExist(apiId)));
         }
-        try {
-            new ObjectId(apiId);
-        } catch (Exception exception) {
-            return Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId)));
-        }
         Mono<Api> apiMono = apiRepository.findOneById(apiId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
         Mono<User> userMono = ContextUtil.getUser();
         Mono<Environment> envMono = environmentRepository.findOneById(envId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
-
-        return Mono.zip(apiMono, userMono, envMono).flatMap(tuple3 -> {
+        return Mono.zip(apiMono, userMono, envMono).map(tuple3 -> {
             if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT2().getOrganizationId())) {
-                return Mono.error(BizException.of(ErrorMsgUtil.noApiRights(apiId)));
+                throw BizException.of(ErrorMsgUtil.noApiRights(apiId));
             } else {
-                return doPublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3());
+                return tuple3;
             }
         });
     }
@@ -128,6 +127,24 @@ public class ApiServiceImpl implements ApiService {
         publishSnapshot.setLastModifiedDate(Instant.now());
 
         publishSnapshots.put(envId, publishSnapshot);
+        return apiRepository.save(api);
+    }
+
+    @Override
+    public Mono<Api> unpublishApi(String apiId, String envId) {
+        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doUnpublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()));
+    }
+
+    private Mono<Api> doUnpublishApi(Api api, User user, Environment environment) {
+        String envId = environment.getId();
+        Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
+        if (Objects.isNull(publishSnapshots) || !publishSnapshots.containsKey(envId) || publishSnapshots.get(envId).isStatusUnpublished()) {
+            return Mono.error(BizException.of("API处于未发布状态"));
+        }
+        RouteDefinitionPublishSnapshot publishSnapshot = publishSnapshots.get(envId);
+        publishSnapshot.setPublishStatus(ApiPublishStatus.UNPUBLISHED);
+        publishSnapshot.setLastModifiedDate(Instant.now());
+        publishSnapshot.setPublisherId(user.getId());
         return apiRepository.save(api);
     }
 
