@@ -33,7 +33,7 @@ import zk.rgw.dashboard.web.bean.dto.AppDto;
 @Getter
 @Setter
 @Document
-@Index(name = "AppIndex-name", unique = true, def = "{\"name\": 1}")
+@Index(name = "AppIndex-name-organization", unique = true, def = "{\"name\": 1, \"organization\": 1}}")
 public class App extends BaseAuditableEntity<AppDto> {
 
     @BsonId
@@ -56,8 +56,6 @@ public class App extends BaseAuditableEntity<AppDto> {
     public App initFromDto(AppDto dto) {
         this.name = dto.getName();
         this.description = dto.getDescription();
-        this.organization = new Organization();
-        this.organization.setId(dto.getOrganizationId());
         if (Objects.isNull(this.key)) {
             this.key = UUID.randomUUID().toString();
         }

@@ -50,6 +50,7 @@ public class AppVo extends TimeAuditableVo implements Vo<App> {
         this.description = app.getDescription();
         this.key = app.getKey();
         this.secret = app.getSecret();
+        copyTimeAuditInfo(app);
         return this;
     }
 

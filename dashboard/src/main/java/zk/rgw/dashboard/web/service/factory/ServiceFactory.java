@@ -33,10 +33,12 @@ import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.service.ApiService;
+import zk.rgw.dashboard.web.service.AppService;
 import zk.rgw.dashboard.web.service.EnvironmentService;
 import zk.rgw.dashboard.web.service.OrganizationService;
 import zk.rgw.dashboard.web.service.UserService;
 import zk.rgw.dashboard.web.service.impl.ApiServiceImpl;
+import zk.rgw.dashboard.web.service.impl.AppServiceImpl;
 import zk.rgw.dashboard.web.service.impl.EnvironmentServiceImpl;
 import zk.rgw.dashboard.web.service.impl.OrganizationServiceImpl;
 import zk.rgw.dashboard.web.service.impl.UserServiceImpl;
@@ -51,6 +53,7 @@ public class ServiceFactory {
         SERVICES.put(OrganizationService.class, new SecurityProxy<>(OrganizationService.class, new OrganizationServiceImpl()).getProxy());
         SERVICES.put(EnvironmentService.class, new SecurityProxy<>(EnvironmentService.class, new EnvironmentServiceImpl()).getProxy());
         SERVICES.put(ApiService.class, new SecurityProxy<>(ApiService.class, new ApiServiceImpl()).getProxy());
+        SERVICES.put(AppService.class, new SecurityProxy<>(AppService.class, new AppServiceImpl()).getProxy());
     }
 
     private ServiceFactory() {
