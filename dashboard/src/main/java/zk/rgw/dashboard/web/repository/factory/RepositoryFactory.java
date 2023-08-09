@@ -23,6 +23,8 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import zk.rgw.dashboard.web.repository.ApiRepository;
+import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
+import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
 import zk.rgw.dashboard.web.repository.AppRepository;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
@@ -45,6 +47,8 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(EnvBindingRepository.class, new EnvBindingRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(ApiRepository.class, new ApiRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(AppRepository.class, new AppRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(ApiSubscribeRepository.class, new ApiSubscribeRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(ApiSubscriptionRepository.class, new ApiSubscriptionRepository(mongoClient, mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")

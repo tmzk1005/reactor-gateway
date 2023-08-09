@@ -29,8 +29,16 @@ public class ErrorMsgUtil {
         return "没有权限操作id为" + apiId + "的API";
     }
 
+    public static String noAppRights(String appId) {
+        return "没有权限操作id为" + appId + "的APP";
+    }
+
     public static String envNotExist(String apiId) {
         return "不存在id为" + apiId + "的环境";
+    }
+
+    public static String appNotExist(String appId) {
+        return "不存在id为" + appId + "的应用";
     }
 
 }
