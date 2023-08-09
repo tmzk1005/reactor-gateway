@@ -30,6 +30,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
+import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.Page;
@@ -41,6 +42,7 @@ import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
+import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
 import zk.rgw.dashboard.web.repository.AppRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.SubscriptionService;
@@ -72,6 +74,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final AppRepository appRepository = RepositoryFactory.get(AppRepository.class);
 
     private final ApiSubscribeRepository apiSubscribeRepository = RepositoryFactory.get(ApiSubscribeRepository.class);
+
+    private final ApiSubscriptionRepository apiSubscriptionRepository = RepositoryFactory.get(ApiSubscriptionRepository.class);
 
     @Override
     public Mono<Void> applySubscribeApi(String apiId, String appId) {
@@ -127,6 +131,35 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             Bson sorts = Sorts.descending("applyTime");
             return apiSubscribeRepository.find(orgFilter, sorts, Page.of(pageNum, pageSize), LOOKUP);
         });
+    }
+
+    @Override
+    public Mono<Void> handleSubscribeById(String subscribeId, boolean approved) {
+        Mono<ApiSubscribe> apiSubscribeMono = apiSubscribeRepository.findOneById(subscribeId)
+                .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.subscribeNotExist(subscribeId))));
+        Mono<User> userMono = ContextUtil.getUser();
+
+        return Mono.zip(apiSubscribeMono, userMono).flatMap(tuple2 -> {
+            ApiSubscribe apiSubscribe = tuple2.getT1();
+            User user = tuple2.getT2();
+            if (!Objects.equals(apiSubscribe.getApiOrganization().getId(), user.getOrganizationId())) {
+                return Mono.error(new AccessDeniedException());
+            }
+            if (approved) {
+                apiSubscribe.setHandleTime(Instant.now());
+                apiSubscribe.setState(ApiSubscribe.State.PERMITTED);
+                Mono<ApiSubscribe> saveMono = apiSubscribeRepository.save(apiSubscribe)
+                        .flatMap(
+                                savedApiApiSubscribe -> apiSubscriptionRepository.saveSubscriptionRelationship(
+                                        savedApiApiSubscribe.getApi(), savedApiApiSubscribe.getApp()
+                                ).thenReturn(savedApiApiSubscribe)
+                        );
+                return apiSubscribeRepository.doInTransaction(saveMono);
+            } else {
+                apiSubscribe.setState(ApiSubscribe.State.REJECTED);
+                return apiSubscribeRepository.save(apiSubscribe);
+            }
+        }).then();
     }
 
 }

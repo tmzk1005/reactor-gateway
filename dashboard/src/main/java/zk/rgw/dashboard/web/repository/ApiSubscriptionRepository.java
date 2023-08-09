@@ -15,15 +15,43 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import org.bson.types.ObjectId;
+import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscription;
+import zk.rgw.dashboard.web.bean.entity.App;
 
 public class ApiSubscriptionRepository extends AbstractMongodbRepository<ApiSubscription> {
 
     public ApiSubscriptionRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, ApiSubscription.class);
+    }
+
+    public Mono<ApiSubscription> findByApiId(String apiId) {
+        return findOne(Filters.eq("app", new ObjectId(apiId)));
+    }
+
+    public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app) {
+        return findByApiId(api.getId())
+                .switchIfEmpty(Mono.just(new ApiSubscription()))
+                .flatMap(apiSubscription -> {
+                    apiSubscription.setApi(api);
+                    List<App> apps = apiSubscription.getApps();
+                    if (Objects.isNull(apps)) {
+                        apps = new ArrayList<>();
+                        apiSubscription.setApps(apps);
+                    }
+                    apps.add(app);
+                    return save(apiSubscription);
+                });
     }
 
 }

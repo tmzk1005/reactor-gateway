@@ -41,4 +41,8 @@ public class ErrorMsgUtil {
         return "不存在id为" + appId + "的应用";
     }
 
+    public static String subscribeNotExist(String subId) {
+        return "不存在id为" + subId + "订阅申请记录";
+    }
+
 }
