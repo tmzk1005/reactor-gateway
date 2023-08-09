@@ -114,7 +114,11 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
     }
 
     public Mono<PageData<E>> find(Bson filter, Bson sorts, Page page) {
-        Mono<List<E>> dataMono = MongodbOperations.find(mongoCollection, filter, sorts, page).collectList();
+        return find(filter, sorts, page, null);
+    }
+
+    public Mono<PageData<E>> find(Bson filter, Bson sorts, Page page, List<Bson> lookupAndProjection) {
+        Mono<List<E>> dataMono = MongodbOperations.find(mongoCollection, filter, sorts, page, lookupAndProjection).collectList();
         Mono<Long> countMono = MongodbOperations.count(mongoCollection, filter);
         return Mono.zip(dataMono, countMono)
                 .map(tuple -> new PageData<>(tuple.getT1(), tuple.getT2(), page.getPageNum(), page.getPageSize()));

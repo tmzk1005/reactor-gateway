@@ -44,6 +44,12 @@ public class MongodbOperations {
     }
 
     public static <T extends BaseAuditableEntity<?>> Flux<T> find(MongoCollection<T> collection, Bson filter, Bson sorts, Page page) {
+        return find(collection, filter, sorts, page, null);
+    }
+
+    public static <T extends BaseAuditableEntity<?>> Flux<T> find(
+            MongoCollection<T> collection, Bson filter, Bson sorts, Page page, List<Bson> lookupAndProjection
+    ) {
         List<Bson> aggPipelines = new ArrayList<>(4);
         if (Objects.nonNull(filter)) {
             aggPipelines.add(Aggregates.match(filter));
@@ -55,6 +61,10 @@ public class MongodbOperations {
             aggPipelines.add(Aggregates.skip(page.getOffset()));
             aggPipelines.add(Aggregates.limit(page.getPageSize()));
         }
+        if (Objects.nonNull(lookupAndProjection) && !lookupAndProjection.isEmpty()) {
+            aggPipelines.addAll(lookupAndProjection);
+        }
+
         if (aggPipelines.isEmpty()) {
             // just find, no aggregate
             return find(collection, Filters.empty());

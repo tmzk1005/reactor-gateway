@@ -19,10 +19,15 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.PageData;
+import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 
 public interface SubscriptionService {
 
     @HasRole(Role.NORMAL_USER)
     Mono<Void> applySubscribeApi(String apiId, String appId);
+
+    @HasRole(Role.NORMAL_USER)
+    Mono<PageData<ApiSubscribe>> myApiSubscribes(int pageNum, int pageSize);
 
 }

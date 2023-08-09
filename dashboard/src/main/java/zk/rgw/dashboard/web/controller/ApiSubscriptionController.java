@@ -21,6 +21,10 @@ import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
 import zk.rgw.dashboard.framework.validate.NotBlank;
+import zk.rgw.dashboard.framework.validate.PageNum;
+import zk.rgw.dashboard.framework.validate.PageSize;
+import zk.rgw.dashboard.web.bean.PageData;
+import zk.rgw.dashboard.web.bean.vo.ApiSubscribeVo;
 import zk.rgw.dashboard.web.service.SubscriptionService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -35,6 +39,14 @@ public class ApiSubscriptionController {
             @RequestParam(name = "appId") @NotBlank(message = "参数appId不能为空") String appId
     ) {
         return subscribeApi.applySubscribeApi(apiId, appId);
+    }
+
+    @RequestMapping()
+    public Mono<PageData<ApiSubscribeVo>> mySubscribes(
+            @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ) {
+        return subscribeApi.myApiSubscribes(pageNum, pageSize).map(page -> page.map(po -> new ApiSubscribeVo().initFromPo(po)));
     }
 
 }

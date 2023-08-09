@@ -16,14 +16,24 @@
 package zk.rgw.dashboard.web.service.impl;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
+import org.bson.BsonDocument;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
+import zk.rgw.dashboard.web.bean.Page;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 import zk.rgw.dashboard.web.bean.entity.App;
@@ -36,6 +46,24 @@ import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.SubscriptionService;
 
 public class SubscriptionServiceImpl implements SubscriptionService {
+
+    private static final List<Bson> LOOKUP = List.of(
+            Aggregates.lookup("Api", "api", "_id", "apiLookup"),
+            Aggregates.lookup("Organization", "organization", "_id", "organizationLookup"),
+            Aggregates.lookup("App", "app", "_id", "appLookup"),
+            Aggregates.lookup("User", "user", "_id", "userLookup"),
+            Aggregates.project(
+                    Projections.fields(
+                            Projections.include(
+                                    "_id", "state", "applyTime", "handleTime"
+                            ),
+                            Projections.computed("api", BsonDocument.parse("{\"$first\": \"$apiLookup\"}")),
+                            Projections.computed("app", BsonDocument.parse("{\"$first\": \"$appLookup\"}")),
+                            Projections.computed("user", BsonDocument.parse("{\"$first\": \"$userLookup\"}")),
+                            Projections.computed("organization", BsonDocument.parse("{\"$first\": \"$organizationLookup\"}"))
+                    )
+            )
+    );
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
@@ -75,6 +103,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 throw BizException.of(ErrorMsgUtil.noAppRights(appId));
             }
             return tuple3;
+        });
+    }
+
+    @Override
+    public Mono<PageData<ApiSubscribe>> myApiSubscribes(int pageNum, int pageSize) {
+        return ContextUtil.getUser().map(User::getOrganizationId).flatMap(orgId -> {
+            Bson filter = Filters.eq("organization", new ObjectId(orgId));
+            Bson sorts = Sorts.descending("applyTime");
+            return apiSubscribeRepository.find(filter, sorts, Page.of(pageNum, pageSize), LOOKUP);
         });
     }
 
