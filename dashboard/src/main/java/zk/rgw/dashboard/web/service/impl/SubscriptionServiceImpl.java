@@ -49,9 +49,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private static final List<Bson> LOOKUP = List.of(
             Aggregates.lookup("Api", "api", "_id", "apiLookup"),
-            Aggregates.lookup("Organization", "organization", "_id", "organizationLookup"),
             Aggregates.lookup("App", "app", "_id", "appLookup"),
             Aggregates.lookup("User", "user", "_id", "userLookup"),
+            Aggregates.lookup("Organization", "appOrganization", "_id", "appOrganizationLookup"),
+            Aggregates.lookup("Organization", "apiOrganization", "_id", "apiOrganizationLookup"),
             Aggregates.project(
                     Projections.fields(
                             Projections.include(
@@ -60,7 +61,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                             Projections.computed("api", BsonDocument.parse("{\"$first\": \"$apiLookup\"}")),
                             Projections.computed("app", BsonDocument.parse("{\"$first\": \"$appLookup\"}")),
                             Projections.computed("user", BsonDocument.parse("{\"$first\": \"$userLookup\"}")),
-                            Projections.computed("organization", BsonDocument.parse("{\"$first\": \"$organizationLookup\"}"))
+                            Projections.computed("appOrganization", BsonDocument.parse("{\"$first\": \"$appOrganizationLookup\"}")),
+                            Projections.computed("apiOrganization", BsonDocument.parse("{\"$first\": \"$apiOrganizationLookup\"}"))
                     )
             )
     );
@@ -80,13 +82,20 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                     if (Boolean.TRUE.equals(exists)) {
                                         return Mono.error(BizException.of("相同的订阅申请正在审批中，请勿重复申请!"));
                                     }
+
+                                    App app = tuple3.getT1();
+                                    Api api = tuple3.getT2();
+                                    User user = tuple3.getT3();
+
                                     final ApiSubscribe apiSubscribe = new ApiSubscribe();
-                                    apiSubscribe.setApp(tuple3.getT1());
-                                    apiSubscribe.setApi(tuple3.getT2());
-                                    apiSubscribe.setUser(tuple3.getT3());
-                                    Organization organization = new Organization();
-                                    organization.setId(tuple3.getT3().getOrganizationId());
-                                    apiSubscribe.setOrganization(organization);
+                                    apiSubscribe.setApp(app);
+                                    apiSubscribe.setApi(api);
+                                    apiSubscribe.setUser(user);
+
+                                    apiSubscribe.setAppOrganization(new Organization(user.getOrganizationId()));
+
+                                    apiSubscribe.setApiOrganization(api.getOrganization());
+
                                     apiSubscribe.setState(ApiSubscribe.State.CREATED);
                                     apiSubscribe.setApplyTime(Instant.now());
                                     return apiSubscribeRepository.insert(apiSubscribe);
@@ -107,11 +116,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Mono<PageData<ApiSubscribe>> myApiSubscribes(int pageNum, int pageSize) {
-        return ContextUtil.getUser().map(User::getOrganizationId).flatMap(orgId -> {
-            Bson filter = Filters.eq("organization", new ObjectId(orgId));
+    public Mono<PageData<ApiSubscribe>> myApiSubscribes(boolean asSubscriber, int pageNum, int pageSize) {
+        return ContextUtil.getUser().map(User::getOrganizationId).flatMap(curUserOrgId -> {
+            Bson orgFilter;
+            if (asSubscriber) {
+                orgFilter = Filters.eq("appOrganization", new ObjectId(curUserOrgId));
+            } else {
+                orgFilter = Filters.eq("apiOrganization", new ObjectId(curUserOrgId));
+            }
             Bson sorts = Sorts.descending("applyTime");
-            return apiSubscribeRepository.find(filter, sorts, Page.of(pageNum, pageSize), LOOKUP);
+            return apiSubscribeRepository.find(orgFilter, sorts, Page.of(pageNum, pageSize), LOOKUP);
         });
     }
 

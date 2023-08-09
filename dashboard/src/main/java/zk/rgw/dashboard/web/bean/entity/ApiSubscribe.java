@@ -48,7 +48,10 @@ public class ApiSubscribe extends BaseAuditableEntity<NoDto> {
     private User user;
 
     @DocumentReference
-    private Organization organization;
+    private Organization appOrganization;
+
+    @DocumentReference
+    private Organization apiOrganization;
 
     private Instant applyTime;
 

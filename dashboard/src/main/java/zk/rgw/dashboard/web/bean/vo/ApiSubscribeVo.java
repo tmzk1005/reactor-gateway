@@ -43,9 +43,13 @@ public class ApiSubscribeVo implements Vo<ApiSubscribe> {
 
     private String userName;
 
-    private String organizationId;
+    private String appOrganizationId;
 
-    private String organizationName;
+    private String appOrganizationName;
+
+    private String apiOrganizationId;
+
+    private String apiOrganizationName;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     private Instant applyTime;
@@ -65,8 +69,10 @@ public class ApiSubscribeVo implements Vo<ApiSubscribe> {
         this.appName = po.getApp().getName();
         this.userId = po.getUser().getId();
         this.userName = po.getUser().getNickname();
-        this.organizationId = po.getOrganization().getId();
-        this.organizationName = po.getOrganization().getName();
+        this.appOrganizationId = po.getAppOrganization().getId();
+        this.appOrganizationName = po.getAppOrganization().getName();
+        this.apiOrganizationId = po.getApiOrganization().getId();
+        this.apiOrganizationName = po.getApiOrganization().getName();
         this.applyTime = po.getApplyTime();
         this.handleTime = po.getHandleTime();
         this.state = po.getState();

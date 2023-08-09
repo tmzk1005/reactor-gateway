@@ -44,9 +44,10 @@ public class ApiSubscriptionController {
     @RequestMapping()
     public Mono<PageData<ApiSubscribeVo>> mySubscribes(
             @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
-            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
+            @RequestParam(name = "asSubscriber", required = false, defaultValue = "true") boolean asSubscriber
     ) {
-        return subscribeApi.myApiSubscribes(pageNum, pageSize).map(page -> page.map(po -> new ApiSubscribeVo().initFromPo(po)));
+        return subscribeApi.myApiSubscribes(asSubscriber, pageNum, pageSize).map(page -> page.map(po -> new ApiSubscribeVo().initFromPo(po)));
     }
 
 }
