@@ -36,7 +36,22 @@ public class ApiSubscriptionRepository extends AbstractMongodbRepository<ApiSubs
     }
 
     public Mono<ApiSubscription> findByApiId(String apiId) {
-        return findOne(Filters.eq("app", new ObjectId(apiId)));
+        return findOne(Filters.eq("api", new ObjectId(apiId)));
+    }
+
+    public Mono<Boolean> isAppSubscribedApi(String apiId, String appId) {
+        return findByApiId(apiId).map(apiSubscription -> {
+            List<App> apps = apiSubscription.getApps();
+            if (Objects.isNull(apps) || apps.isEmpty()) {
+                return false;
+            }
+            for (App oneApp : apps) {
+                if (Objects.equals(appId, oneApp.getId())) {
+                    return true;
+                }
+            }
+            return false;
+        }).switchIfEmpty(Mono.just(false));
     }
 
     public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app) {

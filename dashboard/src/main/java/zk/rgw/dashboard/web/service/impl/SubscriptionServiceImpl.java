@@ -79,7 +79,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Mono<Void> applySubscribeApi(String apiId, String appId) {
-        return prepareForApiSubscription(apiId, appId)
+        Mono<Void> checkMono = apiSubscriptionRepository.isAppSubscribedApi(apiId, appId).flatMap(boolValue -> {
+            if (Boolean.TRUE.equals(boolValue)) {
+                return Mono.error(BizException.of("应用已经订阅了该API，请勿重复申请!"));
+            }
+            return Mono.empty();
+        });
+
+        Mono<Void> handleMono = prepareForApiSubscription(apiId, appId)
                 .flatMap(
                         tuple3 -> apiSubscribeRepository.existSameUnhandled(apiId, appId)
                                 .flatMap(exists -> {
@@ -105,6 +112,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                     return apiSubscribeRepository.insert(apiSubscribe);
                                 })
                 ).then();
+
+        return checkMono.then(handleMono);
     }
 
     private Mono<Tuple3<App, Api, User>> prepareForApiSubscription(String apiId, String appId) {
