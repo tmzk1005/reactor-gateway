@@ -10,13 +10,13 @@ import zk.rgw.common.event.RgwEvent;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RouteEvent implements RgwEvent {
+public class RouteDefinitionEvent implements RgwEvent {
 
     private IdRouteDefinition routeDefinition;
 
     private boolean add = true;
 
-    public RouteEvent(IdRouteDefinition routeDefinition, boolean isAdd) {
+    public RouteDefinitionEvent(IdRouteDefinition routeDefinition, boolean isAdd) {
         this.routeDefinition = routeDefinition;
         this.add = isAdd;
     }

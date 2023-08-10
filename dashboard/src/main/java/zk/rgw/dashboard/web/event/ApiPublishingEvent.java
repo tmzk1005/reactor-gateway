@@ -21,12 +21,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import zk.rgw.common.definition.IdRouteDefinition;
-import zk.rgw.common.event.impl.RouteEvent;
+import zk.rgw.common.event.impl.RouteDefinitionEvent;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class ApiPublishingEvent extends RouteEvent {
+public class ApiPublishingEvent extends RouteDefinitionEvent {
 
     private String envId;
 
