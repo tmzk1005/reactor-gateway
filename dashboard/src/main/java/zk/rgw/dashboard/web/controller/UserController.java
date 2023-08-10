@@ -18,6 +18,7 @@ package zk.rgw.dashboard.web.controller;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
+import zk.rgw.dashboard.framework.annotation.PathVariable;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
@@ -55,6 +56,21 @@ public class UserController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<UserVo> createUser(@RequestBody UserDto userDto) {
         return userService.createUser(userDto).map(new UserVo()::initFromPo);
+    }
+
+    @RequestMapping(path = "/_enable/{userId}", method = RequestMapping.Method.POST)
+    public Mono<Void> enableUser(@PathVariable("userId") String userId) {
+        return userService.enableUser(userId);
+    }
+
+    @RequestMapping(path = "/_disable/{userId}", method = RequestMapping.Method.POST)
+    public Mono<Void> disableUser(@PathVariable("userId") String userId) {
+        return userService.disableUser(userId);
+    }
+
+    @RequestMapping(path = "/_delete/{userId}", method = RequestMapping.Method.POST)
+    public Mono<Void> deleteUser(@PathVariable("userId") String userId) {
+        return userService.deleteUser(userId);
     }
 
 }

@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bson.BsonType;
 import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
@@ -48,6 +49,16 @@ public class User extends BaseAuditableEntity<UserDto> {
 
     private String organizationId;
 
+    private String phone;
+
+    private String email;
+
+    private String address;
+
+    private boolean enabled = true;
+
+    private boolean deleted = false;
+
     @SuppressWarnings("unchecked")
     @Override
     public User initFromDto(UserDto dto) {
@@ -57,9 +68,13 @@ public class User extends BaseAuditableEntity<UserDto> {
         user.setPassword(dto.getPassword());
         user.setOrganizationId(dto.getOrganizationId());
         user.setRole(dto.getRole());
+        user.setPhone(dto.getPhone());
+        user.setEmail(dto.getEmail());
+        user.setAddress(dto.getAddress());
         return user;
     }
 
+    @BsonIgnore
     public boolean isSystemAdmin() {
         return Role.SYSTEM_ADMIN == this.role;
     }

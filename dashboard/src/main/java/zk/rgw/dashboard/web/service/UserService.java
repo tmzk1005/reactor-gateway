@@ -32,6 +32,13 @@ public interface UserService {
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<PageData<User>> listUsers(int pageNum, int pageSize);
 
+    @HasRole(Role.SYSTEM_ADMIN)
     Mono<User> createUser(UserDto userDto);
+
+    Mono<Void> enableUser(String userId);
+
+    Mono<Void> disableUser(String userId);
+
+    Mono<Void> deleteUser(String userId);
 
 }

@@ -19,8 +19,10 @@ package zk.rgw.dashboard.web.service.impl;
 import java.util.Objects;
 
 import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.Page;
@@ -41,13 +43,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<User> login(LoginDto loginDto) {
-        return userRepository.findOneByUsername(loginDto.getUsername())
-                .filter(user -> passwordMatch(loginDto.getPassword(), user.getPassword()));
+        return userRepository.findOneByUsername(loginDto.getUsername()).map(user -> {
+            if (!user.isEnabled()) {
+                throw new AccessDeniedException("用户被禁用");
+            }
+            return user;
+        }).filter(user -> passwordMatch(loginDto.getPassword(), user.getPassword()));
     }
 
     @Override
     public Mono<PageData<User>> listUsers(int pageNum, int pageSize) {
-        return userRepository.find(Filters.empty(), null, Page.of(pageNum, pageSize));
+        Bson filter = Filters.eq("deleted", false);
+        return userRepository.find(filter, null, Page.of(pageNum, pageSize));
     }
 
     @Override
@@ -68,6 +75,37 @@ public class UserServiceImpl implements UserService {
                 });
             }
         });
+    }
+
+    private Mono<User> findUserById(String userId) {
+        return userRepository.findOneById(userId)
+                .filter(user -> !user.isDeleted())
+                .switchIfEmpty(Mono.error(BizException.of("用户不存在")));
+    }
+
+    @Override
+    public Mono<Void> enableUser(String userId) {
+        return setUserEnabledStatus(userId, true);
+    }
+
+    @Override
+    public Mono<Void> disableUser(String userId) {
+        return setUserEnabledStatus(userId, false);
+    }
+
+    public Mono<Void> setUserEnabledStatus(String userId, boolean enabled) {
+        return findUserById(userId).flatMap(user -> {
+            user.setEnabled(enabled);
+            return userRepository.save(user);
+        }).then();
+    }
+
+    @Override
+    public Mono<Void> deleteUser(String userId) {
+        return findUserById(userId).flatMap(user -> {
+            user.setDeleted(true);
+            return userRepository.save(user);
+        }).then();
     }
 
     private static boolean passwordMatch(String dtoPassword, String hashedPassword) {

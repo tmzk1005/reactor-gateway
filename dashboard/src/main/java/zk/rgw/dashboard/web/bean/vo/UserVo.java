@@ -38,6 +38,14 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
 
     private String organizationId;
 
+    private String phone;
+
+    private String email;
+
+    private String address;
+
+    private boolean enabled;
+
     @JsonProperty
     public String getRoleDisplay() {
         switch (role) {
@@ -68,6 +76,10 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
         this.setNickname(user.getNickname());
         this.setRole(user.getRole());
         this.setOrganizationId(user.getOrganizationId());
+        this.setPhone(user.getPhone());
+        this.setEmail(user.getEmail());
+        this.setAddress(user.getAddress());
+        this.setEnabled(user.isEnabled());
         copyTimeAuditInfo(user);
         return this;
     }

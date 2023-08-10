@@ -18,6 +18,7 @@ package zk.rgw.dashboard.web.repository;
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import org.bson.conversions.Bson;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.User;
@@ -29,7 +30,11 @@ public class UserRepository extends AbstractMongodbRepository<User> {
     }
 
     public Mono<User> findOneByUsername(String username) {
-        return findOne(Filters.eq("username", username));
+        Bson filter = Filters.and(
+                Filters.eq("username", username),
+                Filters.eq("deleted", false)
+        );
+        return findOne(filter);
     }
 
     public Mono<Boolean> existByUsername(String username) {

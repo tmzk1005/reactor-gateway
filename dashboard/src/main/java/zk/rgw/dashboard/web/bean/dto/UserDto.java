@@ -54,6 +54,15 @@ public class UserDto implements ValidatableDto {
     @NotBlank(message = "组织ID不能为空")
     private String organizationId;
 
+    @Size(max = 24, message = "用户电话号码不能超过256个字符长度")
+    private String phone;
+
+    @Size(max = 56, message = "用户email不能超过256个字符长度")
+    private String email;
+
+    @Size(max = 256, message = "用户地址不能超过256个字符长度")
+    private String address;
+
     @Override
     public List<String> validate() {
         List<String> errMessages = new ArrayList<>(1);
