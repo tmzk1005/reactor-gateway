@@ -25,6 +25,9 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
+import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.event.EventPublisher;
+import zk.rgw.common.event.EventPublisherImpl;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
@@ -39,6 +42,8 @@ import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.event.ApiPublishingEvent;
+import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
@@ -49,6 +54,13 @@ public class ApiServiceImpl implements ApiService {
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
+
+    private final EventPublisher<ApiPublishingEvent> eventPublisher;
+
+    public ApiServiceImpl() {
+        this.eventPublisher = new EventPublisherImpl<>();
+        this.eventPublisher.registerListener(new ApiPublishingListener());
+    }
 
     @Override
     public Mono<Api> createApi(ApiDto apiDto) {
@@ -83,7 +95,18 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public Mono<Api> publishApi(String apiId, String envId) {
-        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doPublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()));
+        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doPublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()))
+                .doOnSuccess(api -> emitEvent(api, envId, true));
+    }
+
+    private void emitEvent(Api api, String envId, boolean isPublish) {
+        IdRouteDefinition idRouteDefinition = new IdRouteDefinition(api.getId(), api.getOrganization().getId());
+        if (isPublish) {
+            idRouteDefinition = new IdRouteDefinition(api.getId(), api.getOrganization().getId());
+            idRouteDefinition.setRouteDefinition(api.getPublishSnapshots().get(envId).getRouteDefinition());
+        }
+        ApiPublishingEvent apiPublishingEvent = new ApiPublishingEvent(idRouteDefinition, isPublish, envId);
+        eventPublisher.publishEvent(apiPublishingEvent);
     }
 
     private Mono<Tuple3<Api, User, Environment>> prepareApiForOperate(String apiId, String envId) {
@@ -132,7 +155,8 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public Mono<Api> unpublishApi(String apiId, String envId) {
-        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doUnpublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()));
+        return prepareApiForOperate(apiId, envId).flatMap(tuple3 -> doUnpublishApi(tuple3.getT1(), tuple3.getT2(), tuple3.getT3()))
+                .doOnSuccess(api -> emitEvent(api, envId, false));
     }
 
     private Mono<Api> doUnpublishApi(Api api, User user, Environment environment) {

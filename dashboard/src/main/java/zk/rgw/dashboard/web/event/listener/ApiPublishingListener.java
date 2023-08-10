@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.event.listener;
 
-package zk.rgw.common.definition;
+import lombok.extern.slf4j.Slf4j;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import zk.rgw.common.event.RgwEventListener;
+import zk.rgw.dashboard.web.event.ApiPublishingEvent;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class IdRouteDefinition {
+@Slf4j
+public class ApiPublishingListener implements RgwEventListener<ApiPublishingEvent> {
 
-    private String id;
-
-    private String orgId;
-
-    private RouteDefinition routeDefinition;
-
-    public IdRouteDefinition(String id, String orgId) {
-        this.id = id;
-        this.orgId = orgId;
+    @Override
+    public void onEvent(ApiPublishingEvent event) {
+        log.info("detect an api publishing event, envId: {}, apiId: {}", event.getEnvId(), event.getRouteDefinition().getId());
     }
 
 }

@@ -15,10 +15,10 @@
  */
 package zk.rgw.common.event;
 
-public interface EventPublisher {
+public interface EventPublisher<E extends RgwEvent> {
 
-    void publishEvent(RgwEvent rgwEvent);
+    void publishEvent(E rgwEvent);
 
-    void registerListener(RgwEventListener<? super RgwEvent> listener);
+    void registerListener(RgwEventListener<E> listener);
 
 }

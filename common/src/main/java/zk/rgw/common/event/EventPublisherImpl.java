@@ -20,11 +20,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Slf4j
-public class EventPublisherImpl implements EventPublisher {
+public class EventPublisherImpl<E extends RgwEvent> implements EventPublisher<E> {
 
-    private final Sinks.Many<RgwEvent> sink;
+    private final Sinks.Many<E> sink;
 
-    private final Flux<RgwEvent> eventStream;
+    private final Flux<E> eventStream;
 
     public EventPublisherImpl() {
         this.sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -32,7 +32,7 @@ public class EventPublisherImpl implements EventPublisher {
     }
 
     @Override
-    public void publishEvent(RgwEvent rgwEvent) {
+    public void publishEvent(E rgwEvent) {
         Sinks.EmitResult emitResult = sink.tryEmitNext(rgwEvent);
         if (emitResult.isFailure()) {
             log.error("Failed to publish an event, emit result is {}, event object is {}", emitResult, rgwEvent);
@@ -40,7 +40,7 @@ public class EventPublisherImpl implements EventPublisher {
     }
 
     @Override
-    public void registerListener(RgwEventListener<? super RgwEvent> listener) {
+    public void registerListener(RgwEventListener<E> listener) {
         this.eventStream.subscribe(listener::onEvent);
     }
 

@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package zk.rgw.common.definition;
+package zk.rgw.dashboard.web.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.event.impl.RouteEvent;
+
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class IdRouteDefinition {
+public class ApiPublishingEvent extends RouteEvent {
 
-    private String id;
+    private String envId;
 
-    private String orgId;
-
-    private RouteDefinition routeDefinition;
-
-    public IdRouteDefinition(String id, String orgId) {
-        this.id = id;
-        this.orgId = orgId;
+    public ApiPublishingEvent(IdRouteDefinition routeDefinition, boolean isAdd, String envId) {
+        super(routeDefinition, isAdd);
+        this.envId = envId;
     }
 
 }
