@@ -28,7 +28,7 @@ import zk.rgw.http.route.locator.RouteLocator;
 
 public class DashboardRoutes implements RouteLocator {
 
-    private static final List<String> NO_NEED_LOGIN_PATHS = List.of("/user/_login");
+    private static final List<String> NO_NEED_LOGIN_PATHS = List.of("/user/_login", "/gateway/**");
 
     private final String apiContextPath;
 

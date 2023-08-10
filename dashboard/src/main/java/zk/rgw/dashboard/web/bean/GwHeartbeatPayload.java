@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.repository;
+package zk.rgw.dashboard.web.bean;
 
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoDatabase;
+import lombok.Getter;
+import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.entity.EnvBinding;
+@Getter
+@Setter
+public class GwHeartbeatPayload {
 
-public class EnvBindingRepository extends BaseAuditableEntityMongodbRepository<EnvBinding> {
-
-    public EnvBindingRepository(MongoClient mongoClient, MongoDatabase database) {
-        super(mongoClient, database, EnvBinding.class);
-    }
+    private String nodeId;
 
 }

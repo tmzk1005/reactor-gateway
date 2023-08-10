@@ -15,15 +15,23 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import org.bson.conversions.Bson;
+import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.web.bean.entity.EnvBinding;
+import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 
-public class EnvBindingRepository extends BaseAuditableEntityMongodbRepository<EnvBinding> {
+public class GatewayNodeRepository extends BaseMongodbRepository<GatewayNode> {
 
-    public EnvBindingRepository(MongoClient mongoClient, MongoDatabase database) {
-        super(mongoClient, database, EnvBinding.class);
+    public GatewayNodeRepository(MongoClient mongoClient, MongoDatabase database) {
+        super(mongoClient, database, GatewayNode.class);
+    }
+
+    public Mono<GatewayNode> findOneByAddress(String address) {
+        Bson filter = Filters.eq("address", address);
+        return findOne(filter);
     }
 
 }

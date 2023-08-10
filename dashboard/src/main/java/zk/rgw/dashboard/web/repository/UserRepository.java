@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.User;
 
-public class UserRepository extends AbstractMongodbRepository<User> {
+public class UserRepository extends BaseAuditableEntityMongodbRepository<User> {
 
     public UserRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, User.class);

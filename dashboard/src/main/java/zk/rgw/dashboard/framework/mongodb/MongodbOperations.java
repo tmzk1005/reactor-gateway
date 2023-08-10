@@ -27,7 +27,7 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.framework.xo.Po;
 import zk.rgw.dashboard.web.bean.Page;
 
 public class MongodbOperations {
@@ -35,19 +35,19 @@ public class MongodbOperations {
     private MongodbOperations() {
     }
 
-    public static <T extends BaseAuditableEntity<?>> Mono<T> findOne(MongoCollection<T> collection, Bson filter) {
+    public static <T extends Po<?>> Mono<T> findOne(MongoCollection<T> collection, Bson filter) {
         return Mono.from(collection.find(filter));
     }
 
-    public static <T extends BaseAuditableEntity<?>> Flux<T> find(MongoCollection<T> collection, Bson filter) {
+    public static <T extends Po<?>> Flux<T> find(MongoCollection<T> collection, Bson filter) {
         return Flux.from(collection.find(filter));
     }
 
-    public static <T extends BaseAuditableEntity<?>> Flux<T> find(MongoCollection<T> collection, Bson filter, Bson sorts, Page page) {
+    public static <T extends Po<?>> Flux<T> find(MongoCollection<T> collection, Bson filter, Bson sorts, Page page) {
         return find(collection, filter, sorts, page, null);
     }
 
-    public static <T extends BaseAuditableEntity<?>> Flux<T> find(
+    public static <T extends Po<?>> Flux<T> find(
             MongoCollection<T> collection, Bson filter, Bson sorts, Page page, List<Bson> lookupAndProjection
     ) {
         List<Bson> aggPipelines = new ArrayList<>(4);
@@ -73,7 +73,7 @@ public class MongodbOperations {
         }
     }
 
-    public static <T extends BaseAuditableEntity<?>> Mono<T> insert(MongoCollection<T> collection, T entity) {
+    public static <T extends Po<?>> Mono<T> insert(MongoCollection<T> collection, T entity) {
         if (Objects.nonNull(entity.getId())) {
             throw new IllegalArgumentException("Entity to insert to mongodb should not has an id already");
         }
@@ -81,7 +81,7 @@ public class MongodbOperations {
                 .flatMap(insertOneResult -> findOne(collection, Filters.eq("_id", insertOneResult.getInsertedId())));
     }
 
-    public static <T extends BaseAuditableEntity<?>> Mono<T> save(MongoCollection<T> collection, T entity) {
+    public static <T extends Po<?>> Mono<T> save(MongoCollection<T> collection, T entity) {
         if (Objects.isNull(entity.getId())) {
             throw new IllegalArgumentException("Entity to save(update) to mongodb should has an id.");
         }
@@ -90,11 +90,11 @@ public class MongodbOperations {
                 .flatMap(updateResult -> findOne(collection, filter));
     }
 
-    public static <T extends BaseAuditableEntity<?>> Mono<Long> count(MongoCollection<T> collection, Bson filter) {
+    public static <T extends Po<?>> Mono<Long> count(MongoCollection<T> collection, Bson filter) {
         return Mono.from(collection.countDocuments(filter));
     }
 
-    public static <T extends BaseAuditableEntity<?>> Mono<Void> delete(MongoCollection<T> collection, Bson filter) {
+    public static <T extends Po<?>> Mono<Void> delete(MongoCollection<T> collection, Bson filter) {
         return Mono.from(collection.deleteMany(filter)).then();
     }
 

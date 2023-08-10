@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 
-public class ApiSubscribeRepository extends AbstractMongodbRepository<ApiSubscribe> {
+public class ApiSubscribeRepository extends BaseAuditableEntityMongodbRepository<ApiSubscribe> {
 
     public ApiSubscribeRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, ApiSubscribe.class);

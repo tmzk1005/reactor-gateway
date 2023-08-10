@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.repository;
+package zk.rgw.dashboard.web.service;
 
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoDatabase;
+import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.web.bean.entity.EnvBinding;
+import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
+import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
 
-public class EnvBindingRepository extends BaseAuditableEntityMongodbRepository<EnvBinding> {
+public interface GatewayNodeService {
 
-    public EnvBindingRepository(MongoClient mongoClient, MongoDatabase database) {
-        super(mongoClient, database, EnvBinding.class);
-    }
+    Mono<GwRegisterResult> handleRegister(GwRegisterPayload gwRegisterPayload);
+
+    Mono<Void> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload);
 
 }

@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.repository;
+package zk.rgw.dashboard.web.bean.vo;
 
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoDatabase;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.entity.EnvBinding;
+@Getter
+@Setter
+@NoArgsConstructor
+public class GwRegisterResult {
 
-public class EnvBindingRepository extends BaseAuditableEntityMongodbRepository<EnvBinding> {
+    private String nodeId;
 
-    public EnvBindingRepository(MongoClient mongoClient, MongoDatabase database) {
-        super(mongoClient, database, EnvBinding.class);
+    public GwRegisterResult(String nodeId) {
+        this.nodeId = nodeId;
     }
 
 }

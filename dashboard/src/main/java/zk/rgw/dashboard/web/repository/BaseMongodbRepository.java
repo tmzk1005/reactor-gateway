@@ -15,29 +15,24 @@
  */
 package zk.rgw.dashboard.web.repository;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
-import lombok.extern.slf4j.Slf4j;
 import org.bson.conversions.Bson;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.context.ContextUtil;
-import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.NotObjectIdException;
 import zk.rgw.dashboard.framework.mongodb.MongodbOperations;
 import zk.rgw.dashboard.framework.mongodb.MongodbUtil;
-import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.framework.xo.Po;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
 
-@Slf4j
-public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
+public class BaseMongodbRepository<E extends Po<?>> {
 
     protected final MongoClient mongoClient;
 
@@ -47,7 +42,7 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
 
     protected final MongoCollection<E> mongoCollection;
 
-    protected AbstractMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
+    protected BaseMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
         this.mongoClient = mongoClient;
         this.database = database;
         this.entityClass = entityClass;
@@ -55,40 +50,14 @@ public class AbstractMongodbRepository<E extends BaseAuditableEntity<?>> {
     }
 
     public Mono<E> insert(E entity) {
-        Instant now = Instant.now();
-        entity.setCreatedDate(now);
-        entity.setLastModifiedDate(now);
-        return ContextUtil.getUser().flatMap(user -> {
-            entity.setCreatedBy(user);
-            entity.setLastModifiedBy(user);
-            return MongodbOperations.insert(mongoCollection, entity);
-        }).switchIfEmpty(MongodbOperations.insert(mongoCollection, entity));
+        return MongodbOperations.insert(mongoCollection, entity);
     }
 
     public Mono<E> save(E entity) {
         if (Objects.isNull(entity.getId())) {
             return insert(entity);
         }
-        Instant now = Instant.now();
-        entity.setLastModifiedDate(now);
-        return ContextUtil.getUser().flatMap(user -> {
-            entity.setLastModifiedBy(user);
-            return MongodbOperations.save(mongoCollection, entity);
-        }).switchIfEmpty(MongodbOperations.save(mongoCollection, entity));
-    }
-
-    public Mono<E> saveMine(E entity) {
-        Instant now = Instant.now();
-        entity.setLastModifiedDate(now);
-        return ContextUtil.getUser().flatMap(user -> {
-            String createdById = entity.getCreatedBy().getId();
-            String curUserId = user.getId();
-            if (!createdById.equals(curUserId)) {
-                throw new AccessDeniedException("没有权限操作id为" + entity.getId() + "的对象");
-            }
-            entity.setLastModifiedBy(user);
-            return MongodbOperations.save(mongoCollection, entity);
-        }).switchIfEmpty(MongodbOperations.save(mongoCollection, entity));
+        return MongodbOperations.save(mongoCollection, entity);
     }
 
     public Mono<E> findOne(Bson filter) {

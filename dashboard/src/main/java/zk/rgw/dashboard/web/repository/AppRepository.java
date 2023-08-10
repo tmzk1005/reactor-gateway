@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.App;
 
-public class AppRepository extends AbstractMongodbRepository<App> {
+public class AppRepository extends BaseAuditableEntityMongodbRepository<App> {
 
     public AppRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, App.class);

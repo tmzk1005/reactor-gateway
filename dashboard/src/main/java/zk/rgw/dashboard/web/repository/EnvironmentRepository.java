@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.Environment;
 
-public class EnvironmentRepository extends AbstractMongodbRepository<Environment> {
+public class EnvironmentRepository extends BaseAuditableEntityMongodbRepository<Environment> {
 
     public EnvironmentRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, Environment.class);

@@ -29,7 +29,7 @@ import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
 
-public class ApiRepository extends AbstractMongodbRepository<Api> {
+public class ApiRepository extends BaseAuditableEntityMongodbRepository<Api> {
 
     public ApiRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, Api.class);

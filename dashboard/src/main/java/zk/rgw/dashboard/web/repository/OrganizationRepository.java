@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.Organization;
 
-public class OrganizationRepository extends AbstractMongodbRepository<Organization> {
+public class OrganizationRepository extends BaseAuditableEntityMongodbRepository<Organization> {
 
     public OrganizationRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, Organization.class);

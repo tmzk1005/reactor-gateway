@@ -35,12 +35,14 @@ import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.service.ApiService;
 import zk.rgw.dashboard.web.service.AppService;
 import zk.rgw.dashboard.web.service.EnvironmentService;
+import zk.rgw.dashboard.web.service.GatewayNodeService;
 import zk.rgw.dashboard.web.service.OrganizationService;
 import zk.rgw.dashboard.web.service.SubscriptionService;
 import zk.rgw.dashboard.web.service.UserService;
 import zk.rgw.dashboard.web.service.impl.ApiServiceImpl;
 import zk.rgw.dashboard.web.service.impl.AppServiceImpl;
 import zk.rgw.dashboard.web.service.impl.EnvironmentServiceImpl;
+import zk.rgw.dashboard.web.service.impl.GatewayNodeServiceImpl;
 import zk.rgw.dashboard.web.service.impl.OrganizationServiceImpl;
 import zk.rgw.dashboard.web.service.impl.SubscriptionServiceImpl;
 import zk.rgw.dashboard.web.service.impl.UserServiceImpl;
@@ -57,6 +59,7 @@ public class ServiceFactory {
         SERVICES.put(ApiService.class, new SecurityProxy<>(ApiService.class, new ApiServiceImpl()).getProxy());
         SERVICES.put(AppService.class, new SecurityProxy<>(AppService.class, new AppServiceImpl()).getProxy());
         SERVICES.put(SubscriptionService.class, new SecurityProxy<>(SubscriptionService.class, new SubscriptionServiceImpl()).getProxy());
+        SERVICES.put(GatewayNodeService.class, new GatewayNodeServiceImpl());
     }
 
     private ServiceFactory() {

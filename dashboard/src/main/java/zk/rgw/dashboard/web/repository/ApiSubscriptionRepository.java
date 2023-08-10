@@ -29,7 +29,7 @@ import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscription;
 import zk.rgw.dashboard.web.bean.entity.App;
 
-public class ApiSubscriptionRepository extends AbstractMongodbRepository<ApiSubscription> {
+public class ApiSubscriptionRepository extends BaseAuditableEntityMongodbRepository<ApiSubscription> {
 
     public ApiSubscriptionRepository(MongoClient mongoClient, MongoDatabase database) {
         super(mongoClient, database, ApiSubscription.class);

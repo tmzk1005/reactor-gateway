@@ -28,6 +28,7 @@ import zk.rgw.dashboard.web.controller.ApiController;
 import zk.rgw.dashboard.web.controller.ApiSubscriptionController;
 import zk.rgw.dashboard.web.controller.AppController;
 import zk.rgw.dashboard.web.controller.EnvironmentController;
+import zk.rgw.dashboard.web.controller.GatewayNodeController;
 import zk.rgw.dashboard.web.controller.OrganizationController;
 import zk.rgw.dashboard.web.controller.UserController;
 import zk.rgw.http.path.PathUtil;
@@ -56,6 +57,7 @@ public class ControllerMethodInvokeFilter implements Filter {
         addController(ApiController.class);
         addController(AppController.class);
         addController(ApiSubscriptionController.class);
+        addController(GatewayNodeController.class);
     }
 
     private void addController(Class<?> controllerClass) {
