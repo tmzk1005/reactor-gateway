@@ -35,10 +35,15 @@ public interface UserService {
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<User> createUser(UserDto userDto);
 
+    @HasRole(Role.SYSTEM_ADMIN)
     Mono<Void> enableUser(String userId);
 
+    @HasRole(Role.SYSTEM_ADMIN)
     Mono<Void> disableUser(String userId);
 
+    @HasRole(Role.SYSTEM_ADMIN)
     Mono<Void> deleteUser(String userId);
+
+    Mono<Void> updatePassword(String oldPassword, String newPassword);
 
 }

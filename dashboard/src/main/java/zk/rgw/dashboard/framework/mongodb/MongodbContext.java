@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
@@ -107,7 +108,7 @@ public class MongodbContext {
         RepositoryFactory.init(this.mongoClient, this.database);
 
         initUser("admin", "Admin", "admin@rgw", Role.SYSTEM_ADMIN)
-                .then(initUser("rgw", "Rgw", "rgw@rgw", Role.NORMAL_USER))
+                .then(initUser("rgw", "Rgw", "rgw1@rgw", Role.NORMAL_USER))
                 .subscribe();
 
         createEnvironment("开发环境")
@@ -150,7 +151,7 @@ public class MongodbContext {
             log.info("Create a organization named {}", orgName);
             return organizationRepository.insert(organization);
         })).flatMap(
-                organization -> userRepository.findOneByUsername(username)
+                organization -> userRepository.findOne(Filters.eq("username", username))
                         .switchIfEmpty(Mono.defer(() -> {
                             User user = new User();
                             user.setUsername(username);

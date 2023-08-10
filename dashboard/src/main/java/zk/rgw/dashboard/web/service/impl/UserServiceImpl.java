@@ -22,6 +22,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
@@ -106,6 +107,23 @@ public class UserServiceImpl implements UserService {
             user.setDeleted(true);
             return userRepository.save(user);
         }).then();
+    }
+
+    @Override
+    public Mono<Void> updatePassword(String oldPassword, String newPassword) {
+        return ContextUtil.getUser()
+                .flatMap(user -> userRepository.findOneById(user.getId()))
+                .flatMap(user -> {
+                    if (!user.isEnabled()) {
+                        throw new AccessDeniedException("用户被禁用");
+                    }
+                    if (!passwordMatch(oldPassword, user.getPassword())) {
+                        throw new BizException("旧密码错误");
+                    }
+                    String hashedPassword = Pbkdf2PasswordEncoder.getDefaultInstance().encode(newPassword);
+                    user.setPassword(hashedPassword);
+                    return userRepository.save(user);
+                }).then();
     }
 
     private static boolean passwordMatch(String dtoPassword, String hashedPassword) {

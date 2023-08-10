@@ -27,6 +27,7 @@ import zk.rgw.dashboard.framework.validate.PageNum;
 import zk.rgw.dashboard.framework.validate.PageSize;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
+import zk.rgw.dashboard.web.bean.dto.PasswordUpdateDto;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
 import zk.rgw.dashboard.web.bean.vo.LoginVo;
 import zk.rgw.dashboard.web.bean.vo.UserVo;
@@ -71,6 +72,11 @@ public class UserController {
     @RequestMapping(path = "/_delete/{userId}", method = RequestMapping.Method.POST)
     public Mono<Void> deleteUser(@PathVariable("userId") String userId) {
         return userService.deleteUser(userId);
+    }
+
+    @RequestMapping(path = "/password/_update", method = RequestMapping.Method.POST)
+    public Mono<Void> updatePassword(@RequestBody PasswordUpdateDto dto) {
+        return userService.updatePassword(dto.getOldPassword(), dto.getNewPassword());
     }
 
 }
