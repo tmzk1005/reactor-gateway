@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.common.definition;
 
-archivesBaseName = "rgw-common"
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-dependencies {
-    compileOnly "org.projectlombok:lombok"
-    compileOnly 'org.slf4j:slf4j-api'
-    compileOnly 'org.apache.logging.log4j:log4j-core'
-    compileOnly 'org.apache.logging.log4j:log4j-slf4j-impl'
-    compileOnly 'info.picocli:picocli'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
-    compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AppDefinition {
 
-    compileOnly 'io.projectreactor:reactor-core'
+    private String id;
+
+    private String key;
+
+    private String secret;
+
 }
