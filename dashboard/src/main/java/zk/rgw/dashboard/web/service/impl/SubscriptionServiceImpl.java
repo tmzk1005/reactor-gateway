@@ -38,7 +38,6 @@ import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 import zk.rgw.dashboard.web.bean.entity.App;
-import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
@@ -103,7 +102,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                                     apiSubscribe.setApi(api);
                                     apiSubscribe.setUser(user);
 
-                                    apiSubscribe.setAppOrganization(new Organization(user.getOrganizationId()));
+                                    apiSubscribe.setAppOrganization(user.getOrganization());
 
                                     apiSubscribe.setApiOrganization(api.getOrganization());
 
@@ -121,7 +120,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Mono<Api> apiMono = apiRepository.findOneById(apiId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
         Mono<User> userMono = ContextUtil.getUser();
         return Mono.zip(appMono, apiMono, userMono).map(tuple3 -> {
-            if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT3().getOrganizationId())) {
+            if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT3().getOrganization().getId())) {
                 throw BizException.of(ErrorMsgUtil.noAppRights(appId));
             }
             return tuple3;
@@ -130,12 +129,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Mono<PageData<ApiSubscribe>> myApiSubscribes(boolean asSubscriber, int pageNum, int pageSize) {
-        return ContextUtil.getUser().map(User::getOrganizationId).flatMap(curUserOrgId -> {
+        return ContextUtil.getUser().map(User::getOrganization).flatMap(curUserOrg -> {
             Bson orgFilter;
             if (asSubscriber) {
-                orgFilter = Filters.eq("appOrganization", new ObjectId(curUserOrgId));
+                orgFilter = Filters.eq("appOrganization", new ObjectId(curUserOrg.getId()));
             } else {
-                orgFilter = Filters.eq("apiOrganization", new ObjectId(curUserOrgId));
+                orgFilter = Filters.eq("apiOrganization", new ObjectId(curUserOrg.getId()));
             }
             Bson sorts = Sorts.descending("applyTime");
             return apiSubscribeRepository.find(orgFilter, sorts, Page.of(pageNum, pageSize), LOOKUP);
@@ -151,7 +150,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return Mono.zip(apiSubscribeMono, userMono).flatMap(tuple2 -> {
             ApiSubscribe apiSubscribe = tuple2.getT1();
             User user = tuple2.getT2();
-            if (!Objects.equals(apiSubscribe.getApiOrganization().getId(), user.getOrganizationId())) {
+            if (!Objects.equals(apiSubscribe.getApiOrganization().getId(), user.getOrganization().getId())) {
                 return Mono.error(new AccessDeniedException());
             }
             if (approved) {

@@ -37,6 +37,8 @@ public class LoginVo implements Vo<User> {
 
     private String organizationId;
 
+    private String organizationName;
+
     private String jwtToken;
 
     private int jwtExpireSeconds;
@@ -48,7 +50,8 @@ public class LoginVo implements Vo<User> {
         this.username = user.getUsername();
         this.nickname = user.getNickname();
         this.role = user.getRole();
-        this.organizationId = user.getOrganizationId();
+        this.organizationId = user.getOrganization().getId();
+        this.organizationName = user.getOrganization().getName();
         this.jwtToken = UserJwtUtil.encode(user);
         this.jwtExpireSeconds = UserJwtUtil.getJwtExpireSeconds();
         return this;

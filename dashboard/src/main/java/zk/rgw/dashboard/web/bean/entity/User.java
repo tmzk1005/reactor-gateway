@@ -24,6 +24,7 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
+import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.framework.mongodb.Index;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
@@ -47,7 +48,8 @@ public class User extends BaseAuditableEntity<UserDto> {
 
     private Role role;
 
-    private String organizationId;
+    @DocumentReference
+    private Organization organization;
 
     private String phone;
 
@@ -66,7 +68,7 @@ public class User extends BaseAuditableEntity<UserDto> {
         user.setUsername(dto.getUsername());
         user.setNickname(dto.getNickname());
         user.setPassword(dto.getPassword());
-        user.setOrganizationId(dto.getOrganizationId());
+        user.setOrganization(new Organization(dto.getOrganizationId()));
         user.setRole(dto.getRole());
         user.setPhone(dto.getPhone());
         user.setEmail(dto.getEmail());

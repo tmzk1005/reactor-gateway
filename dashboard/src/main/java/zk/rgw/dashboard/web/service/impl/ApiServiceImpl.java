@@ -65,13 +65,13 @@ public class ApiServiceImpl implements ApiService {
     @Override
     public Mono<Api> createApi(ApiDto apiDto) {
         return ContextUtil.getUser().flatMap(
-                user -> apiRepository.existOneByNameAndOrg(apiDto.getName(), user.getOrganizationId())
+                user -> apiRepository.existOneByNameAndOrg(apiDto.getName(), user.getOrganization().getId())
                         .flatMap(exist -> {
                             if (Boolean.TRUE.equals(exist)) {
                                 return Mono.error(BizException.of("相同组织下已经存在具有名为" + apiDto.getName() + "的API"));
                             } else {
                                 Organization organization = new Organization();
-                                organization.setId(user.getOrganizationId());
+                                organization.setId(user.getOrganization().getId());
                                 Api api = new Api().initFromDto(apiDto);
                                 api.setOrganization(organization);
                                 return apiRepository.insert(api);
@@ -88,7 +88,7 @@ public class ApiServiceImpl implements ApiService {
             } else if (user.getRole().equals(Role.AUDIT_ADMIN) || user.getRole().equals(Role.SECURITY_ADMIN)) {
                 throw new AccessDeniedException();
             } else {
-                return Filters.eq("organization", new ObjectId(user.getOrganizationId()));
+                return Filters.eq("organization", new ObjectId(user.getOrganization().getId()));
             }
         }).flatMap(filter -> apiRepository.find(filter, null, Page.of(pageNum, pageSize)));
     }
@@ -124,7 +124,7 @@ public class ApiServiceImpl implements ApiService {
         Mono<User> userMono = ContextUtil.getUser();
         Mono<Environment> envMono = environmentRepository.findOneById(envId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
         return Mono.zip(apiMono, userMono, envMono).map(tuple3 -> {
-            if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT2().getOrganizationId())) {
+            if (!Objects.equals(tuple3.getT1().getOrganization().getId(), tuple3.getT2().getOrganization().getId())) {
                 throw BizException.of(ErrorMsgUtil.noApiRights(apiId));
             } else {
                 return tuple3;

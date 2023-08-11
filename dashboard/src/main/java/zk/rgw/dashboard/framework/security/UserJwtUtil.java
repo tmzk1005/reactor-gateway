@@ -26,6 +26,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.Getter;
 
 import zk.rgw.dashboard.framework.filter.auth.AuthenticationException;
+import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public class UserJwtUtil {
@@ -63,7 +64,7 @@ public class UserJwtUtil {
                 .withClaim(CLAIM_USER_ID, user.getId())
                 .withClaim(CLAIM_USERNAME, user.getUsername())
                 .withClaim(CLAIM_NICKNAME, user.getNickname())
-                .withClaim(CLAIM_ORGANIZATION_ID, user.getOrganizationId())
+                .withClaim(CLAIM_ORGANIZATION_ID, user.getOrganization().getId())
                 .withClaim(CLAIM_ROLE, user.getRole().toString())
                 .sign(algorithm);
     }
@@ -80,12 +81,12 @@ public class UserJwtUtil {
         user.setId(jwt.getClaim(CLAIM_USER_ID).asString());
         user.setUsername(jwt.getClaim(CLAIM_USERNAME).asString());
         user.setNickname(jwt.getClaim(CLAIM_NICKNAME).asString());
-        user.setOrganizationId(jwt.getClaim(CLAIM_ORGANIZATION_ID).asString());
+        user.setOrganization(new Organization(jwt.getClaim(CLAIM_ORGANIZATION_ID).asString()));
         try {
             user.setRole(Role.valueOf(jwt.getClaim(CLAIM_ROLE).asString()));
             Objects.requireNonNull(user.getId());
             Objects.requireNonNull(user.getUsername());
-            Objects.requireNonNull(user.getOrganizationId());
+            Objects.requireNonNull(user.getOrganization().getId());
             Objects.requireNonNull(user.getRole());
         } catch (Exception exception) {
             throw new AuthenticationException("认证失败");

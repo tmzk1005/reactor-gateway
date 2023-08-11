@@ -101,7 +101,7 @@ public class EnvironmentServiceImpl implements EnvironmentService {
 
     private Mono<Tuple2<Environment, Organization>> getEnvAndOrg(String envId, String orgId) {
         return ContextUtil.getUser().flatMap(user -> {
-            if (!user.isSystemAdmin() && !user.getOrganizationId().equals(orgId)) {
+            if (!user.isSystemAdmin() && !user.getOrganization().getId().equals(orgId)) {
                 return Mono.error(new AccessDeniedException("无权访问其他组织数据"));
             }
 

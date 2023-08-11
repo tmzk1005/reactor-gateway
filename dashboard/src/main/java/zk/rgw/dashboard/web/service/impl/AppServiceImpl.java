@@ -33,13 +33,13 @@ public class AppServiceImpl implements AppService {
     @Override
     public Mono<App> createApp(AppDto appDto) {
         return ContextUtil.getUser().flatMap(
-                user -> appRepository.existOneByNameAndOrg(appDto.getName(), user.getOrganizationId())
+                user -> appRepository.existOneByNameAndOrg(appDto.getName(), user.getOrganization().getId())
                         .flatMap(exist -> {
                             if (Boolean.TRUE.equals(exist)) {
                                 return Mono.error(BizException.of("相同组织下已经存在具有名为" + appDto.getName() + "的应用"));
                             } else {
                                 Organization organization = new Organization();
-                                organization.setId(user.getOrganizationId());
+                                organization.setId(user.getOrganization().getId());
                                 App app = new App().initFromDto(appDto);
                                 app.setOrganization(organization);
                                 return appRepository.insert(app);

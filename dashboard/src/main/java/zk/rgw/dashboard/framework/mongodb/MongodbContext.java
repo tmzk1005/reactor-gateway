@@ -160,10 +160,9 @@ public class MongodbContext {
                             user.setNickname(nickname);
                             user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
                             user.setRole(role);
-                            user.setOrganizationId(organization.getId());
-                            return userRepository.insert(user).doOnNext(newUser -> {
-                                log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId());
-                            });
+                            user.setOrganization(organization);
+                            return userRepository.insert(user)
+                                    .doOnNext(newUser -> log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId()));
                         }))
         ).then();
     }

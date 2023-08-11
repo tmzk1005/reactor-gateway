@@ -38,6 +38,8 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
 
     private String organizationId;
 
+    private String organizationName;
+
     private String phone;
 
     private String email;
@@ -75,7 +77,8 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
         this.setUsername(user.getUsername());
         this.setNickname(user.getNickname());
         this.setRole(user.getRole());
-        this.setOrganizationId(user.getOrganizationId());
+        this.setOrganizationId(user.getOrganization().getId());
+        this.organizationName = user.getOrganization().getName();
         this.setPhone(user.getPhone());
         this.setEmail(user.getEmail());
         this.setAddress(user.getAddress());
