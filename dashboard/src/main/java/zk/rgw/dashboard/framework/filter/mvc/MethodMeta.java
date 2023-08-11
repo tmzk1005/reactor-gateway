@@ -258,7 +258,7 @@ public class MethodMeta {
             if (Objects.isNull(values)) {
                 if (required) {
                     throw new BadRequestException("缺少必要的参数 " + name);
-                } else if (defaultValue.equals(RequestParam.NULL)) {
+                } else if (Objects.isNull(defaultValue) || defaultValue.equals(RequestParam.NULL)) {
                     values = new ArrayList<>();
                 } else {
                     values = List.of(defaultValue);
