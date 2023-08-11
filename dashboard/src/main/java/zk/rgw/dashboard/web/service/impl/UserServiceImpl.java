@@ -16,9 +16,14 @@
 
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import reactor.core.publisher.Mono;
 
@@ -26,6 +31,7 @@ import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
+import zk.rgw.dashboard.utils.BeanUtil;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
@@ -37,6 +43,24 @@ import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.UserService;
 
 public class UserServiceImpl implements UserService {
+
+    private static final List<Bson> LOOKUP;
+
+    static {
+        // exclude id 是因为在mongodb实际的字段名是 _id
+        // exclude organization 是因为这个字段由 Projections.computed 而来
+        final List<String> projectionsInclude = BeanUtil.allFieldNamesExclude(User.class, Set.of("id", "organization"));
+        projectionsInclude.add("_id");
+        LOOKUP = List.of(
+                Aggregates.lookup("Organization", "organization", "_id", "organizationLookup"),
+                Aggregates.project(
+                        Projections.fields(
+                                Projections.include(projectionsInclude),
+                                Projections.computed("organization", BsonDocument.parse("{\"$first\": \"$organizationLookup\"}"))
+                        )
+                )
+        );
+    }
 
     private final UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
 
@@ -55,7 +79,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<PageData<User>> listUsers(int pageNum, int pageSize) {
         Bson filter = Filters.eq("deleted", false);
-        return userRepository.find(filter, null, Page.of(pageNum, pageSize));
+        return userRepository.find(filter, null, Page.of(pageNum, pageSize), LOOKUP);
     }
 
     @Override
