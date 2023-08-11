@@ -15,14 +15,7 @@
  */
 package zk.rgw.dashboard.framework.xo;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class NoDtoPo implements Po<NoDto> {
-
-    protected String id;
+public abstract class NoDtoPo implements Po<NoDto> {
 
     @Override
     public <P extends Po<NoDto>> P initFromDto(NoDto dto) {

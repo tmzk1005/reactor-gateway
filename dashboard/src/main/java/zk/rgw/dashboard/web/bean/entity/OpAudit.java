@@ -19,6 +19,9 @@ import java.time.Instant;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.BsonType;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
 import zk.rgw.dashboard.framework.mongodb.DocumentReference;
@@ -28,6 +31,10 @@ import zk.rgw.dashboard.framework.xo.NoDtoPo;
 @Setter
 @Document
 public class OpAudit extends NoDtoPo {
+
+    @BsonId
+    @BsonRepresentation(BsonType.OBJECT_ID)
+    private String id;
 
     @DocumentReference
     private User user;

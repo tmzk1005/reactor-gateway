@@ -15,10 +15,12 @@
  */
 package zk.rgw.dashboard.web.service;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
 import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
 
 public interface GatewayNodeService {
@@ -26,5 +28,7 @@ public interface GatewayNodeService {
     Mono<GwRegisterResult> handleRegister(GwRegisterPayload gwRegisterPayload);
 
     Mono<Void> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload);
+
+    Flux<GatewayNode> getNodes(String envId);
 
 }

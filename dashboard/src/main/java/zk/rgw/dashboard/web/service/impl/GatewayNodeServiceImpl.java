@@ -15,6 +15,12 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.Objects;
+
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.exception.BizException;
@@ -57,6 +63,22 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
                 .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
                 .flatMap(gatewayNodeRepository::save)
                 .then();
+    }
+
+    @Override
+    public Flux<GatewayNode> getNodes(String envId) {
+        Bson filter;
+        if (Objects.isNull(envId) || envId.isEmpty()) {
+            filter = Filters.empty();
+        } else {
+            try {
+                ObjectId envObjId = new ObjectId(envId);
+                filter = Filters.eq("envId", envObjId);
+            } catch (Exception exception) {
+                return Flux.error(BizException.of(ErrorMsgUtil.envNotExist(envId)));
+            }
+        }
+        return gatewayNodeRepository.find(filter);
     }
 
 }
