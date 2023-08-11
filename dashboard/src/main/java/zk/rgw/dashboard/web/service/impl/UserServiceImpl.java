@@ -96,6 +96,9 @@ public class UserServiceImpl implements UserService {
 
     public Mono<Void> setUserEnabledStatus(String userId, boolean enabled) {
         return findUserById(userId).flatMap(user -> {
+            if (user.isSystemAdmin() && "admin".equals(user.getUsername())) {
+                throw new BizException("系统管理员admin不能被禁用");
+            }
             user.setEnabled(enabled);
             return userRepository.save(user);
         }).then();
@@ -104,6 +107,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<Void> deleteUser(String userId) {
         return findUserById(userId).flatMap(user -> {
+            if (user.isSystemAdmin() && "admin".equals(user.getUsername())) {
+                throw new BizException("系统管理员admin不能被删除");
+            }
             user.setDeleted(true);
             return userRepository.save(user);
         }).then();
