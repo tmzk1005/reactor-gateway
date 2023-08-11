@@ -64,6 +64,10 @@ public class BaseMongodbRepository<E extends Po<?>> {
         return MongodbOperations.findOne(mongoCollection, filter);
     }
 
+    public Mono<E> findOne(Bson filter, List<Bson> lookupAndProjection) {
+        return MongodbOperations.findOne(mongoCollection, filter, lookupAndProjection);
+    }
+
     public Mono<Boolean> exists(Bson filter) {
         return MongodbOperations.count(mongoCollection, filter).map(num -> num > 0);
     }
@@ -101,6 +105,16 @@ public class BaseMongodbRepository<E extends Po<?>> {
             return Mono.empty();
         }
         return findOne(filter);
+    }
+
+    public Mono<E> findOneById(String id, List<Bson> lookupAndProjection) {
+        Bson filter;
+        try {
+            filter = MongodbUtil.createFilterById(id);
+        } catch (NotObjectIdException exception) {
+            return Mono.empty();
+        }
+        return findOne(filter, lookupAndProjection);
     }
 
     public <T> Mono<T> doInTransaction(Mono<T> mono) {

@@ -77,6 +77,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Mono<User> curSessionUser() {
+        return ContextUtil.getUser().flatMap(user -> userRepository.findOneById(user.getId(), LOOKUP));
+    }
+
+    @Override
     public Mono<PageData<User>> listUsers(int pageNum, int pageSize) {
         Bson filter = Filters.eq("deleted", false);
         return userRepository.find(filter, null, Page.of(pageNum, pageSize), LOOKUP);

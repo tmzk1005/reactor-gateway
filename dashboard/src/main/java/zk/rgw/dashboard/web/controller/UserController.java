@@ -79,4 +79,9 @@ public class UserController {
         return userService.updatePassword(dto.getOldPassword(), dto.getNewPassword());
     }
 
+    @RequestMapping(path = "/me")
+    public Mono<UserVo> selfDetails() {
+        return userService.curSessionUser().map(new UserVo()::initFromPo);
+    }
+
 }

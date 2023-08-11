@@ -39,6 +39,19 @@ public class MongodbOperations {
         return Mono.from(collection.find(filter));
     }
 
+    public static <T extends Po<?>> Mono<T> findOne(MongoCollection<T> collection, Bson filter, List<Bson> lookupAndProjection) {
+        if (Objects.isNull(lookupAndProjection) || lookupAndProjection.isEmpty()) {
+            return findOne(collection, filter);
+        }
+
+        List<Bson> aggPipelines = new ArrayList<>(4);
+        if (Objects.nonNull(filter)) {
+            aggPipelines.add(Aggregates.match(filter));
+        }
+        aggPipelines.addAll(lookupAndProjection);
+        return Mono.from(collection.aggregate(aggPipelines));
+    }
+
     public static <T extends Po<?>> Flux<T> find(MongoCollection<T> collection, Bson filter) {
         return Flux.from(collection.find(filter));
     }

@@ -29,6 +29,8 @@ public interface UserService {
 
     Mono<User> login(LoginDto loginDto);
 
+    Mono<User> curSessionUser();
+
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<PageData<User>> listUsers(int pageNum, int pageSize);
 
