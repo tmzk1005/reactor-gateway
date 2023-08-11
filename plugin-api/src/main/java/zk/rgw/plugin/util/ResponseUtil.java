@@ -60,7 +60,7 @@ public class ResponseUtil {
     }
 
     public static Mono<Void> sendOk(HttpServerResponse response) {
-        return sendStatus(response, HttpResponseStatus.OK);
+        return send(response, Shuck.CODE_OK, Shuck.MESSAGE_OK);
     }
 
     public static Mono<Void> sendError(HttpServerResponse response) {
