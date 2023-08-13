@@ -15,12 +15,14 @@
  */
 package zk.rgw.dashboard.web.controller;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
+import zk.rgw.dashboard.web.bean.vo.ApiPluginVo;
 import zk.rgw.dashboard.web.service.ApiPluginService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -29,9 +31,14 @@ public class ApiPluginController {
 
     private final ApiPluginService apiPluginService = ServiceFactory.get(ApiPluginService.class);
 
-    @RequestMapping
+    @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<Void> installPlugin(@RequestBody ApiPluginDto apiPluginDto) {
         return apiPluginService.installPlugin(apiPluginDto);
+    }
+
+    @RequestMapping(method = RequestMapping.Method.GET)
+    public Flux<ApiPluginVo> getAllPlugins() {
+        return apiPluginService.getAllPlugins().map(poInstance -> new ApiPluginVo().initFromPo(poInstance));
     }
 
 }

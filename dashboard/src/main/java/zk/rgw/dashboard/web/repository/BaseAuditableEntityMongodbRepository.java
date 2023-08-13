@@ -30,7 +30,7 @@ import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
 @Slf4j
 public class BaseAuditableEntityMongodbRepository<E extends BaseAuditableEntity<?>> extends BaseMongodbRepository<E> {
 
-    protected BaseAuditableEntityMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
+    public BaseAuditableEntityMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
         super(mongoClient, database, entityClass);
     }
 

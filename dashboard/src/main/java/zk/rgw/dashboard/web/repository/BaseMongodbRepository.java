@@ -42,7 +42,7 @@ public class BaseMongodbRepository<E extends Po<?>> {
 
     protected final MongoCollection<E> mongoCollection;
 
-    protected BaseMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
+    public BaseMongodbRepository(MongoClient mongoClient, MongoDatabase database, Class<E> entityClass) {
         this.mongoClient = mongoClient;
         this.database = database;
         this.entityClass = entityClass;

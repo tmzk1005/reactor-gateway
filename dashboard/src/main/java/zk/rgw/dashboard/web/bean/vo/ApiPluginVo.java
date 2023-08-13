@@ -18,7 +18,6 @@ package zk.rgw.dashboard.web.bean.vo;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.common.definition.PluginDefinition;
 import zk.rgw.dashboard.framework.xo.Vo;
 import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
 
@@ -28,7 +27,19 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
 
     private String id;
 
-    private PluginDefinition pluginDefinition;
+    private String name;
+
+    private String fullClassName;
+
+    private String version;
+
+    private String jsonSchema;
+
+    private String organizationId;
+
+    private String organizationName;
+
+    private boolean builtin;
 
     private boolean tail;
 
@@ -36,8 +47,14 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
     @Override
     public ApiPluginVo initFromPo(ApiPlugin poInstance) {
         this.id = poInstance.getId();
-        this.pluginDefinition = poInstance.getPluginDefinition();
+        this.name = poInstance.getName();
+        this.fullClassName = poInstance.getFullClassName();
+        this.version = poInstance.getVersion();
+        this.jsonSchema = poInstance.getJsonSchema();
+        this.organizationId = poInstance.getOrganizationId();
         this.tail = poInstance.isTail();
+
+        this.builtin = poInstance.isBuiltin();
         return this;
     }
 }

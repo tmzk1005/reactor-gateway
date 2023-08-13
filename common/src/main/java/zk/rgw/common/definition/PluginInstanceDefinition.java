@@ -19,7 +19,7 @@ package zk.rgw.common.definition;
 import lombok.Data;
 
 @Data
-public class PluginDefinition {
+public class PluginInstanceDefinition {
 
     private String name;
 

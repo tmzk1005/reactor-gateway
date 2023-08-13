@@ -18,14 +18,19 @@ package zk.rgw.dashboard.web.bean.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import zk.rgw.common.definition.PluginDefinition;
 import zk.rgw.dashboard.framework.validate.ValidatableDto;
 
 @Getter
 @Setter
 public class ApiPluginDto implements ValidatableDto {
 
-    private PluginDefinition pluginDefinition;
+    private String name;
+
+    private String fullClassName;
+
+    private String version;
+
+    private String jsonSchema;
 
     private boolean tail;
 

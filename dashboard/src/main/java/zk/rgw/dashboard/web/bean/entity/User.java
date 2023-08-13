@@ -17,6 +17,7 @@
 package zk.rgw.dashboard.web.bean.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.BsonType;
 import org.bson.codecs.pojo.annotations.BsonId;
@@ -34,6 +35,7 @@ import zk.rgw.dashboard.web.bean.dto.UserDto;
 @Setter
 @Document(collection = "User")
 @Index(name = "UserIndex-username", unique = true, def = "{\"username\": 1}")
+@NoArgsConstructor
 public class User extends BaseAuditableEntity<UserDto> {
 
     @BsonId

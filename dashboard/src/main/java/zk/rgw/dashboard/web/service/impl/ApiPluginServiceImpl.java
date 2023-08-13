@@ -16,16 +16,42 @@
 
 package zk.rgw.dashboard.web.service.impl;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.framework.context.ContextUtil;
+import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
+import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
+import zk.rgw.dashboard.web.repository.ApiPluginRepository;
+import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiPluginService;
 
 public class ApiPluginServiceImpl implements ApiPluginService {
 
+    private final ApiPluginRepository apiPluginRepository = RepositoryFactory.get(ApiPluginRepository.class);
+
     @Override
     public Mono<Void> installPlugin(ApiPluginDto apiPluginDto) {
-        return Mono.empty();
+        return Mono.error(BizException.of("暂时不支持安装插件"));
+    }
+
+    @Override
+    public Flux<ApiPlugin> getAllPlugins() {
+        Mono<Bson> filterMono = ContextUtil.getUser().map(user -> {
+            if (user.isSystemAdmin()) {
+                return Filters.empty();
+            } else {
+                return Filters.or(
+                        Filters.eq("organizationId", new ObjectId(user.getOrganization().getId())),
+                        Filters.eq("organizationId", null)
+                );
+            }
+        });
+        return filterMono.flatMapMany(apiPluginRepository::find);
     }
 
 }

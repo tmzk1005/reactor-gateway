@@ -15,10 +15,13 @@
  */
 package zk.rgw.dashboard.framework.mongodb;
 
+import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.model.Filters;
@@ -35,11 +38,14 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Convention;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
+import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
@@ -50,9 +56,7 @@ import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
-import zk.rgw.dashboard.web.repository.EnvironmentRepository;
-import zk.rgw.dashboard.web.repository.OrganizationRepository;
-import zk.rgw.dashboard.web.repository.UserRepository;
+import zk.rgw.dashboard.web.repository.BaseMongodbRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 
 @Slf4j
@@ -111,15 +115,16 @@ public class MongodbContext {
 
         RepositoryFactory.init(this.mongoClient, this.database);
 
-        initUser("admin", "Admin", "admin@rgw", Role.SYSTEM_ADMIN)
-                .then(initUser("rgw", "Rgw", "rgw1@rgw", Role.NORMAL_USER))
-                .subscribe();
+        Mono<User> adminUserMono = initBuiltinUsersAndReturnAdmin();
 
-        createEnvironment("开发环境")
-                .then(createEnvironment("测试环境"))
-                .then(createEnvironment("预生产环境"))
-                .then(createEnvironment("生产环境"))
-                .subscribe();
+        adminUserMono.flatMap(adminUser -> createBuiltinEnvironments(adminUser).then(createBuiltinApiPlugins(adminUser))).subscribe();
+    }
+
+    private Mono<User> initBuiltinUsersAndReturnAdmin() {
+        BaseMongodbRepository<User> userRepository = new BaseMongodbRepository<>(mongoClient, database, User.class);
+        BaseMongodbRepository<Organization> organizationRepository = new BaseMongodbRepository<>(mongoClient, database, Organization.class);
+        Mono<User> adminUserMono = initTheFirstAdminUserAndItsOrg(userRepository, organizationRepository);
+        return adminUserMono.flatMap(user -> initNormalUsers(user, userRepository).thenReturn(user));
     }
 
     private Mono<Void> initCollectionForEntity(Class<?> entityClass) {
@@ -143,40 +148,158 @@ public class MongodbContext {
         return Mono.from(collection.createIndex(Document.parse(definition), indexOptions)).then();
     }
 
-    private static Mono<Void> initUser(String username, String nickname, String password, Role role) {
-        OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
-        UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
-
-        final String orgName = "系统管理组";
-
-        return organizationRepository.findOneByName(orgName).switchIfEmpty(Mono.defer(() -> {
-            Organization organization = new Organization();
-            organization.setName(orgName);
-            log.info("Create a organization named {}", orgName);
-            return organizationRepository.insert(organization);
-        })).flatMap(
-                organization -> userRepository.findOne(Filters.eq("username", username))
-                        .switchIfEmpty(Mono.defer(() -> {
-                            User user = new User();
-                            user.setUsername(username);
-                            user.setNickname(nickname);
-                            user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
-                            user.setRole(role);
-                            user.setOrganization(organization);
-                            return userRepository.insert(user)
-                                    .doOnNext(newUser -> log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId()));
-                        }))
-        ).then();
+    private Mono<User> initTheFirstAdminUserAndItsOrg(
+            BaseMongodbRepository<User> userRepository,
+            BaseMongodbRepository<Organization> organizationRepository
+    ) {
+        return userRepository.findOne(Filters.eq("name", "admin"))
+                .switchIfEmpty(createAdminUser(userRepository, organizationRepository));
     }
 
-    private static Mono<Void> createEnvironment(String envName) {
-        EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
-        return environmentRepository.findOneByName(envName).switchIfEmpty(Mono.defer(() -> {
+    private Mono<User> createAdminUser(BaseMongodbRepository<User> userRepository, BaseMongodbRepository<Organization> organizationRepository) {
+        Organization tmpOrg = new Organization();
+        tmpOrg.setName("系统管理组");
+        User tmpUser = new User();
+        tmpUser.setUsername("admin");
+
+        return Mono.zip(
+                organizationRepository.insert(tmpOrg),
+                userRepository.insert(tmpUser)
+        ).flatMap(tuple2 -> {
+            Organization organization = tuple2.getT1();
+            User user = tuple2.getT2();
+
+            Instant now = Instant.now();
+
+            organization.setCreatedBy(user);
+            organization.setLastModifiedBy(user);
+            organization.setCreatedDate(now);
+            organization.setLastModifiedDate(now);
+
+            user.setCreatedBy(user);
+            user.setLastModifiedBy(user);
+            user.setCreatedDate(now);
+            user.setLastModifiedDate(now);
+
+            user.setOrganization(organization);
+
+            user.setNickname("系统管理员");
+            user.setRole(Role.SYSTEM_ADMIN);
+            user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode("admin@rgw"));
+            user.setEnabled(true);
+            user.setDeleted(false);
+            return organizationRepository.save(organization)
+                    .doOnNext(org -> log.info("Create a organization named {}", org.getName()))
+                    .then(userRepository.save(user))
+                    .doOnNext(adminUser -> log.info("Create system administrator named {}", adminUser.getUsername()))
+                    .switchIfEmpty(Mono.error(new RuntimeException("初始化系统管理员失败")))
+                    .doOnError(throwable -> {
+                        log.error("系统初始化失败", throwable);
+                        System.exit(-1);
+                    });
+        });
+    }
+
+    private Mono<Void> initNormalUsers(User adminUser, BaseMongodbRepository<User> userRepository) {
+        return initNormalUser(adminUser, userRepository, "rgw1", "Rgw1", "rgw1@rgw", Role.ORGANIZATION_ADMIN)
+                .then(initNormalUser(adminUser, userRepository, "rgw2", "Rgw2", "rgw2@rgw", Role.NORMAL_USER));
+    }
+
+    private Mono<Void> initNormalUser(
+            User adminUser, BaseMongodbRepository<User> userRepository,
+            String username, String nickname, String password, Role role
+    ) {
+        return userRepository.findOne(Filters.eq("username", username))
+                .switchIfEmpty(Mono.defer(() -> {
+                    User user = new User();
+                    user.setUsername(username);
+                    user.setNickname(nickname);
+                    user.setPassword(Pbkdf2PasswordEncoder.getDefaultInstance().encode(password));
+                    user.setRole(role);
+                    user.setOrganization(adminUser.getOrganization());
+
+                    user.setEnabled(true);
+                    user.setDeleted(false);
+
+                    user.setCreatedBy(adminUser);
+                    user.setLastModifiedBy(adminUser);
+                    Instant now = Instant.now();
+                    user.setCreatedDate(now);
+                    user.setLastModifiedDate(now);
+
+                    return userRepository.insert(user)
+                            .doOnNext(newUser -> log.info("Create a user named {}, generated id is {}", newUser.getUsername(), newUser.getId()));
+                })).then();
+    }
+
+    private Mono<Void> createBuiltinEnvironments(User adminUser) {
+        BaseMongodbRepository<Environment> repository = new BaseMongodbRepository<>(mongoClient, database, Environment.class);
+        return createEnvironment(repository, adminUser, "开发环境")
+                .then(createEnvironment(repository, adminUser, "测试环境"))
+                .then(createEnvironment(repository, adminUser, "预生产环境"))
+                .then(createEnvironment(repository, adminUser, "生产环境"));
+    }
+
+    private Mono<Void> createEnvironment(BaseMongodbRepository<Environment> repository, User adminUser, String envName) {
+        return repository.findOne(Filters.eq("name", envName)).switchIfEmpty(Mono.defer(() -> {
             Environment environment = new Environment();
             environment.setName(envName);
+
+            environment.setCreatedBy(adminUser);
+            environment.setLastModifiedBy(adminUser);
+            Instant now = Instant.now();
+            environment.setCreatedDate(now);
+            environment.setLastModifiedDate(now);
+
             log.info("Create an environment named {}", envName);
-            return environmentRepository.insert(environment);
+            return repository.insert(environment);
         })).then();
+    }
+
+    private Mono<Void> createBuiltinApiPlugins(User adminUser) {
+        String jsonFileName = "rgw-builtin-plugins.json";
+        ObjectMapper objectMapper = new ObjectMapper();
+        ApiPluginDto[] apiPluginDtoArr;
+        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(jsonFileName)) {
+            apiPluginDtoArr = objectMapper.readValue(inputStream, ApiPluginDto[].class);
+        } catch (Exception exception) {
+            return Mono.error(new RgwRuntimeException("Failed to read builtin plugins from json file " + jsonFileName));
+        }
+        if (Objects.isNull(apiPluginDtoArr)) {
+            return Mono.empty();
+        }
+        BaseMongodbRepository<ApiPlugin> repository = new BaseMongodbRepository<>(mongoClient, database, ApiPlugin.class);
+        return Flux.fromArray(apiPluginDtoArr).flatMap(apiPluginDto -> {
+            ApiPlugin apiPlugin = new ApiPlugin().initFromDto(apiPluginDto);
+
+            apiPlugin.setBuiltin(true);
+            apiPlugin.setOrganizationId(null);
+            apiPlugin.setInstallerUri(null);
+
+            apiPlugin.setCreatedBy(adminUser);
+            apiPlugin.setLastModifiedBy(adminUser);
+            Instant now = Instant.now();
+            apiPlugin.setCreatedDate(now);
+            apiPlugin.setLastModifiedDate(now);
+
+            return saveApiPlugin(repository, apiPlugin);
+        }).then();
+    }
+
+    private static Mono<Void> saveApiPlugin(BaseMongodbRepository<ApiPlugin> repository, ApiPlugin apiPlugin) {
+        Bson checkFilter = Filters.and(
+                Filters.eq("name", apiPlugin.getName()),
+                Filters.eq("version", apiPlugin.getVersion())
+        );
+        return repository.exists(checkFilter).flatMap(exist -> {
+            if (Boolean.TRUE.equals(exist)) {
+                return Mono.empty();
+            } else {
+                return repository.insert(apiPlugin).doOnNext(pl -> {
+                    log.info("save a builtin plugin, name = {}, version={}", pl.getName(), pl.getVersion());
+                }).then();
+            }
+        });
     }
 
 }

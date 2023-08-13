@@ -31,6 +31,6 @@ public class RouteDefinition {
 
     private List<PredicateDefinition> predicateDefinitions = new ArrayList<>(1);
 
-    private List<PluginDefinition> pluginDefinitions = new ArrayList<>(4);
+    private List<PluginInstanceDefinition> pluginDefinitions = new ArrayList<>(4);
 
 }

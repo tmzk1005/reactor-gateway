@@ -21,36 +21,55 @@ import org.bson.BsonType;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
-import zk.rgw.common.definition.PluginDefinition;
 import zk.rgw.dashboard.framework.mongodb.Document;
 import zk.rgw.dashboard.framework.mongodb.Index;
-import zk.rgw.dashboard.framework.xo.Po;
+import zk.rgw.dashboard.framework.validate.NotBlank;
+import zk.rgw.dashboard.framework.validate.Pattern;
+import zk.rgw.dashboard.framework.validate.Size;
+import zk.rgw.dashboard.framework.xo.BaseAuditableEntity;
+import zk.rgw.dashboard.utils.Patters;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
 
 @Getter
 @Setter
 @Document
 @Index(name = "ApiPlugin-name-version", unique = true, def = "{\"name\": 1, \"version\": 1}")
-public class ApiPlugin implements Po<ApiPluginDto> {
+public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
 
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    private PluginDefinition pluginDefinition;
+    @NotBlank(message = "插件名称不能为空")
+    @Size(min = 3, max = 32, message = "插件名称不能超过32个字符长度，且最少需要3个字符长度")
+    @Pattern(regexp = Patters.IDENTIFIER_ZH, message = "API名称只能包含字母，数字和下划线以及中文字符")
+    private String name;
+
+    private String fullClassName;
+
+    private String version;
+
+    private String jsonSchema;
 
     private boolean builtin;
 
     private String installerUri;
+
+    @BsonRepresentation(BsonType.OBJECT_ID)
+    private String organizationId;
 
     private boolean tail;
 
     @SuppressWarnings("unchecked")
     @Override
     public ApiPlugin initFromDto(ApiPluginDto dto) {
-        this.pluginDefinition = dto.getPluginDefinition();
-        this.builtin = false;
+        this.name = dto.getName();
+        this.fullClassName = dto.getFullClassName();
+        this.version = dto.getVersion();
+        this.jsonSchema = dto.getJsonSchema();
         this.tail = dto.isTail();
+
+        this.builtin = false;
         return this;
     }
 

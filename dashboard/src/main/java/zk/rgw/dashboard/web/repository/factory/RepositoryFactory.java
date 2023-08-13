@@ -22,6 +22,7 @@ import java.util.Objects;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
+import zk.rgw.dashboard.web.repository.ApiPluginRepository;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
@@ -51,6 +52,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(ApiSubscribeRepository.class, new ApiSubscribeRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(ApiSubscriptionRepository.class, new ApiSubscriptionRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(GatewayNodeRepository.class, new GatewayNodeRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(ApiPluginRepository.class, new ApiPluginRepository(mongoClient, mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")

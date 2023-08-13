@@ -15,15 +15,19 @@
  */
 package zk.rgw.dashboard.web.service;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
+import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
 
 public interface ApiPluginService {
 
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<Void> installPlugin(ApiPluginDto apiPluginDto);
+
+    Flux<ApiPlugin> getAllPlugins();
 
 }
