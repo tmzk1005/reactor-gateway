@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.service;
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+import reactor.core.publisher.Mono;
 
-archivesBaseName = "rgw-dashboard"
+import zk.rgw.dashboard.framework.security.HasRole;
+import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+public interface ApiPluginService {
 
-    implementation 'org.mongodb:mongodb-driver-reactivestreams'
-    implementation 'org.mongodb:bson-record-codec'
+    @HasRole(Role.SYSTEM_ADMIN)
+    Mono<Void> installPlugin(ApiPluginDto apiPluginDto);
 
-    implementation "com.auth0:java-jwt"
-
-    // implementation 'com.networknt:json-schema-validator'
 }

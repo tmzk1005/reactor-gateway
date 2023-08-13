@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+package zk.rgw.dashboard.web.service.impl;
 
-archivesBaseName = "rgw-dashboard"
+import reactor.core.publisher.Mono;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
+import zk.rgw.dashboard.web.service.ApiPluginService;
 
-    implementation 'org.mongodb:mongodb-driver-reactivestreams'
-    implementation 'org.mongodb:bson-record-codec'
+public class ApiPluginServiceImpl implements ApiPluginService {
 
-    implementation "com.auth0:java-jwt"
+    @Override
+    public Mono<Void> installPlugin(ApiPluginDto apiPluginDto) {
+        return Mono.empty();
+    }
 
-    // implementation 'com.networknt:json-schema-validator'
 }

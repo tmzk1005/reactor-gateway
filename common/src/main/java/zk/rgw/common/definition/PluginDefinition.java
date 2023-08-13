@@ -23,6 +23,8 @@ public class PluginDefinition {
 
     private String name;
 
+    private String fullClassName;
+
     private String version;
 
     private String jsonConf;

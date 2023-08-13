@@ -25,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.dashboard.web.controller.ApiController;
+import zk.rgw.dashboard.web.controller.ApiPluginController;
 import zk.rgw.dashboard.web.controller.ApiSubscriptionController;
 import zk.rgw.dashboard.web.controller.AppController;
 import zk.rgw.dashboard.web.controller.EnvironmentController;
@@ -58,6 +59,7 @@ public class ControllerMethodInvokeFilter implements Filter {
         addController(AppController.class);
         addController(ApiSubscriptionController.class);
         addController(GatewayNodeController.class);
+        addController(ApiPluginController.class);
     }
 
     private void addController(Class<?> controllerClass) {

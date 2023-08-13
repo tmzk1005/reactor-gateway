@@ -41,6 +41,7 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
 import zk.rgw.dashboard.web.bean.entity.Api;
+import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscription;
 import zk.rgw.dashboard.web.bean.entity.App;
@@ -105,6 +106,7 @@ public class MongodbContext {
                 .then(initCollectionForEntity(ApiSubscribe.class))
                 .then(initCollectionForEntity(ApiSubscription.class))
                 .then(initCollectionForEntity(GatewayNode.class))
+                .then(initCollectionForEntity(ApiPlugin.class))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);

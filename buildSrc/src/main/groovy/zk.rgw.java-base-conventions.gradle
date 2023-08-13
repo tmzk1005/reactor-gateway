@@ -57,6 +57,7 @@ def picocliVersion = "4.7.3"
 def junitJupiterVersion = "5.9.3"
 def jwtLibVersion = "4.4.0"
 def mongodbReactiveDriverVersion = "4.9.1"
+def jsonSchemaVersion = "1.0.86"
 
 dependencies {
     implementation platform("org.projectlombok:lombok:${lombokVersion}")
@@ -69,6 +70,7 @@ dependencies {
     implementation platform("com.auth0:java-jwt:${jwtLibVersion}")
     implementation platform("org.mongodb:mongodb-driver-reactivestreams:${mongodbReactiveDriverVersion}")
     implementation platform("org.mongodb:bson-record-codec:${mongodbReactiveDriverVersion}")
+    // implementation platform("com.networknt:json-schema-validator:${jsonSchemaVersion}")
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}"

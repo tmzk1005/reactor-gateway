@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.web.bean.dto;
 
-plugins {
-    id 'zk.rgw.java-base-conventions'
-}
+import lombok.Getter;
+import lombok.Setter;
 
-archivesBaseName = "rgw-dashboard"
+import zk.rgw.common.definition.PluginDefinition;
+import zk.rgw.dashboard.framework.validate.ValidatableDto;
 
-dependencies {
-    implementation project(path: ":http", configuration: "default")
-    implementation project(path: ":common", configuration: "default")
+@Getter
+@Setter
+public class ApiPluginDto implements ValidatableDto {
 
-    implementation 'org.mongodb:mongodb-driver-reactivestreams'
-    implementation 'org.mongodb:bson-record-codec'
+    private PluginDefinition pluginDefinition;
 
-    implementation "com.auth0:java-jwt"
+    private boolean tail;
 
-    // implementation 'com.networknt:json-schema-validator'
 }
