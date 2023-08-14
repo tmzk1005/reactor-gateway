@@ -60,6 +60,10 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
 
     private boolean tail;
 
+    private String description;
+
+    private String mdDoc;
+
     @SuppressWarnings("unchecked")
     @Override
     public ApiPlugin initFromDto(ApiPluginDto dto) {
@@ -68,6 +72,8 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
         this.version = dto.getVersion();
         this.jsonSchema = dto.getJsonSchema();
         this.tail = dto.isTail();
+        this.description = dto.getDescription();
+        this.mdDoc = dto.getMdDoc();
 
         this.builtin = false;
         return this;

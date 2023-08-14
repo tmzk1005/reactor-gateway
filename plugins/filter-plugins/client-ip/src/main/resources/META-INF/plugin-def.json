@@ -1,0 +1,7 @@
+{
+    "name": "客户端IP黑白名单",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.clientip.ClientIpFilter",
+    "tail": false,
+    "description": "{}"
+}

@@ -1,0 +1,7 @@
+{
+    "name": "参数映射",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.parametermap.ParameterMapFilter",
+    "tail": false,
+    "description": "{}"
+}

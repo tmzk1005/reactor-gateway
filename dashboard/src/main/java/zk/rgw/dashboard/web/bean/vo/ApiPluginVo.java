@@ -43,6 +43,10 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
 
     private boolean tail;
 
+    private String description;
+
+    private String mdDoc;
+
     @SuppressWarnings("unchecked")
     @Override
     public ApiPluginVo initFromPo(ApiPlugin poInstance) {
@@ -53,6 +57,8 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
         this.jsonSchema = poInstance.getJsonSchema();
         this.organizationId = poInstance.getOrganizationId();
         this.tail = poInstance.isTail();
+        this.description = poInstance.getDescription();
+        this.mdDoc = poInstance.getMdDoc();
 
         this.builtin = poInstance.isBuiltin();
         return this;

@@ -1,0 +1,7 @@
+{
+    "name": "熔断",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.circuitbreaker.CircuitBreakerFilter",
+    "tail": false,
+    "description": "{}"
+}

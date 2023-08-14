@@ -1,0 +1,7 @@
+{
+    "name": "HTTP后端MOCK",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.mock.http.HttpMockFilter",
+    "tail": false,
+    "description": "{}"
+}

@@ -34,4 +34,8 @@ public class ApiPluginDto implements ValidatableDto {
 
     private boolean tail;
 
+    private String description;
+
+    private String mdDoc;
+
 }

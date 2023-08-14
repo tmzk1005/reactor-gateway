@@ -1,0 +1,7 @@
+{
+    "name": "HTTP1.1协议代理",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.proxyhttp.ProxyHttpFilter",
+    "tail": false,
+    "description": "{}"
+}
