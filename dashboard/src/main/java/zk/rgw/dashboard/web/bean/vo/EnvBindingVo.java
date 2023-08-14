@@ -15,10 +15,16 @@
  */
 package zk.rgw.dashboard.web.bean.vo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import zk.rgw.dashboard.framework.xo.Vo;
@@ -47,6 +53,26 @@ public class EnvBindingVo implements Vo<EnvBinding> {
         this.orgName = poInstance.getOrganization().getName();
         this.variables = poInstance.getVariables();
         return this;
+    }
+
+    @JsonProperty
+    public List<KvPair> getVariableList() {
+        List<KvPair> list = new ArrayList<>();
+        if (Objects.nonNull(variables)) {
+            for (Map.Entry<String, String> entry : variables.entrySet()) {
+                list.add(new KvPair(entry.getKey(), entry.getValue()));
+            }
+        }
+        return list;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class KvPair {
+        private String varName;
+        private String varValue;
     }
 
 }
