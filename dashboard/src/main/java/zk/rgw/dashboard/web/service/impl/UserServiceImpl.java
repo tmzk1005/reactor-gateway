@@ -25,6 +25,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
@@ -83,8 +84,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<PageData<User>> listUsers(int pageNum, int pageSize) {
-        Bson filter = Filters.eq("deleted", false);
-        return userRepository.find(filter, null, Page.of(pageNum, pageSize), LOOKUP);
+        Bson notDeleted = Filters.eq("deleted", false);
+
+        Mono<Bson> filterByRole = ContextUtil.getUser().map(user -> {
+            if (user.isSystemAdmin()) {
+                return notDeleted;
+            } else if (user.isOrgAdmin()) {
+                return Filters.and(notDeleted, Filters.eq("organization", new ObjectId(user.getOrganization().getId())));
+            } else {
+                throw new AccessDeniedException();
+            }
+        });
+
+        return filterByRole.flatMap(filter -> userRepository.find(filter, null, Page.of(pageNum, pageSize), LOOKUP));
     }
 
     @Override
@@ -124,12 +136,22 @@ public class UserServiceImpl implements UserService {
     }
 
     public Mono<Void> setUserEnabledStatus(String userId, boolean enabled) {
-        return findUserById(userId).flatMap(user -> {
-            if (user.isSystemAdmin() && "admin".equals(user.getUsername())) {
+        return Mono.zip(
+                ContextUtil.getUser(),
+                findUserById(userId)
+        ).flatMap(tuple2 -> {
+            User sessionUser = tuple2.getT1();
+            User opUser = tuple2.getT2();
+
+            if (sessionUser.isOrgAdmin() && !sessionUser.getOrganization().getId().equals(opUser.getOrganization().getId())) {
+                throw new AccessDeniedException();
+            }
+
+            if (opUser.isSystemAdmin() && "admin".equals(opUser.getUsername())) {
                 throw new BizException("系统管理员admin不能被禁用");
             }
-            user.setEnabled(enabled);
-            return userRepository.save(user);
+            opUser.setEnabled(enabled);
+            return userRepository.save(opUser);
         }).then();
     }
 

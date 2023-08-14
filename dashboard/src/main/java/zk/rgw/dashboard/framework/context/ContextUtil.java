@@ -58,6 +58,10 @@ public class ContextUtil {
                 if (role.equals(r)) {
                     return true;
                 }
+                if (role == Role.ORGANIZATION_ADMIN && r == Role.NORMAL_USER) {
+                    // ORGANIZATION_ADMIN 包含 NORMAL_USER
+                    return true;
+                }
             }
             return false;
         }).switchIfEmpty(Mono.just(false));

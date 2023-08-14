@@ -30,11 +30,11 @@ public interface EnvironmentService {
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<Environment> createEnvironment(EnvironmentDto environmentDto);
 
-    @HasRole(Role.SYSTEM_ADMIN)
     Flux<Environment> getEnvironments();
 
     Mono<EnvBinding> getOneEnvBinding(String envId, String orgId);
 
+    @HasRole(Role.NORMAL_USER)
     Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables);
 
 }

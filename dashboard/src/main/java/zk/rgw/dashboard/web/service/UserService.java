@@ -31,16 +31,16 @@ public interface UserService {
 
     Mono<User> curSessionUser();
 
-    @HasRole(Role.SYSTEM_ADMIN)
+    @HasRole({ Role.SYSTEM_ADMIN, Role.ORGANIZATION_ADMIN })
     Mono<PageData<User>> listUsers(int pageNum, int pageSize);
 
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<User> createUser(UserDto userDto);
 
-    @HasRole(Role.SYSTEM_ADMIN)
+    @HasRole({ Role.SYSTEM_ADMIN, Role.ORGANIZATION_ADMIN })
     Mono<Void> enableUser(String userId);
 
-    @HasRole(Role.SYSTEM_ADMIN)
+    @HasRole({ Role.SYSTEM_ADMIN, Role.ORGANIZATION_ADMIN })
     Mono<Void> disableUser(String userId);
 
     @HasRole(Role.SYSTEM_ADMIN)

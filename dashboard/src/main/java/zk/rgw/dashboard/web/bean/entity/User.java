@@ -83,4 +83,9 @@ public class User extends BaseAuditableEntity<UserDto> {
         return Role.SYSTEM_ADMIN == this.role;
     }
 
+    @BsonIgnore
+    public boolean isOrgAdmin() {
+        return Role.ORGANIZATION_ADMIN == this.role;
+    }
+
 }
