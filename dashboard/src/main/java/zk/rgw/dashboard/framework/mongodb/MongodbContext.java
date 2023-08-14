@@ -152,7 +152,7 @@ public class MongodbContext {
             BaseMongodbRepository<User> userRepository,
             BaseMongodbRepository<Organization> organizationRepository
     ) {
-        return userRepository.findOne(Filters.eq("name", "admin"))
+        return userRepository.findOne(Filters.eq("username", "admin"))
                 .switchIfEmpty(createAdminUser(userRepository, organizationRepository));
     }
 
