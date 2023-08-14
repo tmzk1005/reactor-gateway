@@ -3,5 +3,5 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.ratelimiter.RateLimiterFilter",
     "tail": false,
-    "description": "{}"
+    "description": "限制API的访问频率，使用令牌桶算法。"
 }

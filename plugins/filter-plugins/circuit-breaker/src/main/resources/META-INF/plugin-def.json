@@ -3,5 +3,5 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.circuitbreaker.CircuitBreakerFilter",
     "tail": false,
-    "description": "{}"
+    "description": "实现熔断功能，防止造成上游服务雪崩。"
 }

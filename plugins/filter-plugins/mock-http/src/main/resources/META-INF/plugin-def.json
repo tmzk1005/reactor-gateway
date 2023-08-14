@@ -2,6 +2,6 @@
     "name": "HTTP后端MOCK",
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.mock.http.HttpMockFilter",
-    "tail": false,
-    "description": "{}"
+    "tail": true,
+    "description": "实现HTTP接口的MOCK，由网关直接返回响应，不和上游交互。返回的响应码，响应头以及响应体可配。"
 }

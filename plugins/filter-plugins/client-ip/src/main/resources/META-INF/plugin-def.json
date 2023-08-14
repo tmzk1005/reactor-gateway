@@ -3,5 +3,5 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.clientip.ClientIpFilter",
     "tail": false,
-    "description": "{}"
+    "description": "实现IP黑白名单过滤，可以配置只允许指定范围内的IP白名单通过网关，或者拒绝IP黑名单范围内的IP通过网关。"
 }
