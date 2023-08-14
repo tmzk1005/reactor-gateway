@@ -60,12 +60,6 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
             case ORGANIZATION_ADMIN -> {
                 return "组织管理员";
             }
-            case SECURITY_ADMIN -> {
-                return "安全管理员";
-            }
-            case AUDIT_ADMIN -> {
-                return "审计管理员";
-            }
         }
         return "";
     }

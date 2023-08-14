@@ -18,6 +18,6 @@ package zk.rgw.dashboard.framework.security;
 
 public enum Role {
 
-    SYSTEM_ADMIN, SECURITY_ADMIN, AUDIT_ADMIN, NORMAL_USER, ORGANIZATION_ADMIN
+    SYSTEM_ADMIN, NORMAL_USER, ORGANIZATION_ADMIN
 
 }
