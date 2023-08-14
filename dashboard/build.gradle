@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
+import java.nio.file.Files
+
+buildscript {
+    dependencies {
+        classpath 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
+    }
+}
+
 plugins {
     id 'zk.rgw.java-base-conventions'
 }
@@ -30,4 +40,45 @@ dependencies {
     implementation "com.auth0:java-jwt"
 
     // implementation 'com.networknt:json-schema-validator'
+}
+
+tasks.register("generateBuiltinPluginsInfo") {
+    doLast {
+        def plugins = []
+        def om = new ObjectMapper()
+
+        def builtinPluginsDir = rootDir.toPath().resolve("plugins").resolve("filter-plugins").toFile()
+
+        for (final def pluginDir in builtinPluginsDir.listFiles()) {
+            def pluginPath = pluginDir.toPath()
+
+            def pluginDefJsonPath = pluginPath.resolve("src/main/resources/META-INF/plugin-def.json")
+            def pluginConfJsonSchemaPath = pluginPath.resolve("src/main/resources/META-INF/conf-schema.json")
+            def docMdPath = pluginPath.resolve("src/main/resources/META-INF/doc.md")
+
+            def plugin = [:]
+
+            om.readerForUpdating(plugin).readValue(Files.newInputStream(pluginDefJsonPath))
+
+            plugin.put("jsonSchema", Files.readString(pluginConfJsonSchemaPath))
+            plugin.put("mdDoc", Files.readString(docMdPath))
+
+            plugins.add(plugin)
+        }
+
+        def builtinPluginsJsonPath = project.projectDir.toPath().resolve("src/main/resources/rgw-builtin-plugins.json")
+
+        if (!Files.exists(builtinPluginsJsonPath.getParent())) {
+            Files.createDirectory(builtinPluginsJsonPath.getParent())
+        }
+
+        def jsonStr = om.writerWithDefaultPrettyPrinter().writeValueAsString(plugins)
+
+        Files.writeString(builtinPluginsJsonPath, jsonStr)
+    }
+}
+
+
+tasks.named("build") {
+    dependsOn 'generateBuiltinPluginsInfo'
 }
