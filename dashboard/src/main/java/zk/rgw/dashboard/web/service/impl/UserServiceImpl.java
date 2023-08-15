@@ -74,7 +74,14 @@ public class UserServiceImpl implements UserService {
                 throw new AccessDeniedException("用户被禁用");
             }
             return user;
-        }).filter(user -> passwordMatch(loginDto.getPassword(), user.getPassword()));
+        }).filter(user -> passwordMatch(loginDto.getPassword(), user.getPassword()))
+                .flatMap(
+                        user -> organizationRepository.findOneById(user.getOrganization().getId())
+                                .map(organization -> {
+                                    user.setOrganization(organization);
+                                    return user;
+                                })
+                );
     }
 
     @Override
