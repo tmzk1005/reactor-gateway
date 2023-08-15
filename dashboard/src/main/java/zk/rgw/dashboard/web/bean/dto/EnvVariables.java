@@ -37,7 +37,7 @@ public class EnvVariables implements ValidatableDto {
 
     @Override
     public List<String> validate() {
-        if (Objects.isNull(keyValues) || keyValues.isEmpty()) {
+        if (Objects.isNull(keyValues)) {
             return List.of("未包含有效的环境变量设置");
         }
         List<String> errMessages = new ArrayList<>(1);

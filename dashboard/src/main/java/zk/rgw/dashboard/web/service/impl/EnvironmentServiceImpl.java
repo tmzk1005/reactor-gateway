@@ -15,6 +15,7 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -85,12 +86,13 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     }
 
     @Override
-    public Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables) {
+    public Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables, boolean append) {
         return getOneEnvBinding(evnId, orgId).flatMap(envBinding -> {
-            Map<String, String> variables = envBinding.getVariables();
+            Map<String, String> variables = append ? envBinding.getVariables() : new HashMap<>();
             for (KeyValue keyValue : envVariables.getKeyValues()) {
                 variables.put(keyValue.getKey(), keyValue.getValue());
             }
+            envBinding.setVariables(variables);
             return envBindingRepository.save(envBinding).map(theResult -> {
                 theResult.setEnvironment(envBinding.getEnvironment());
                 theResult.setOrganization(envBinding.getOrganization());

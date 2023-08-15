@@ -56,9 +56,10 @@ public class EnvironmentController {
     public Mono<EnvBindingVo> setEnvironment(
             @RequestParam(name = "envId") String envId,
             @RequestParam(name = "orgId") String orgId,
+            @RequestParam(name = "append", required = false, defaultValue = "false") boolean append,
             @RequestBody EnvVariables envVariables
     ) {
-        return environmentService.setEnvVariables(envId, orgId, envVariables).map(new EnvBindingVo()::initFromPo);
+        return environmentService.setEnvVariables(envId, orgId, envVariables, append).map(new EnvBindingVo()::initFromPo);
     }
 
 }

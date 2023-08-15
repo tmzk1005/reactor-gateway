@@ -35,6 +35,6 @@ public interface EnvironmentService {
     Mono<EnvBinding> getOneEnvBinding(String envId, String orgId);
 
     @HasRole(Role.NORMAL_USER)
-    Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables);
+    Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables, boolean append);
 
 }
