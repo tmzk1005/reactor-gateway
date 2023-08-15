@@ -52,7 +52,7 @@ public class EnvironmentController {
         return environmentService.getOneEnvBinding(envId, orgId).map(new EnvBindingVo()::initFromPo);
     }
 
-    @RequestMapping(path = "/binding", method = RequestMapping.Method.PATCH)
+    @RequestMapping(path = "/binding", method = RequestMapping.Method.POST)
     public Mono<EnvBindingVo> setEnvironment(
             @RequestParam(name = "envId") String envId,
             @RequestParam(name = "orgId") String orgId,
