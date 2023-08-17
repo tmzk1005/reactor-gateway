@@ -29,6 +29,7 @@ import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.dto.PasswordUpdateDto;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
+import zk.rgw.dashboard.web.bean.dto.UserModifiableDto;
 import zk.rgw.dashboard.web.bean.vo.LoginVo;
 import zk.rgw.dashboard.web.bean.vo.UserVo;
 import zk.rgw.dashboard.web.service.UserService;
@@ -57,6 +58,14 @@ public class UserController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<UserVo> createUser(@RequestBody UserDto userDto) {
         return userService.createUser(userDto).map(new UserVo()::initFromPo);
+    }
+
+    @RequestMapping(method = RequestMapping.Method.PATCH)
+    public Mono<UserVo> updateUser(
+            @RequestParam(name = "userId", required = false) String userId,
+            @RequestBody UserModifiableDto dto
+    ) {
+        return userService.updateBaseInfo(userId, dto).map(new UserVo()::initFromPo);
     }
 
     @RequestMapping(path = "/_enable/{userId}", method = RequestMapping.Method.POST)

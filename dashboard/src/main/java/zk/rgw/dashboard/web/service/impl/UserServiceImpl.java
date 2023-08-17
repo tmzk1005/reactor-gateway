@@ -37,6 +37,7 @@ import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
+import zk.rgw.dashboard.web.bean.dto.UserModifiableDto;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
@@ -124,6 +125,32 @@ public class UserServiceImpl implements UserService {
                 });
             }
         });
+    }
+
+    @Override
+    public Mono<User> updateBaseInfo(final String userId, final UserModifiableDto userModifiableDto) {
+        Mono<String> finalUserIdMono = ContextUtil.getUser().map(user -> {
+            if (Objects.nonNull(userId)) {
+                if (!user.isSystemAdmin() && !userId.equals(user.getId())) {
+                    throw new AccessDeniedException();
+                }
+                return userId;
+            } else {
+                return user.getId();
+            }
+        });
+
+        return finalUserIdMono.flatMap(
+                theUserId -> findUserById(theUserId).flatMap(
+                        user -> {
+                            user.setNickname(userModifiableDto.getNickname());
+                            user.setPhone(userModifiableDto.getPhone());
+                            user.setEmail(userModifiableDto.getEmail());
+                            user.setAddress(userModifiableDto.getAddress());
+                            return userRepository.save(user);
+                        }
+                )
+        );
     }
 
     private Mono<User> findUserById(String userId) {

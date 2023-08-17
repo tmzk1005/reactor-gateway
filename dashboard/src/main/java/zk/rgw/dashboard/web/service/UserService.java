@@ -23,6 +23,7 @@ import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.LoginDto;
 import zk.rgw.dashboard.web.bean.dto.UserDto;
+import zk.rgw.dashboard.web.bean.dto.UserModifiableDto;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 public interface UserService {
@@ -36,6 +37,8 @@ public interface UserService {
 
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<User> createUser(UserDto userDto);
+
+    Mono<User> updateBaseInfo(String userId, UserModifiableDto userModifiableDto);
 
     @HasRole({ Role.SYSTEM_ADMIN, Role.ORGANIZATION_ADMIN })
     Mono<Void> enableUser(String userId);
