@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -97,12 +98,23 @@ public class ParameterValidator {
 
     private void doValidateValidatable(Validatable validatable) {
         errorMessages.addAll(validatable.validate());
-        final Field[] declaredFields = validatable.getClass().getDeclaredFields();
-        for (Field field : declaredFields) {
+        List<Field> fields = findFieldsNeedValidate(validatable);
+        for (Field field : fields) {
             if (field.getAnnotations().length > 0) {
                 validateField(field, validatable);
             }
         }
+    }
+
+    private static List<Field> findFieldsNeedValidate(Validatable validatable) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> clazz = validatable.getClass();
+        while (Validatable.class.isAssignableFrom(clazz)) {
+            Field[] declaredFields = clazz.getDeclaredFields();
+            fields.addAll(Arrays.asList(declaredFields));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
     }
 
     private void validateField(Field field, Object object) {
