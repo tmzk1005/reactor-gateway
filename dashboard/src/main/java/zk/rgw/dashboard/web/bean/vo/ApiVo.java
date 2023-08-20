@@ -31,7 +31,7 @@ import zk.rgw.dashboard.web.bean.entity.Api;
 
 @Getter
 @Setter
-public class ApiVo implements Vo<Api> {
+public class ApiVo extends AuditableVo implements Vo<Api> {
 
     private String id;
 
@@ -61,6 +61,9 @@ public class ApiVo implements Vo<Api> {
         this.routeDefinition = poInstance.getRouteDefinition();
         this.routeDefinitionLastModifiedDate = poInstance.getRouteDefinitionLastModifiedDate();
         this.publishSnapshots = poInstance.getPublishSnapshots();
+
+        this.copyOperatorAuditableInfo(poInstance);
+        this.copyTimeAuditInfo(poInstance);
         return this;
     }
 

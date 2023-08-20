@@ -16,12 +16,16 @@
 
 package zk.rgw.dashboard.web.bean.vo;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.xo.Vo;
+import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 
 @Getter
@@ -34,6 +38,7 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
 
     private String nickname;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Role role;
 
     private String organizationId;
@@ -49,7 +54,11 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
     private boolean enabled;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getRoleDisplay() {
+        if (Objects.isNull(role)) {
+            return null;
+        }
         switch (role) {
             case SYSTEM_ADMIN -> {
                 return "系统管理员";
@@ -61,7 +70,7 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
                 return "组织管理员";
             }
         }
-        return "";
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -71,12 +80,16 @@ public class UserVo extends TimeAuditableVo implements Vo<User> {
         this.setUsername(user.getUsername());
         this.setNickname(user.getNickname());
         this.setRole(user.getRole());
-        this.setOrganizationId(user.getOrganization().getId());
-        this.organizationName = user.getOrganization().getName();
+        Organization organization = user.getOrganization();
+        if (Objects.nonNull(organization)) {
+            this.organizationId = organization.getId();
+            this.organizationName = organization.getName();
+        }
         this.setPhone(user.getPhone());
         this.setEmail(user.getEmail());
         this.setAddress(user.getAddress());
         this.setEnabled(user.isEnabled());
+
         copyTimeAuditInfo(user);
         return this;
     }

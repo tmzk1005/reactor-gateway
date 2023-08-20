@@ -44,6 +44,7 @@ import zk.rgw.dashboard.web.event.ApiPublishingEvent;
 import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
+import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiService;
 
@@ -52,6 +53,8 @@ public class ApiServiceImpl implements ApiService {
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
+
+    private final OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
 
     private final EventPublisher<ApiPublishingEvent> eventPublisher;
 
@@ -87,6 +90,27 @@ public class ApiServiceImpl implements ApiService {
                 return Filters.eq("organization", new ObjectId(user.getOrganization().getId()));
             }
         }).flatMap(filter -> apiRepository.find(filter, null, Page.of(pageNum, pageSize)));
+    }
+
+    @Override
+    public Mono<Api> getApiById(String apiId) {
+        Mono<Api> apiMono = apiRepository.findOneById(apiId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
+        Mono<User> userMono = ContextUtil.getUser();
+        return Mono.zip(apiMono, userMono).map(tuple2 -> {
+            Api api = tuple2.getT1();
+            if (!Objects.equals(api.getOrganization().getId(), tuple2.getT2().getOrganization().getId())) {
+                throw BizException.of(ErrorMsgUtil.noApiRights(apiId));
+            } else {
+                return api;
+            }
+        }).flatMap(api -> {
+            // 为了填充Org name
+            Mono<Organization> orgMono = organizationRepository.findOneById(api.getOrganization().getId());
+            return orgMono.map(org -> {
+                api.setOrganization(org);
+                return api;
+            });
+        });
     }
 
     @Override

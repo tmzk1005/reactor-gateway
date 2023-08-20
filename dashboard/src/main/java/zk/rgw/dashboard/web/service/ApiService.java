@@ -30,6 +30,8 @@ public interface ApiService {
 
     Mono<PageData<Api>> listApis(int pageNum, int pageSize);
 
+    Mono<Api> getApiById(String apiId);
+
     @HasRole(Role.NORMAL_USER)
     Mono<Api> publishApi(String apiId, String envId);
 
