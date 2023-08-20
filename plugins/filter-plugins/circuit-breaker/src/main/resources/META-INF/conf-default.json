@@ -1,0 +1,9 @@
+{
+    "failureCodes": [500],
+    "failureCountThreshold": 50,
+    "slidingWindowSize": 100,
+    "minimumCalls": 100,
+    "openStateDuration": 60,
+    "halfOpenStateCalls": 20,
+    "halfOpenStateDuration": 30
+}

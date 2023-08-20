@@ -1,0 +1,6 @@
+{
+    "ipFilterRuleType": "REJECT",
+    "singleIps": [],
+    "subNets": [],
+    "ipRanges": []
+}

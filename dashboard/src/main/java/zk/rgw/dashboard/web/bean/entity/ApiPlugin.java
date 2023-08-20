@@ -51,6 +51,8 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
 
     private String jsonSchema;
 
+    private String jsonDefault;
+
     private boolean builtin;
 
     private String installerUri;
@@ -71,6 +73,7 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
         this.fullClassName = dto.getFullClassName();
         this.version = dto.getVersion();
         this.jsonSchema = dto.getJsonSchema();
+        this.jsonDefault = dto.getJsonDefault();
         this.tail = dto.isTail();
         this.description = dto.getDescription();
         this.mdDoc = dto.getMdDoc();

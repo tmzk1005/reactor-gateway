@@ -35,6 +35,8 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
 
     private String jsonSchema;
 
+    private String jsonDefault;
+
     private String organizationId;
 
     private String organizationName;
@@ -55,6 +57,7 @@ public class ApiPluginVo implements Vo<ApiPlugin> {
         this.fullClassName = poInstance.getFullClassName();
         this.version = poInstance.getVersion();
         this.jsonSchema = poInstance.getJsonSchema();
+        this.jsonDefault = poInstance.getJsonDefault();
         this.organizationId = poInstance.getOrganizationId();
         this.tail = poInstance.isTail();
         this.description = poInstance.getDescription();

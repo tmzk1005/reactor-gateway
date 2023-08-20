@@ -54,6 +54,7 @@ tasks.register("generateBuiltinPluginsInfo") {
 
             def pluginDefJsonPath = pluginPath.resolve("src/main/resources/META-INF/plugin-def.json")
             def pluginConfJsonSchemaPath = pluginPath.resolve("src/main/resources/META-INF/conf-schema.json")
+            def pluginConfJsonDefaultPath = pluginPath.resolve("src/main/resources/META-INF/conf-default.json")
             def docMdPath = pluginPath.resolve("src/main/resources/META-INF/doc.md")
 
             def plugin = [:]
@@ -61,6 +62,7 @@ tasks.register("generateBuiltinPluginsInfo") {
             om.readerForUpdating(plugin).readValue(Files.newInputStream(pluginDefJsonPath))
 
             plugin.put("jsonSchema", Files.readString(pluginConfJsonSchemaPath))
+            plugin.put("jsonDefault", Files.readString(pluginConfJsonDefaultPath))
             plugin.put("mdDoc", Files.readString(docMdPath))
 
             plugins.add(plugin)

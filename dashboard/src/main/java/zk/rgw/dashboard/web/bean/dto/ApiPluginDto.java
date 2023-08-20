@@ -36,6 +36,8 @@ public class ApiPluginDto implements ValidatableDto {
 
     private String description;
 
+    private String jsonDefault;
+
     private String mdDoc;
 
 }

@@ -1,0 +1,5 @@
+{
+    "burstCapacity": 100,
+    "replenishRate": 10,
+    "cost": 1
+}
