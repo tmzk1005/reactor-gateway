@@ -17,8 +17,11 @@ package zk.rgw.dashboard.web.service.impl;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
@@ -35,16 +38,20 @@ import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshotDisplay;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.bean.vo.ApiVo;
+import zk.rgw.dashboard.web.bean.vo.SimpleEnvironmentVo;
 import zk.rgw.dashboard.web.event.ApiPublishingEvent;
 import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
+import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiService;
 
@@ -55,6 +62,8 @@ public class ApiServiceImpl implements ApiService {
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
 
     private final OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
+
+    private final UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
 
     private final EventPublisher<ApiPublishingEvent> eventPublisher;
 
@@ -93,10 +102,10 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public Mono<Api> getApiById(String apiId) {
+    public Mono<ApiVo> getApiDetailById(String apiId) {
         Mono<Api> apiMono = apiRepository.findOneById(apiId).switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
         Mono<User> userMono = ContextUtil.getUser();
-        return Mono.zip(apiMono, userMono).map(tuple2 -> {
+        Mono<ApiVo> apiVoMono = Mono.zip(apiMono, userMono).map(tuple2 -> {
             Api api = tuple2.getT1();
             if (!Objects.equals(api.getOrganization().getId(), tuple2.getT2().getOrganization().getId())) {
                 throw BizException.of(ErrorMsgUtil.noApiRights(apiId));
@@ -110,7 +119,35 @@ public class ApiServiceImpl implements ApiService {
                 api.setOrganization(org);
                 return api;
             });
-        });
+        }).map(api -> new ApiVo().initFromPo(api));
+
+        return apiVoMono.flatMap(this::fillMorePublishSnapshotsInfo);
+    }
+
+    private Mono<ApiVo> fillMorePublishSnapshotsInfo(final ApiVo apiVo) {
+        Map<String, RouteDefinitionPublishSnapshotDisplay> publishSnapshots = apiVo.getPublishSnapshots();
+        if (publishSnapshots.isEmpty()) {
+            return Mono.just(apiVo);
+        }
+
+        List<String> userIdList = publishSnapshots.values().stream().map(RouteDefinitionPublishSnapshot::getPublisherId).toList();
+        Set<String> userIds = new HashSet<>(userIdList);
+        Mono<Map<String, User>> userMapMono = userRepository.getMapByIdIn(userIds);
+
+        Set<String> envIds = publishSnapshots.keySet();
+        Mono<Map<String, Environment>> envMapMono = environmentRepository.getMapByIdIn(envIds);
+
+        return Mono.zip(userMapMono, envMapMono).doOnNext(tuple2 -> {
+            Map<String, User> userMap = tuple2.getT1();
+            Map<String, Environment> envMap = tuple2.getT2();
+
+            for (Map.Entry<String, RouteDefinitionPublishSnapshotDisplay> entry : publishSnapshots.entrySet()) {
+                String userId = entry.getValue().getPublisherId();
+                String envId = entry.getKey();
+                entry.getValue().setPublisherName(userMap.get(userId).getNickname());
+                entry.getValue().setEnv(new SimpleEnvironmentVo(envId, envMap.get(envId).getName()));
+            }
+        }).thenReturn(apiVo);
     }
 
     @Override

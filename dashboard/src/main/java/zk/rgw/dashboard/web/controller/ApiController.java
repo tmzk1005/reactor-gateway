@@ -53,7 +53,7 @@ public class ApiController {
     public Mono<ApiVo> getApiById(
             @PathVariable("apiId") @NotBlank(message = "参数apiId不能为空") String apiId
     ) {
-        return apiService.getApiById(apiId).map(new ApiVo()::initFromPo);
+        return apiService.getApiDetailById(apiId);
     }
 
     @RequestMapping(path = "/_publish/{apiId}", method = RequestMapping.Method.POST)

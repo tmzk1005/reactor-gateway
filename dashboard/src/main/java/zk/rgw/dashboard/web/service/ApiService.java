@@ -22,6 +22,7 @@ import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
+import zk.rgw.dashboard.web.bean.vo.ApiVo;
 
 public interface ApiService {
 
@@ -30,7 +31,7 @@ public interface ApiService {
 
     Mono<PageData<Api>> listApis(int pageNum, int pageSize);
 
-    Mono<Api> getApiById(String apiId);
+    Mono<ApiVo> getApiDetailById(String apiId);
 
     @HasRole(Role.NORMAL_USER)
     Mono<Api> publishApi(String apiId, String envId);

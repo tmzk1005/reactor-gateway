@@ -13,25 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package zk.rgw.dashboard.web.bean.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import zk.rgw.dashboard.framework.xo.OperatorAuditable;
-import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.framework.xo.Vo;
+import zk.rgw.dashboard.web.bean.entity.Organization;
 
 @Getter
 @Setter
-public abstract class AuditableVo extends TimeAuditableVo {
+@NoArgsConstructor
+@AllArgsConstructor
+public class SimpleOrganizationVo implements Vo<Organization> {
 
-    protected SimpleUserVo createdBy;
+    private String id;
 
-    protected SimpleUserVo lastModifiedBy;
+    private String name;
 
-    public void copyOperatorAuditableInfo(OperatorAuditable<User> operatorAuditable) {
-        this.createdBy = new SimpleUserVo().initFromPo(operatorAuditable.getCreatedBy());
-        this.lastModifiedBy = new SimpleUserVo().initFromPo(operatorAuditable.getLastModifiedBy());
+    @SuppressWarnings("unchecked")
+    @Override
+    public SimpleOrganizationVo initFromPo(Organization poInstance) {
+        this.id = poInstance.getId();
+        this.name = poInstance.getName();
+        return this;
     }
 
 }

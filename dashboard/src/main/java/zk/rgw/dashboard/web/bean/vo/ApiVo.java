@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.bean.vo;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import zk.rgw.common.definition.RouteDefinition;
 import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.xo.Vo;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshotDisplay;
 import zk.rgw.dashboard.web.bean.entity.Api;
 
 @Getter
@@ -35,7 +37,7 @@ public class ApiVo extends AuditableVo implements Vo<Api> {
 
     private String id;
 
-    private OrganizationVo organization;
+    private SimpleOrganizationVo organization;
 
     private String name;
 
@@ -48,19 +50,23 @@ public class ApiVo extends AuditableVo implements Vo<Api> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     private Instant routeDefinitionLastModifiedDate;
 
-    private Map<String, RouteDefinitionPublishSnapshot> publishSnapshots;
+    private Map<String, RouteDefinitionPublishSnapshotDisplay> publishSnapshots;
 
     @SuppressWarnings("unchecked")
     @Override
     public ApiVo initFromPo(Api poInstance) {
         this.id = poInstance.getId();
-        this.organization = new OrganizationVo().initFromPo(poInstance.getOrganization());
+        this.organization = new SimpleOrganizationVo().initFromPo(poInstance.getOrganization());
         this.name = poInstance.getName();
         this.description = poInstance.getDescription();
         this.tags = poInstance.getTags();
         this.routeDefinition = poInstance.getRouteDefinition();
         this.routeDefinitionLastModifiedDate = poInstance.getRouteDefinitionLastModifiedDate();
-        this.publishSnapshots = poInstance.getPublishSnapshots();
+
+        this.publishSnapshots = new HashMap<>();
+        for (Map.Entry<String, RouteDefinitionPublishSnapshot> entry : poInstance.getPublishSnapshots().entrySet()) {
+            this.publishSnapshots.put(entry.getKey(), new RouteDefinitionPublishSnapshotDisplay(entry.getValue()));
+        }
 
         this.copyOperatorAuditableInfo(poInstance);
         this.copyTimeAuditInfo(poInstance);

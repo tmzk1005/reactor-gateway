@@ -34,6 +34,7 @@ public class BaseAuditableEntityMongodbRepository<E extends BaseAuditableEntity<
         super(mongoClient, database, entityClass);
     }
 
+    @Override
     public Mono<E> insert(E entity) {
         Instant now = Instant.now();
         entity.setCreatedDate(now);
@@ -45,6 +46,7 @@ public class BaseAuditableEntityMongodbRepository<E extends BaseAuditableEntity<
         }).switchIfEmpty(MongodbOperations.insert(mongoCollection, entity));
     }
 
+    @Override
     public Mono<E> save(E entity) {
         if (Objects.isNull(entity.getId())) {
             return insert(entity);

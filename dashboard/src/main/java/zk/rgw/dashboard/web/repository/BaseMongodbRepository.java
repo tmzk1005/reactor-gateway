@@ -15,13 +15,18 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -115,6 +120,21 @@ public class BaseMongodbRepository<E extends Po<?>> {
             return Mono.empty();
         }
         return findOne(filter, lookupAndProjection);
+    }
+
+    public Mono<List<E>> getListByIdIn(Collection<String> ids) {
+        Bson filter = Filters.in("_id", ids.stream().map(ObjectId::new).toList());
+        return find(filter).collectList();
+    }
+
+    public Mono<Map<String, E>> getMapByIdIn(Collection<String> ids) {
+        return getListByIdIn(ids).map(list -> {
+            Map<String, E> map = new HashMap<>(2 * ids.size());
+            for (E item : list) {
+                map.put(item.getId(), item);
+            }
+            return map;
+        });
     }
 
     public <T> Mono<T> doInTransaction(Mono<T> mono) {
