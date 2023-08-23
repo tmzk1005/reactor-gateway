@@ -15,10 +15,14 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import com.mongodb.client.model.Filters;
+import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.web.bean.Page;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.AppDto;
 import zk.rgw.dashboard.web.bean.entity.App;
 import zk.rgw.dashboard.web.bean.entity.Organization;
@@ -46,6 +50,17 @@ public class AppServiceImpl implements AppService {
                             }
                         })
         );
+    }
+
+    @Override
+    public Mono<PageData<App>> listApps(int pageNum, int pageSize) {
+        return ContextUtil.getUser().map(user -> {
+            if (user.isSystemAdmin()) {
+                return Filters.empty();
+            } else {
+                return Filters.eq("organization", new ObjectId(user.getOrganization().getId()));
+            }
+        }).flatMap(filter -> appRepository.find(filter, null, Page.of(pageNum, pageSize)));
     }
 
 }

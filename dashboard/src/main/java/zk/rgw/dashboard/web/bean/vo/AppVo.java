@@ -25,7 +25,7 @@ import zk.rgw.dashboard.web.bean.entity.App;
 
 @Getter
 @Setter
-public class AppVo extends TimeAuditableVo implements Vo<App> {
+public class AppVo extends AuditableVo implements Vo<App> {
 
     private String id;
 
@@ -51,6 +51,7 @@ public class AppVo extends TimeAuditableVo implements Vo<App> {
         this.key = app.getKey();
         this.secret = app.getSecret();
         copyTimeAuditInfo(app);
+        copyOperatorAuditableInfo(app);
         return this;
     }
 

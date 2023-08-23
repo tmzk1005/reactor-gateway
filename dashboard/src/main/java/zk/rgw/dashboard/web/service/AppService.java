@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.AppDto;
 import zk.rgw.dashboard.web.bean.entity.App;
 
@@ -26,5 +27,7 @@ public interface AppService {
 
     @HasRole(Role.NORMAL_USER)
     Mono<App> createApp(AppDto appDto);
+
+    Mono<PageData<App>> listApps(int pageNum, int pageSize);
 
 }

@@ -20,6 +20,10 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
+import zk.rgw.dashboard.framework.annotation.RequestParam;
+import zk.rgw.dashboard.framework.validate.PageNum;
+import zk.rgw.dashboard.framework.validate.PageSize;
+import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.AppDto;
 import zk.rgw.dashboard.web.bean.vo.AppVo;
 import zk.rgw.dashboard.web.service.AppService;
@@ -33,6 +37,14 @@ public class AppController {
     @RequestMapping(method = RequestMapping.Method.POST)
     public Mono<AppVo> createApp(@RequestBody AppDto appDto) {
         return appService.createApp(appDto).map(new AppVo()::initFromPo);
+    }
+
+    @RequestMapping
+    public Mono<PageData<AppVo>> listApps(
+            @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+    ) {
+        return appService.listApps(pageNum, pageSize).map(page -> page.map(app -> new AppVo().initFromPo(app)));
     }
 
 }
