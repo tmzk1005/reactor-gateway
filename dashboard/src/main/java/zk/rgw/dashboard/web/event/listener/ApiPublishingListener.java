@@ -25,7 +25,12 @@ public class ApiPublishingListener implements RgwEventListener<ApiPublishingEven
 
     @Override
     public void onEvent(ApiPublishingEvent event) {
-        log.info("detect an api publishing event, envId: {}, apiId: {}", event.getEnvId(), event.getRouteDefinition().getId());
+        log.info(
+                "detect an api {} event, envId: {}, apiId: {}",
+                event.isAdd() ? "publish" : "unpublish",
+                event.getEnvId(),
+                event.getRouteDefinition().getId()
+        );
     }
 
 }
