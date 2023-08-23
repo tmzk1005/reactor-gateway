@@ -28,6 +28,7 @@ import zk.rgw.dashboard.framework.validate.PageSize;
 import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.vo.ApiVo;
+import zk.rgw.dashboard.web.bean.vo.ReleasedApiVo;
 import zk.rgw.dashboard.web.service.ApiService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -47,6 +48,16 @@ public class ApiController {
             @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
     ) {
         return apiService.listApis(pageNum, pageSize).map(page -> page.map(api -> new ApiVo().initFromPo(api)));
+    }
+
+    @RequestMapping(path = "/released/{envId}")
+    public Mono<PageData<ReleasedApiVo>> listReleasedApiVo(
+            @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
+            @PathVariable("envId") @NotBlank(message = "参数envId不能为空") String envId,
+            @RequestParam(name = "searchText", required = false) String searchText
+    ) {
+        return apiService.listReleasedApiVo(envId, searchText, pageNum, pageSize);
     }
 
     @RequestMapping(path = "/{apiId}")

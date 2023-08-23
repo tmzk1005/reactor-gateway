@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
@@ -45,6 +46,7 @@ import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.bean.vo.ApiVo;
+import zk.rgw.dashboard.web.bean.vo.ReleasedApiVo;
 import zk.rgw.dashboard.web.bean.vo.SimpleEnvironmentVo;
 import zk.rgw.dashboard.web.event.ApiPublishingEvent;
 import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
@@ -231,6 +233,24 @@ public class ApiServiceImpl implements ApiService {
         publishSnapshot.setLastModifiedDate(Instant.now());
         publishSnapshot.setPublisherId(user.getId());
         return apiRepository.save(api);
+    }
+
+    @Override
+    public Mono<PageData<ReleasedApiVo>> listReleasedApiVo(String envId, String searchText, int pageNum, int pageSize) {
+        Bson filter = Filters.and(
+                Filters.exists("publishSnapshots." + envId),
+                Filters.eq("publishSnapshots." + envId + ".publishStatus", "PUBLISHED")
+        );
+        if (Objects.nonNull(searchText) && !searchText.isBlank()) {
+            String options = "i";
+            Bson searchFilter = Filters.or(
+                    Filters.regex("name", searchText, options),
+                    Filters.regex("tags", searchText, options),
+                    Filters.regex("description", searchText, options)
+            );
+            filter = Filters.and(filter, searchFilter);
+        }
+        return apiRepository.find(filter, null, Page.of(pageNum, pageSize)).map(page -> page.map(api -> new ReleasedApiVo(api, envId)));
     }
 
 }

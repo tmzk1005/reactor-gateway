@@ -23,6 +23,7 @@ import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.vo.ApiVo;
+import zk.rgw.dashboard.web.bean.vo.ReleasedApiVo;
 
 public interface ApiService {
 
@@ -38,5 +39,7 @@ public interface ApiService {
 
     @HasRole(Role.NORMAL_USER)
     Mono<Api> unpublishApi(String apiId, String envId);
+
+    Mono<PageData<ReleasedApiVo>> listReleasedApiVo(String envId, String searchText, int pageNum, int pageSize);
 
 }
