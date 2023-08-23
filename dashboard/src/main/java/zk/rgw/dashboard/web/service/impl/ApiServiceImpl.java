@@ -126,26 +126,30 @@ public class ApiServiceImpl implements ApiService {
 
     private Mono<ApiVo> fillMorePublishSnapshotsInfo(final ApiVo apiVo) {
         Map<String, RouteDefinitionPublishSnapshotDisplay> publishSnapshots = apiVo.getPublishSnapshots();
-        if (publishSnapshots.isEmpty()) {
-            return Mono.just(apiVo);
-        }
 
         List<String> userIdList = publishSnapshots.values().stream().map(RouteDefinitionPublishSnapshot::getPublisherId).toList();
         Set<String> userIds = new HashSet<>(userIdList);
         Mono<Map<String, User>> userMapMono = userRepository.getMapByIdIn(userIds);
 
-        Set<String> envIds = publishSnapshots.keySet();
-        Mono<Map<String, Environment>> envMapMono = environmentRepository.getMapByIdIn(envIds);
+        Mono<List<Environment>> allEnvMono = environmentRepository.findAll().collectList();
 
-        return Mono.zip(userMapMono, envMapMono).doOnNext(tuple2 -> {
+        return Mono.zip(userMapMono, allEnvMono).doOnNext(tuple2 -> {
             Map<String, User> userMap = tuple2.getT1();
-            Map<String, Environment> envMap = tuple2.getT2();
+            List<Environment> allEnv = tuple2.getT2();
 
-            for (Map.Entry<String, RouteDefinitionPublishSnapshotDisplay> entry : publishSnapshots.entrySet()) {
-                String userId = entry.getValue().getPublisherId();
-                String envId = entry.getKey();
-                entry.getValue().setPublisherName(userMap.get(userId).getNickname());
-                entry.getValue().setEnv(new SimpleEnvironmentVo(envId, envMap.get(envId).getName()));
+            for (Environment env : allEnv) {
+                String envId = env.getId();
+                if (publishSnapshots.containsKey(envId)) {
+                    String userId = publishSnapshots.get(envId).getPublisherId();
+                    publishSnapshots.get(envId).setPublisherName(userMap.get(userId).getNickname());
+                    publishSnapshots.get(envId).setEnv(new SimpleEnvironmentVo(envId, env.getName()));
+                } else {
+                    // 没有发布到此环境，仍然填充一些信息供前端渲染
+                    RouteDefinitionPublishSnapshotDisplay snapshotDisplay = new RouteDefinitionPublishSnapshotDisplay();
+                    snapshotDisplay.setEnv(new SimpleEnvironmentVo(envId, env.getName()));
+                    snapshotDisplay.setPublishStatus(ApiPublishStatus.UNPUBLISHED);
+                    publishSnapshots.put(envId, snapshotDisplay);
+                }
             }
         }).thenReturn(apiVo);
     }
