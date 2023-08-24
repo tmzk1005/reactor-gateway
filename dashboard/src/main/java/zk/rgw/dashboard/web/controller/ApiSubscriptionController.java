@@ -52,13 +52,13 @@ public class ApiSubscriptionController {
     }
 
     @RequestMapping(path = "/{subscribeId}/_approve", method = RequestMapping.Method.POST)
-    public Mono<Void> approve(@PathVariable("subscribeId") String subscribeId) {
-        return subscriptionService.handleSubscribeById(subscribeId, true);
+    public Mono<ApiSubscribeVo> approve(@PathVariable("subscribeId") String subscribeId) {
+        return subscriptionService.handleSubscribeById(subscribeId, true).map(new ApiSubscribeVo()::initFromPo);
     }
 
     @RequestMapping(path = "/{subscribeId}/_reject", method = RequestMapping.Method.POST)
-    public Mono<Void> reject(@PathVariable("subscribeId") String subscribeId) {
-        return subscriptionService.handleSubscribeById(subscribeId, false);
+    public Mono<ApiSubscribeVo> reject(@PathVariable("subscribeId") String subscribeId) {
+        return subscriptionService.handleSubscribeById(subscribeId, false).map(new ApiSubscribeVo()::initFromPo);
     }
 
 }

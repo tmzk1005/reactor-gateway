@@ -30,6 +30,6 @@ public interface SubscriptionService {
     Mono<PageData<ApiSubscribe>> myApiSubscribes(boolean asSubscriber, int pageNum, int pageSize);
 
     @HasRole(Role.NORMAL_USER)
-    Mono<Void> handleSubscribeById(String subscribeId, boolean approved);
+    Mono<ApiSubscribe> handleSubscribeById(String subscribeId, boolean approved);
 
 }

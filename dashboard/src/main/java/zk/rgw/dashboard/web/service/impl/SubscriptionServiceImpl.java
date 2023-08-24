@@ -142,7 +142,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Mono<Void> handleSubscribeById(String subscribeId, boolean approved) {
+    public Mono<ApiSubscribe> handleSubscribeById(String subscribeId, boolean approved) {
         Mono<ApiSubscribe> apiSubscribeMono = apiSubscribeRepository.findOneById(subscribeId)
                 .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.subscribeNotExist(subscribeId))));
         Mono<User> userMono = ContextUtil.getUser();
@@ -153,8 +153,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             if (!Objects.equals(apiSubscribe.getApiOrganization().getId(), user.getOrganization().getId())) {
                 return Mono.error(new AccessDeniedException());
             }
+            apiSubscribe.setHandleTime(Instant.now());
             if (approved) {
-                apiSubscribe.setHandleTime(Instant.now());
                 apiSubscribe.setState(ApiSubscribe.State.PERMITTED);
                 Mono<ApiSubscribe> saveMono = apiSubscribeRepository.save(apiSubscribe)
                         .flatMap(
@@ -167,7 +167,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 apiSubscribe.setState(ApiSubscribe.State.REJECTED);
                 return apiSubscribeRepository.save(apiSubscribe);
             }
-        }).then();
+        }).flatMap(sub -> apiSubscribeRepository.findOneById(sub.getId(), LOOKUP));
     }
 
 }
