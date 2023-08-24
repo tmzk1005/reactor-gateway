@@ -20,8 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
@@ -62,6 +64,14 @@ public class GatewayNodeController {
             }
             return map;
         });
+    }
+
+    @RequestMapping(path = "/_sync")
+    public Flux<IdRouteDefinition> syncRouteDefinitions(
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "timestamp", required = false, defaultValue = "0") long timestamp
+    ) {
+        return gatewayNodeService.syncRouteDefinitions(envId, timestamp);
     }
 
 }

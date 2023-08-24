@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 
 import zk.rgw.common.definition.RouteDefinition;
 import zk.rgw.common.util.JsonUtil;
@@ -40,11 +41,13 @@ public class RouteDefinitionPublishSnapshot {
     private RouteDefinition routeDefinition;
 
     @JsonIgnore
+    @BsonIgnore
     public boolean isStatusPublished() {
         return Objects.equals(ApiPublishStatus.PUBLISHED, publishStatus);
     }
 
     @JsonIgnore
+    @BsonIgnore
     public boolean isStatusUnpublished() {
         return Objects.equals(ApiPublishStatus.UNPUBLISHED, publishStatus);
     }

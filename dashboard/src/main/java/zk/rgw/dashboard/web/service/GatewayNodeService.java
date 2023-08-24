@@ -18,6 +18,7 @@ package zk.rgw.dashboard.web.service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
 import zk.rgw.dashboard.web.bean.GwRegisterPayload;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
@@ -30,5 +31,7 @@ public interface GatewayNodeService {
     Mono<Void> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload);
 
     Flux<GatewayNode> getNodes(String envId);
+
+    Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long timestamp);
 
 }

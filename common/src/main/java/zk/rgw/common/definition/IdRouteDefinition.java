@@ -16,18 +16,18 @@
 
 package zk.rgw.common.definition;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class IdRouteDefinition {
 
     private String id;
 
     private String orgId;
+
+    private long timestamp;
 
     private RouteDefinition routeDefinition;
 

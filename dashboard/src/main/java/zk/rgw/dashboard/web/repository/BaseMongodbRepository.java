@@ -99,6 +99,10 @@ public class BaseMongodbRepository<E extends Po<?>> {
         return find(filter, sorts, page, null);
     }
 
+    public Flux<E> find(Bson filter, Bson sorts) {
+        return MongodbOperations.find(mongoCollection, filter, sorts, null, null);
+    }
+
     public Mono<PageData<E>> find(Bson filter, Bson sorts, Page page, List<Bson> lookupAndProjection) {
         Mono<List<E>> dataMono = MongodbOperations.find(mongoCollection, filter, sorts, page, lookupAndProjection).collectList();
         Mono<Long> countMono = MongodbOperations.count(mongoCollection, filter);

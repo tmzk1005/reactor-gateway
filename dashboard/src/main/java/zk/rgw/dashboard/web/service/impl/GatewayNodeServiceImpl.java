@@ -15,20 +15,26 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.time.Instant;
 import java.util.Objects;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
+import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
 import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
+import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
@@ -39,6 +45,8 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     private final GatewayNodeRepository gatewayNodeRepository = RepositoryFactory.get(GatewayNodeRepository.class);
 
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
+
+    private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     @Override
     public Mono<GwRegisterResult> handleRegister(GwRegisterPayload gwRegisterPayload) {
@@ -79,6 +87,39 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
             }
         }
         return gatewayNodeRepository.find(filter);
+    }
+
+    @Override
+    public Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long timestamp) {
+        final Bson filter = filterForSyncRouteDefinition(envId, timestamp);
+        Bson sort = Sorts.ascending("publishSnapshots." + envId + ".publishStatus.lastModifiedDate");
+        return apiRepository.find(filter, sort).map(api -> {
+            IdRouteDefinition idRouteDefinition = new IdRouteDefinition();
+            idRouteDefinition.setId(api.getId());
+            idRouteDefinition.setOrgId(api.getOrganization().getId());
+
+            RouteDefinitionPublishSnapshot snapshot = api.getPublishSnapshots().get(envId);
+
+            idRouteDefinition.setTimestamp(snapshot.getLastModifiedDate().toEpochMilli());
+            idRouteDefinition.setRouteDefinition(snapshot.getRouteDefinition());
+            return idRouteDefinition;
+        });
+    }
+
+    private static Bson filterForSyncRouteDefinition(String envId, long timestamp) {
+        Bson filter = Filters.exists("publishSnapshots." + envId);
+        if (timestamp == 0L) {
+            filter = Filters.and(
+                    filter,
+                    Filters.ne("publishSnapshots." + envId + ".publishStatus", ApiPublishStatus.UNPUBLISHED.name())
+            );
+        } else {
+            filter = Filters.and(
+                    filter,
+                    Filters.gt("publishSnapshots." + envId + ".lastModifiedDate", Instant.ofEpochMilli(timestamp))
+            );
+        }
+        return filter;
     }
 
 }
