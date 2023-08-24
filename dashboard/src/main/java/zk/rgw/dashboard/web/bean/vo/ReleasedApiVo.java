@@ -15,14 +15,17 @@
  */
 package zk.rgw.dashboard.web.bean.vo;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
 
@@ -37,6 +40,9 @@ public class ReleasedApiVo {
 
     private String description;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
+    private Instant releaseTime;
+
     private Set<String> tags;
 
     private Set<String> methods;
@@ -50,6 +56,7 @@ public class ReleasedApiVo {
         this.tags = api.getTags();
         Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
         if (Objects.nonNull(publishSnapshots) && publishSnapshots.containsKey(envId)) {
+            this.releaseTime = publishSnapshots.get(envId).getLastModifiedDate();
             this.methods = publishSnapshots.get(envId).getRouteDefinition().getMethods();
             this.path = publishSnapshots.get(envId).getRouteDefinition().getPath();
         }
