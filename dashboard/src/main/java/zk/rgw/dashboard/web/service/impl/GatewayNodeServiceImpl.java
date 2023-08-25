@@ -15,7 +15,6 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
-import java.time.Instant;
 import java.util.Objects;
 
 import com.mongodb.client.model.Filters;
@@ -90,9 +89,19 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     }
 
     @Override
-    public Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long timestamp) {
-        final Bson filter = filterForSyncRouteDefinition(envId, timestamp);
-        Bson sort = Sorts.ascending("publishSnapshots." + envId + ".publishStatus.lastModifiedDate");
+    public Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long seq) {
+        return environmentRepository.existsById(envId).flatMapMany(exists -> {
+            if (Boolean.TRUE.equals(exists)) {
+                return doSyncRouteDefinitions(envId, seq);
+            } else {
+                throw new BizException(ErrorMsgUtil.envNotExist(envId));
+            }
+        });
+    }
+
+    private Flux<IdRouteDefinition> doSyncRouteDefinitions(String envId, long seq) {
+        final Bson filter = filterForSyncRouteDefinition(envId, seq);
+        Bson sort = Sorts.ascending("publishSnapshots." + envId + ".opSeq");
         return apiRepository.find(filter, sort).map(api -> {
             IdRouteDefinition idRouteDefinition = new IdRouteDefinition();
             idRouteDefinition.setId(api.getId());
@@ -106,9 +115,9 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
         });
     }
 
-    private static Bson filterForSyncRouteDefinition(String envId, long timestamp) {
+    private static Bson filterForSyncRouteDefinition(String envId, long seq) {
         Bson filter = Filters.exists("publishSnapshots." + envId);
-        if (timestamp == 0L) {
+        if (seq == 0L) {
             filter = Filters.and(
                     filter,
                     Filters.ne("publishSnapshots." + envId + ".publishStatus", ApiPublishStatus.UNPUBLISHED.name())
@@ -116,7 +125,7 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
         } else {
             filter = Filters.and(
                     filter,
-                    Filters.gt("publishSnapshots." + envId + ".lastModifiedDate", Instant.ofEpochMilli(timestamp))
+                    Filters.gt("publishSnapshots." + envId + ".opSeq", seq)
             );
         }
         return filter;

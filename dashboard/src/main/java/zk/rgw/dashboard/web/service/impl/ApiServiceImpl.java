@@ -53,11 +53,14 @@ import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
+import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiService;
 
 public class ApiServiceImpl implements ApiService {
+
+    private static final String SEQ_NAME_API_PUBLISH = "api_publish_action";
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
@@ -66,6 +69,8 @@ public class ApiServiceImpl implements ApiService {
     private final OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
 
     private final UserRepository userRepository = RepositoryFactory.get(UserRepository.class);
+
+    private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
 
     private final EventPublisher<ApiPublishingEvent> eventPublisher;
 
@@ -213,7 +218,11 @@ public class ApiServiceImpl implements ApiService {
         publishSnapshot.setLastModifiedDate(Instant.now());
 
         publishSnapshots.put(envId, publishSnapshot);
-        return apiRepository.save(api);
+
+        return rgwSequenceRepository.next(SEQ_NAME_API_PUBLISH).flatMap(seq -> {
+            publishSnapshot.setOpSeq(seq);
+            return apiRepository.save(api);
+        });
     }
 
     @Override
@@ -232,7 +241,11 @@ public class ApiServiceImpl implements ApiService {
         publishSnapshot.setPublishStatus(ApiPublishStatus.UNPUBLISHED);
         publishSnapshot.setLastModifiedDate(Instant.now());
         publishSnapshot.setPublisherId(user.getId());
-        return apiRepository.save(api);
+
+        return rgwSequenceRepository.next(SEQ_NAME_API_PUBLISH).flatMap(seq -> {
+            publishSnapshot.setOpSeq(seq);
+            return apiRepository.save(api);
+        });
     }
 
     @Override

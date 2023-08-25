@@ -69,9 +69,9 @@ public class GatewayNodeController {
     @RequestMapping(path = "/_sync")
     public Flux<IdRouteDefinition> syncRouteDefinitions(
             @RequestParam(name = "envId") String envId,
-            @RequestParam(name = "timestamp", required = false, defaultValue = "0") long timestamp
+            @RequestParam(name = "seq", required = false, defaultValue = "0") long seq
     ) {
-        return gatewayNodeService.syncRouteDefinitions(envId, timestamp);
+        return gatewayNodeService.syncRouteDefinitions(envId, seq);
     }
 
 }

@@ -40,6 +40,11 @@ public class RouteDefinitionPublishSnapshot {
 
     private RouteDefinition routeDefinition;
 
+    /**
+     * 操作序列号，多节点全局唯一且递增，用来实现和网关节点严格增量同步路由信息
+     */
+    private long opSeq;
+
     @JsonIgnore
     @BsonIgnore
     public boolean isStatusPublished() {

@@ -55,6 +55,7 @@ import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.entity.Organization;
+import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.repository.BaseMongodbRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
@@ -111,6 +112,7 @@ public class MongodbContext {
                 .then(initCollectionForEntity(ApiSubscription.class))
                 .then(initCollectionForEntity(GatewayNode.class))
                 .then(initCollectionForEntity(ApiPlugin.class))
+                .then(initCollectionForEntity(RgwSequence.class))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);

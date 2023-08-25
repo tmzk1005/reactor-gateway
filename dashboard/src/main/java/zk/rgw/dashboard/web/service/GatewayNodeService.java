@@ -32,6 +32,6 @@ public interface GatewayNodeService {
 
     Flux<GatewayNode> getNodes(String envId);
 
-    Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long timestamp);
+    Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long seq);
 
 }

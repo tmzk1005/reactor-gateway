@@ -31,6 +31,7 @@ import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
+import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 
 public class RepositoryFactory {
@@ -53,6 +54,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(ApiSubscriptionRepository.class, new ApiSubscriptionRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(GatewayNodeRepository.class, new GatewayNodeRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(ApiPluginRepository.class, new ApiPluginRepository(mongoClient, mongoDatabase));
+        REPOSITORY_MAP.put(RgwSequenceRepository.class, new RgwSequenceRepository(mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")
