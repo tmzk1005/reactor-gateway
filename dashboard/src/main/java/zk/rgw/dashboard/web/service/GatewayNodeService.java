@@ -19,14 +19,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
-import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
-import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwRegisterResult;
+import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
-import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
 
 public interface GatewayNodeService {
 
-    Mono<GwRegisterResult> handleRegister(GwRegisterPayload gwRegisterPayload);
+    Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload);
 
     Mono<Void> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload);
 

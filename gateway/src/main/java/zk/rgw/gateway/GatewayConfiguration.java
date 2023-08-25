@@ -23,6 +23,7 @@ import picocli.CommandLine.Command;
 
 import zk.rgw.http.conf.ServerConfiguration;
 
+@SuppressWarnings("java:S1075")
 // @formatter:off
 @Command(
     name = "reactor-gateway",
@@ -42,7 +43,6 @@ public class GatewayConfiguration extends ServerConfiguration {
     @Getter
     @Setter
     @CommandLine.Option(names = "--internal.context.path", description = "The internal context path to interact to gateway itself, not proxy request.")
-    @SuppressWarnings("java:S1075")
     protected String internalContextPath = "/__rgw_internal";
 
     @Getter
@@ -52,8 +52,8 @@ public class GatewayConfiguration extends ServerConfiguration {
 
     @Getter
     @Setter
-    @CommandLine.Option(names = "--dashboard.route.sync.endpoint", description = "The dashboard uri path for sync routes.")
-    private String dashboardRouteSyncEndpoint = "/rgw/api/gateway/_sync";
+    @CommandLine.Option(names = "--dashboard.api.context.path", description = "The api context path of dashboard.")
+    private String dashboardApiContextPath = "/rgw/api";
 
     @Getter
     @Setter
@@ -62,8 +62,18 @@ public class GatewayConfiguration extends ServerConfiguration {
 
     @Getter
     @Setter
-    @CommandLine.Option(names = "--environment.id", description = "The environment id used to fetch route definitions from dashboard.")
+    @CommandLine.Option(names = "--environment.id", required = true, description = "The environment id used to fetch route definitions from dashboard.")
     private String environmentId;
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--heartbeat.interval", description = "The interval of for send heartbeat to dashboard.")
+    private int heartbeatInterval = 30;
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--server.schema", description = "The uri schema used for dashboard send http request to gateway, http or https.")
+    private String serverSchema = "http";
 
     public GatewayConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;

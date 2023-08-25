@@ -25,14 +25,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwRegisterResult;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
-import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
-import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
-import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
@@ -48,15 +48,15 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     @Override
-    public Mono<GwRegisterResult> handleRegister(GwRegisterPayload gwRegisterPayload) {
-        String envId = gwRegisterPayload.getEnvId();
+    public Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload) {
+        String envId = registerPayload.getEnvId();
         Mono<Void> checkEnvMono = environmentRepository.findOneById(envId)
                 .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId)))).then();
 
-        Mono<GwRegisterResult> saveNodeMono = gatewayNodeRepository.findOneByAddress(gwRegisterPayload.getAddress())
-                .switchIfEmpty(Mono.just(new GatewayNode(gwRegisterPayload.getAddress(), gwRegisterPayload.getEnvId())))
+        Mono<GwRegisterResult> saveNodeMono = gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
+                .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), registerPayload.getEnvId())))
                 .doOnNext(node -> {
-                    node.setEnvId(gwRegisterPayload.getEnvId());
+                    node.setEnvId(registerPayload.getEnvId());
                     node.setHeartbeat(System.currentTimeMillis());
                 }).flatMap(gatewayNodeRepository::save).map(gatewayNode -> new GwRegisterResult(gatewayNode.getId()));
 

@@ -17,7 +17,10 @@
 package zk.rgw.http.context;
 
 import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServerRequest;
 import reactor.util.context.Context;
+
+import zk.rgw.plugin.api.Exchange;
 
 public class ReactiveRequestContextHolder {
 
@@ -42,6 +45,14 @@ public class ReactiveRequestContextHolder {
 
     public static Context withRequestContext(Mono<? extends RequestContext> requestContext) {
         return Context.of(REQUEST_CONTEXT_KEY, requestContext);
+    }
+
+    public static Mono<Exchange> getExchange() {
+        return getContext().map(RequestContext::getExchange);
+    }
+
+    public static Mono<HttpServerRequest> getRequest() {
+        return getExchange().map(Exchange::getRequest);
     }
 
 }

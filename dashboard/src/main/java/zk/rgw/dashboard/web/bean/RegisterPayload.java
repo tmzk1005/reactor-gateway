@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package zk.rgw.dashboard.web.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.common.heartbeat.GwRegisterPayload;
+
 @Getter
 @Setter
-public class GwHeartbeatPayload {
+public class RegisterPayload extends GwRegisterPayload {
 
-    private String nodeId;
+    private String serverIp;
+
+    @JsonIgnore
+    public String getAddress() {
+        return getServerSchema() + "://" + serverIp + ":" + getServerPort();
+    }
 
 }

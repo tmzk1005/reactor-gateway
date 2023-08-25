@@ -19,22 +19,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwRegisterResult;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
-import zk.rgw.dashboard.web.bean.GwHeartbeatPayload;
-import zk.rgw.dashboard.web.bean.GwRegisterPayload;
+import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.vo.GatewayNodeVo;
-import zk.rgw.dashboard.web.bean.vo.GwRegisterResult;
 import zk.rgw.dashboard.web.service.GatewayNodeService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
+import zk.rgw.http.context.ReactiveRequestContextHolder;
 
 @Controller("gateway")
 public class GatewayNodeController {
@@ -47,8 +49,12 @@ public class GatewayNodeController {
     }
 
     @RequestMapping(path = "/_register", method = RequestMapping.Method.POST)
-    public Mono<GwRegisterResult> register(@RequestBody GwRegisterPayload gwRegisterPayload) {
-        return gatewayNodeService.handleRegister(gwRegisterPayload);
+    public Mono<GwRegisterResult> register(@RequestBody RegisterPayload registerPayload) {
+        return ReactiveRequestContextHolder.getRequest().flatMap(request -> {
+            String ip = Objects.requireNonNull(request.remoteAddress()).getAddress().getHostAddress();
+            registerPayload.setServerIp(ip);
+            return gatewayNodeService.handleRegister(registerPayload);
+        });
     }
 
     @RequestMapping(path = "/nodes")

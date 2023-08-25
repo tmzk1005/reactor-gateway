@@ -43,6 +43,7 @@ public class DashboardConfiguration extends ServerConfiguration {
     @CommandLine.Option(names = "--jwt.hmac256.secret", description = "The secret key for hmac256 algorithm, if not specified, a random string is used.")
     private String jwtHmac256Secret;
 
+    @SuppressWarnings("java:S1075")
     @CommandLine.Option(names = "--api.context.path", description = "The api context path.")
     private String apiContextPath = "/rgw/api";
 

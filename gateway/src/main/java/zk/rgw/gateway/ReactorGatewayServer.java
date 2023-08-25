@@ -16,8 +16,11 @@
 
 package zk.rgw.gateway;
 
+import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 
+import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.route.locator.CompositeRouteLocator;
@@ -30,6 +33,10 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     private final GatewayConfiguration configuration;
 
     private RouteLocator routeLocator;
+
+    private PullFromDashboardRouteLocator pullFromDashboardRouteLocator;
+
+    private HeartbeatReporter heartbeatReporter;
 
     protected ReactorGatewayServer(GatewayConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
@@ -44,12 +51,21 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     @Override
     protected void beforeStart() {
         initRouteLocator();
+        this.heartbeatReporter = new HeartbeatReporter(
+                configuration.getDashboardAddress(),
+                configuration.getDashboardApiContextPath(),
+                configuration.getEnvironmentId(),
+                configuration.getHeartbeatInterval(),
+                configuration.getServerSchema(),
+                configuration.getServerPort()
+        );
+        heartbeatReporter.start();
     }
 
     private void initRouteLocator() {
-        PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
+        pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
                 configuration.getDashboardAddress(),
-                configuration.getDashboardRouteSyncEndpoint(),
+                configuration.getDashboardApiContextPath(),
                 configuration.getDashboardAuthKey(),
                 configuration.getEnvironmentId()
         );
@@ -70,4 +86,13 @@ public class ReactorGatewayServer extends ReactorHttpServer {
         );
     }
 
+    @Override
+    protected void afterStop() {
+        if (Objects.nonNull(pullFromDashboardRouteLocator)) {
+            pullFromDashboardRouteLocator.stop();
+        }
+        if (Objects.nonNull(heartbeatReporter)) {
+            heartbeatReporter.stop();
+        }
+    }
 }

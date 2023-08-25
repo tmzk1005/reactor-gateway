@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean;
+package zk.rgw.common.heartbeat;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class GwRegisterPayload {
+@NoArgsConstructor
+public class GwRegisterResult {
 
-    private String address;
+    private String nodeId;
 
-    private String envId;
+    public GwRegisterResult(String nodeId) {
+        this.nodeId = nodeId;
+    }
 
 }

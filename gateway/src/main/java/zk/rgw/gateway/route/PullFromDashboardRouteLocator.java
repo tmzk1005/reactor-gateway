@@ -45,6 +45,9 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
 
     private static final String PARAMETER_SEQ = "seq";
 
+    @SuppressWarnings("java:S1075")
+    private static final String SYNC_ROUTE_PATH = "/gateway/_sync";
+
     private final HttpClient httpClient;
 
     @Getter
@@ -63,9 +66,9 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
 
     private final UriBuilder uriBuilder;
 
-    public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardRouteSyncEndpoint, String dashboardAuthKey, String environmentId) {
+    public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardApiContextPath, String dashboardAuthKey, String environmentId) {
         this.dashboardAddress = dashboardAddress;
-        this.dashboardRouteSyncEndpoint = dashboardRouteSyncEndpoint;
+        this.dashboardRouteSyncEndpoint = dashboardApiContextPath + SYNC_ROUTE_PATH;
         this.dashboardAuthKey = dashboardAuthKey;
         this.environmentId = environmentId;
         httpClient = HttpClient.create();

@@ -71,6 +71,7 @@ public abstract class ReactorHttpServer implements Server {
             log.error("Exception happened while try to stop {}.", this.getClass().getSimpleName(), exception);
         }
         this.httpd = null;
+        afterStop();
         log.info("{} stopped.", this.getClass().getSimpleName());
     }
 
@@ -80,6 +81,9 @@ public abstract class ReactorHttpServer implements Server {
     }
 
     protected void beforeStart() {
+    }
+
+    protected void afterStop() {
     }
 
 }
