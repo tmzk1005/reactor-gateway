@@ -22,6 +22,7 @@ import picocli.CommandLine;
 
 import zk.rgw.http.conf.ServerConfiguration;
 
+@SuppressWarnings("java:S1075")
 // @formatter:off
 @CommandLine.Command(
         name = "reactor-dashboard",

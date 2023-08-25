@@ -42,11 +42,6 @@ public class GatewayConfiguration extends ServerConfiguration {
 
     @Getter
     @Setter
-    @CommandLine.Option(names = "--internal.context.path", description = "The internal context path to interact to gateway itself, not proxy request.")
-    protected String internalContextPath = "/__rgw_internal";
-
-    @Getter
-    @Setter
     @CommandLine.Option(names = "--dashboard.address", description = "The dashboard address.")
     private String dashboardAddress = "http://127.0.0.1:7000";
 

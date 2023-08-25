@@ -114,6 +114,11 @@ public class UriBuilder {
         return this;
     }
 
+    public UriBuilder clearQueryParam(String name) {
+        this.queryParams.remove(name);
+        return this;
+    }
+
     public UriBuilder queryParam(String name, String value) {
         if (queryParams.containsKey(name)) {
             queryParams.get(name).add(value);

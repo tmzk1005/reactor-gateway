@@ -19,6 +19,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
@@ -32,6 +34,20 @@ public class GatewayNodeRepository extends BaseMongodbRepository<GatewayNode> {
     public Mono<GatewayNode> findOneByAddress(String address) {
         Bson filter = Filters.eq("address", address);
         return findOne(filter);
+    }
+
+    public Flux<GatewayNode> findAllByEnvId(String envId) {
+        ObjectId envObjId;
+        try {
+            envObjId = new ObjectId(envId);
+        } catch (Exception exception) {
+            return Flux.empty();
+        }
+        Bson filter = Filters.and(
+                Filters.eq("envId", envObjId),
+                Filters.gt("heartbeat", System.currentTimeMillis() - 2 * 60 * 1000L)
+        );
+        return find(filter);
     }
 
 }

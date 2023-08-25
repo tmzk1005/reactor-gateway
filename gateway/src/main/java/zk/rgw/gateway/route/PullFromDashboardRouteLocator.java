@@ -110,7 +110,7 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
     private Flux<IdRouteDefinition> fetchRouteDefinitions() {
         URI uri;
         try {
-            uri = uriBuilder.queryParam(PARAMETER_SEQ, this.latestSequenceNum + "").build();
+            uri = uriBuilder.clearQueryParam(PARAMETER_SEQ).queryParam(PARAMETER_SEQ, this.latestSequenceNum + "").build();
         } catch (URISyntaxException exception) {
             throw new RgwRuntimeException(exception);
         }

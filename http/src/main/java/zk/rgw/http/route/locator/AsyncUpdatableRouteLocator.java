@@ -72,6 +72,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
         if (!updated.compareAndExchange(true, false)) {
             return;
         }
+
         super.doUpdate();
     }
 

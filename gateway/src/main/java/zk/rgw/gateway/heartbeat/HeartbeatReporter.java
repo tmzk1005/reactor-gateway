@@ -140,7 +140,14 @@ public class HeartbeatReporter implements LifeCycle {
                         throw new RgwRuntimeException("Failed to deserialize response of register request sent to dashboard.");
                     }
                 })
-                .doOnError(exception -> log.error("Failed to send register request to dashboard.", exception));
+                .doOnError(exception -> {
+                    log.error("Failed to send register request to dashboard,", exception);
+                    log.error(
+                            "Process is going to shutdown because of failed to register to dashboard, " +
+                                    "please make sure dashboard is running, and configured the dashboard address."
+                    );
+                    System.exit(2);
+                });
     }
 
     private static Publisher<? extends ByteBuf> toByteBufFlux(Object data) {

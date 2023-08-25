@@ -19,32 +19,31 @@ import java.util.List;
 
 import reactor.core.publisher.Flux;
 
+import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.locator.RouteLocator;
 
 public class GatewayInternalRouteLocator implements RouteLocator {
 
-    private final String internalContextPath;
+    private static final String INTERNAL_CONTEXT_PATH = "/__rgw_internal";
 
-    private final String internalContextPathWithEndSlash;
+    private static final String INTERNAL_CONTEXT_PATH_SLASH = INTERNAL_CONTEXT_PATH + "/";
 
     private final Flux<Route> internalRoutes;
 
-    public GatewayInternalRouteLocator(String internalContextPath) {
-        this.internalContextPath = PathUtil.normalize(internalContextPath);
-        this.internalContextPathWithEndSlash = this.internalContextPath + PathUtil.SLASH;
+    public GatewayInternalRouteLocator(PullFromDashboardRouteLocator pullFromDashboardRouteLocator) {
         Route route = new Route();
         route.setId("__rgw_internal");
-        route.setPath(internalContextPath);
-        route.setFilters(List.of(new GatewayInternalEndpoint()));
+        route.setPath(INTERNAL_CONTEXT_PATH);
+        route.setFilters(List.of(new GatewayInternalEndpoint(INTERNAL_CONTEXT_PATH, pullFromDashboardRouteLocator)));
         this.internalRoutes = Flux.just(route);
     }
 
     @Override
     public Flux<Route> getRoutes(String path) {
         String normalizePath = PathUtil.normalize(path);
-        if (normalizePath.startsWith(internalContextPathWithEndSlash) || normalizePath.equals(internalContextPath)) {
+        if (normalizePath.startsWith(INTERNAL_CONTEXT_PATH_SLASH) || normalizePath.equals(INTERNAL_CONTEXT_PATH)) {
             return internalRoutes;
         }
         return Flux.empty();

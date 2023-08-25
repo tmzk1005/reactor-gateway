@@ -71,7 +71,7 @@ public class ReactorGatewayServer extends ReactorHttpServer {
         );
         pullFromDashboardRouteLocator.start();
         this.routeLocator = new CompositeRouteLocator(
-                new GatewayInternalRouteLocator(configuration.getInternalContextPath()),
+                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator),
                 pullFromDashboardRouteLocator
         );
     }
