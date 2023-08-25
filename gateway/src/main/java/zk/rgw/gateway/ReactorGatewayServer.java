@@ -47,13 +47,16 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
+        PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
+                configuration.getDashboardAddress(),
+                configuration.getDashboardRouteSyncEndpoint(),
+                configuration.getDashboardAuthKey(),
+                configuration.getEnvironmentId()
+        );
+        pullFromDashboardRouteLocator.start();
         this.routeLocator = new CompositeRouteLocator(
                 new GatewayInternalRouteLocator(configuration.getInternalContextPath()),
-                new PullFromDashboardRouteLocator(
-                        configuration.getDashboardAddress(),
-                        configuration.getDashboardRouteSyncEndpoint(),
-                        configuration.getDashboardAuthKey()
-                )
+                pullFromDashboardRouteLocator
         );
     }
 

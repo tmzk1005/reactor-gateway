@@ -27,7 +27,7 @@ public class IdRouteDefinition {
 
     private String orgId;
 
-    private long timestamp;
+    private long seqNum;
 
     private RouteDefinition routeDefinition;
 

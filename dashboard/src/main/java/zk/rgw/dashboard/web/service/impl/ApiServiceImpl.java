@@ -169,7 +169,7 @@ public class ApiServiceImpl implements ApiService {
 
     private void emitEvent(Api api, String envId, boolean isPublish) {
         IdRouteDefinition idRouteDefinition = new IdRouteDefinition(api.getId(), api.getOrganization().getId());
-        idRouteDefinition.setTimestamp(api.getPublishSnapshots().get(envId).getLastModifiedDate().toEpochMilli());
+        idRouteDefinition.setSeqNum(api.getPublishSnapshots().get(envId).getOpSeq());
         if (isPublish) {
             idRouteDefinition.setRouteDefinition(api.getPublishSnapshots().get(envId).getRouteDefinition());
         }

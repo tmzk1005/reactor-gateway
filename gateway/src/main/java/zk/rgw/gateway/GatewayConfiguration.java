@@ -53,12 +53,17 @@ public class GatewayConfiguration extends ServerConfiguration {
     @Getter
     @Setter
     @CommandLine.Option(names = "--dashboard.route.sync.endpoint", description = "The dashboard uri path for sync routes.")
-    private String dashboardRouteSyncEndpoint = "/syncRoutes";
+    private String dashboardRouteSyncEndpoint = "/rgw/api/gateway/_sync";
 
     @Getter
     @Setter
     @CommandLine.Option(names = "--dashboard.auth.key", description = "The key for authorization to dashboard.")
     private String dashboardAuthKey = "";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--environment.id", description = "The environment id used to fetch route definitions from dashboard.")
+    private String environmentId;
 
     public GatewayConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;

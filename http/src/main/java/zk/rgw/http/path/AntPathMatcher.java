@@ -298,7 +298,7 @@ public class AntPathMatcher implements PathMatcher {
                 skipped = skipSegment(path, pos, dir);
                 if (skipped < dir.length()) {
                     // Java中&&的优先级高于||
-                    return skipped > 0 || dir.length() > 0 && isWildcardChar(dir.charAt(0));
+                    return skipped > 0 || !dir.isEmpty() && isWildcardChar(dir.charAt(0));
                 }
                 pos += skipped;
             }

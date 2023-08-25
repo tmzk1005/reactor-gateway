@@ -108,9 +108,12 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
             idRouteDefinition.setOrgId(api.getOrganization().getId());
 
             RouteDefinitionPublishSnapshot snapshot = api.getPublishSnapshots().get(envId);
+            idRouteDefinition.setSeqNum(snapshot.getOpSeq());
 
-            idRouteDefinition.setTimestamp(snapshot.getLastModifiedDate().toEpochMilli());
-            idRouteDefinition.setRouteDefinition(snapshot.getRouteDefinition());
+            if (!snapshot.isStatusUnpublished()) {
+                idRouteDefinition.setRouteDefinition(snapshot.getRouteDefinition());
+            }
+            // 未发布，说明是API下线了，以不设置routeDefinition的方式来告知gateway是下线了
             return idRouteDefinition;
         });
     }

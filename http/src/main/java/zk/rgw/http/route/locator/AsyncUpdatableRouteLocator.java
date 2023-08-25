@@ -28,7 +28,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
 
     public static final int DEFAULT_UPDATE_INTERVAL = 10;
 
-    private final AtomicBoolean apiUpdated = new AtomicBoolean(false);
+    private final AtomicBoolean updated = new AtomicBoolean(false);
 
     private final int periodInSeconds;
 
@@ -45,7 +45,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
 
     @Override
     public synchronized void update() {
-        apiUpdated.set(true);
+        updated.set(true);
     }
 
     @Override
@@ -55,7 +55,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
             return;
         }
         log.info("Start {}.", this.getClass().getSimpleName());
-        apiUpdated.set(true);
+        updated.set(true);
         scheduledExecutorService.scheduleAtFixedRate(this::doUpdate, 0, periodInSeconds, TimeUnit.SECONDS);
     }
 
@@ -69,7 +69,7 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
 
     @Override
     protected void doUpdate() {
-        if (!apiUpdated.compareAndExchange(true, false)) {
+        if (!updated.compareAndExchange(true, false)) {
             return;
         }
         super.doUpdate();

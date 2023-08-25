@@ -29,4 +29,6 @@ public class PluginInstanceDefinition {
 
     private String jsonConf;
 
+    private boolean builtin = true;
+
 }

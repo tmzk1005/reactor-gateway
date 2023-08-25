@@ -16,40 +16,136 @@
 
 package zk.rgw.gateway.route;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
+import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.exception.RgwRuntimeException;
+import zk.rgw.common.util.JsonUtil;
+import zk.rgw.http.route.Route;
 import zk.rgw.http.route.RouteEvent;
 import zk.rgw.http.route.locator.AsyncUpdatableRouteLocator;
+import zk.rgw.http.utils.UriBuilder;
+import zk.rgw.plugin.util.Shuck;
 
+@Slf4j
 public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
 
-    private final HttpClient httpClient = HttpClient.create();
+    private static final String PARAMETER_ENV_ID = "envId";
 
+    private static final String PARAMETER_SEQ = "seq";
+
+    private final HttpClient httpClient;
+
+    @Getter
     private final String dashboardAddress;
 
+    @Getter
     private final String dashboardRouteSyncEndpoint;
 
+    @Getter
     private final String dashboardAuthKey;
 
-    private long latestTimestamp = 0L;
+    @Getter
+    private final String environmentId;
 
-    public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardRouteSyncEndpoint, String dashboardAuthKey) {
+    private long latestSequenceNum = 0L;
+
+    private final UriBuilder uriBuilder;
+
+    public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardRouteSyncEndpoint, String dashboardAuthKey, String environmentId) {
         this.dashboardAddress = dashboardAddress;
         this.dashboardRouteSyncEndpoint = dashboardRouteSyncEndpoint;
         this.dashboardAuthKey = dashboardAuthKey;
+        this.environmentId = environmentId;
+        httpClient = HttpClient.create();
+        try {
+            uriBuilder = new UriBuilder(dashboardAddress);
+            uriBuilder.path(dashboardRouteSyncEndpoint);
+            uriBuilder.queryParam(PARAMETER_ENV_ID, this.environmentId);
+            httpClient.baseUrl(uriBuilder.build().toString());
+        } catch (URISyntaxException exception) {
+            throw new RgwRuntimeException("Dashboard address is not validated uri.", exception);
+        }
     }
 
     @Override
     protected Flux<RouteEvent> fetchRouteChange() {
-        // TODO
-        System.out.println(httpClient);
-        System.out.println(dashboardAddress);
-        System.out.println(dashboardRouteSyncEndpoint);
-        System.out.println(dashboardAuthKey);
-        latestTimestamp += 1;
-        System.out.println(latestTimestamp);
-        return Flux.empty();
+        return fetchRouteDefinitions()
+                .doOnNext(idRouteDefinition -> latestSequenceNum = Math.max(latestSequenceNum, idRouteDefinition.getSeqNum()))
+                .map(idRouteDefinition -> {
+                    RouteEvent routeEvent = new RouteEvent();
+                    routeEvent.setRouteId(idRouteDefinition.getId());
+
+                    if (Objects.isNull(idRouteDefinition.getRouteDefinition())) {
+                        // 没有routeDefinition说明是下线了
+                        routeEvent.setDelete(true);
+                    } else {
+                        routeEvent.setDelete(false);
+                        try {
+                            Route route = RouteConverter.convertRouteDefinition(idRouteDefinition);
+                            routeEvent.setRoute(route);
+                        } catch (RouteConvertException exception) {
+                            log.error("Failed to convert a route definition to route.", exception);
+                            routeEvent.setRouteId(null);
+                        }
+                    }
+                    return routeEvent;
+                });
+    }
+
+    private Flux<IdRouteDefinition> fetchRouteDefinitions() {
+        URI uri;
+        try {
+            uri = uriBuilder.queryParam(PARAMETER_SEQ, this.latestSequenceNum + "").build();
+        } catch (URISyntaxException exception) {
+            throw new RgwRuntimeException(exception);
+        }
+        return httpClient.get().uri(uri).responseContent().aggregate().asInputStream()
+                .onErrorResume(throwable -> {
+                    log.error("Failed to fetch route changes from uri: {}", uri);
+                    return Mono.empty();
+                }).map(inputStream -> {
+                    try {
+                        SyncRouteResp syncRouteResp = JsonUtil.readValue(inputStream, SyncRouteResp.class);
+                        List<IdRouteDefinition> list = syncRouteResp.getData();
+                        if (!list.isEmpty()) {
+                            log.info("Fetched {} route definitions from {}", list.size(), uri);
+                        }
+                        return list;
+                    } catch (IOException ioException) {
+                        throw new RgwRuntimeException("Failed to deserialize response of sync route definitions request sent to " + uri);
+                    }
+                }).flatMapMany((Function<List<IdRouteDefinition>, Flux<IdRouteDefinition>>) Flux::fromIterable);
+    }
+
+    static class SyncRouteResp extends Shuck<List<IdRouteDefinition>> {
+
+        @Override
+        public List<IdRouteDefinition> getData() {
+            if (getCode() != Shuck.CODE_OK) {
+                log.error("Sync route definitions request returned not ok status, something maybe wrong.");
+                return List.of();
+            }
+            // 保证不能返回null
+            List<IdRouteDefinition> data = super.getData();
+            if (Objects.isNull(data)) {
+                log.error("Sync route definitions request returned empty data, something maybe wrong.");
+                return List.of();
+            }
+            return data;
+        }
+
     }
 
 }

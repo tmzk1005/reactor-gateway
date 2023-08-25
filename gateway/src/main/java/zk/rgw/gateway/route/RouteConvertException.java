@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.http.route;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package zk.rgw.gateway.route;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RouteEvent {
+import zk.rgw.common.exception.RgwException;
 
-    private String routeId;
+public class RouteConvertException extends RgwException {
 
-    private Route route;
-
-    private boolean delete;
+    public RouteConvertException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 
 }

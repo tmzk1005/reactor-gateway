@@ -27,4 +27,6 @@ public class PredicateDefinition {
 
     private String jsonConf;
 
+    private boolean builtin = true;
+
 }

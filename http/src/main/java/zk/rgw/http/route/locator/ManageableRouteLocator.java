@@ -71,7 +71,7 @@ public class ManageableRouteLocator implements RouteLocator {
     private List<RouteGroup> findInPatternPathRoutes(String normalizePath) {
         String prefix = PathUtil.removeLast(normalizePath);
         List<RouteGroup> groups = new LinkedList<>();
-        while (!"".equals(prefix)) {
+        while (!prefix.isEmpty()) {
             RouteGroup routeGroup = patternPathRoutes.get(prefix);
             if (Objects.nonNull(routeGroup)) {
                 groups.add(routeGroup);

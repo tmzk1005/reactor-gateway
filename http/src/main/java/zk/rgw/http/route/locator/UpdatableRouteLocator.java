@@ -15,6 +15,8 @@
  */
 package zk.rgw.http.route.locator;
 
+import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
@@ -32,13 +34,18 @@ public abstract class UpdatableRouteLocator extends ManageableRouteLocator {
 
     protected void doUpdate() {
         fetchRouteChange().doOnNext(routeEvent -> {
+            if (Objects.isNull(routeEvent.getRouteId())) {
+                // 可以通过设置routeId为null来标识是一个无效事件
+                return;
+            }
             if (routeEvent.isDelete()) {
                 Route route = removeRouteById(routeEvent.getRouteId());
                 log.info("{} remove route with id = {}", this.getClass().getSimpleName(), route.getId());
             } else {
+                log.info("Add or update a route with id = {}", routeEvent.getRouteId());
                 addRoute(routeEvent.getRoute());
             }
-        });
+        }).subscribe();
     }
 
 }
