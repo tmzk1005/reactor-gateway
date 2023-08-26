@@ -15,10 +15,14 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.List;
 import java.util.Objects;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
+import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
@@ -32,6 +36,7 @@ import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
+import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
@@ -40,6 +45,16 @@ import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.GatewayNodeService;
 
 public class GatewayNodeServiceImpl implements GatewayNodeService {
+
+    private static final List<Bson> LOOKUP = List.of(
+            Aggregates.lookup("Environment", "environment", "_id", "environmentLookup"),
+            Aggregates.project(
+                    Projections.fields(
+                            Projections.include("_id", "address", "heartbeat"),
+                            Projections.computed("environment", BsonDocument.parse("{\"$first\": \"$environmentLookup\"}"))
+                    )
+            )
+    );
 
     private final GatewayNodeRepository gatewayNodeRepository = RepositoryFactory.get(GatewayNodeRepository.class);
 
@@ -50,17 +65,16 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     @Override
     public Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload) {
         String envId = registerPayload.getEnvId();
-        Mono<Void> checkEnvMono = environmentRepository.findOneById(envId)
-                .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId)))).then();
+        Mono<Environment> checkEnvMono = environmentRepository.findOneById(envId)
+                .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
 
-        Mono<GwRegisterResult> saveNodeMono = gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
-                .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), registerPayload.getEnvId())))
-                .doOnNext(node -> {
-                    node.setEnvId(registerPayload.getEnvId());
-                    node.setHeartbeat(System.currentTimeMillis());
-                }).flatMap(gatewayNodeRepository::save).map(gatewayNode -> new GwRegisterResult(gatewayNode.getId()));
-
-        return checkEnvMono.then(saveNodeMono);
+        return checkEnvMono.flatMap(
+                environment -> gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
+                        .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), environment)))
+                        .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
+                        .flatMap(gatewayNodeRepository::save)
+                        .map(gatewayNode -> new GwRegisterResult(gatewayNode.getId()))
+        );
     }
 
     @Override
@@ -80,12 +94,13 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
         } else {
             try {
                 ObjectId envObjId = new ObjectId(envId);
-                filter = Filters.eq("envId", envObjId);
+                filter = Filters.eq("environment", envObjId);
             } catch (Exception exception) {
                 return Flux.error(BizException.of(ErrorMsgUtil.envNotExist(envId)));
             }
         }
-        return gatewayNodeRepository.find(filter);
+
+        return gatewayNodeRepository.find(filter, null, LOOKUP);
     }
 
     @Override

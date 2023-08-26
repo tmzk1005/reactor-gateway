@@ -62,7 +62,7 @@ public class GatewayNodeController {
         return gatewayNodeService.getNodes(envId).collectList().map(nodeList -> {
             Map<String, List<GatewayNodeVo>> map = new HashMap<>();
             for (GatewayNode node : nodeList) {
-                String nodeEnvId = node.getEnvId();
+                String nodeEnvId = node.getEnvironment().getId();
                 if (!map.containsKey(nodeEnvId)) {
                     map.put(nodeEnvId, new ArrayList<>());
                 }

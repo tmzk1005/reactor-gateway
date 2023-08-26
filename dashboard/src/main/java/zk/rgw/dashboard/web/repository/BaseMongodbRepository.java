@@ -95,6 +95,10 @@ public class BaseMongodbRepository<E extends Po<?>> {
         return find(Filters.empty());
     }
 
+    public Flux<E> find(Bson filter, Bson sorts, List<Bson> lookupAndProjection) {
+        return MongodbOperations.find(mongoCollection, filter, sorts, null, lookupAndProjection);
+    }
+
     public Mono<PageData<E>> find(Bson filter, Bson sorts, Page page) {
         return find(filter, sorts, page, null);
     }

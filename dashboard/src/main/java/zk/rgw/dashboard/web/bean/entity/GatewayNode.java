@@ -23,6 +23,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import zk.rgw.dashboard.framework.mongodb.Document;
+import zk.rgw.dashboard.framework.mongodb.DocumentReference;
 import zk.rgw.dashboard.framework.mongodb.Index;
 import zk.rgw.dashboard.framework.xo.NoDtoPo;
 
@@ -37,16 +38,16 @@ public class GatewayNode extends NoDtoPo {
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    @BsonRepresentation(BsonType.OBJECT_ID)
-    private String envId;
+    @DocumentReference
+    private Environment environment;
 
     private String address;
 
     private long heartbeat;
 
-    public GatewayNode(String address, String envId) {
+    public GatewayNode(String address, Environment environment) {
         this.address = address;
-        this.envId = envId;
+        this.environment = environment;
         this.heartbeat = System.currentTimeMillis();
     }
 

@@ -31,7 +31,7 @@ public class GatewayNodeVo implements Vo<GatewayNode> {
 
     private String id;
 
-    private String envId;
+    private SimpleEnvironmentVo environment;
 
     private String address;
 
@@ -46,7 +46,7 @@ public class GatewayNodeVo implements Vo<GatewayNode> {
     @Override
     public GatewayNodeVo initFromPo(GatewayNode po) {
         this.id = po.getId();
-        this.envId = po.getEnvId();
+        this.environment = new SimpleEnvironmentVo().initFromPo(po.getEnvironment());
         this.address = po.getAddress();
         this.heartbeat = po.getHeartbeat();
         return this;
