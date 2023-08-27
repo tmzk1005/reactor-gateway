@@ -18,7 +18,10 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-http"
+base {
+    archivesName = "rgw-http"
+}
+
 
 dependencies {
     implementation project(path: ":plugin-api", configuration: "default")

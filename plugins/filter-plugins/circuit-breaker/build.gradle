@@ -18,4 +18,8 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-filter-plugin-circuit-breaker"
+base {
+    archivesName = "rgw-filter-plugin-circuit-breaker"
+}
+
+

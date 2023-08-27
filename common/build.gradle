@@ -18,7 +18,9 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-common"
+base {
+    archivesName = "rgw-common"
+}
 
 dependencies {
     compileOnly "org.projectlombok:lombok"

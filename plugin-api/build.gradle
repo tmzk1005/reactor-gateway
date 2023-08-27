@@ -18,7 +18,9 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-plugin-api"
+base {
+    archivesName = "rgw-plugin-api"
+}
 
 dependencies {
     compileOnly 'io.projectreactor.netty:reactor-netty-http'

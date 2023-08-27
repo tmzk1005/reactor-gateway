@@ -18,4 +18,6 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-filter-plugin-mock-http"
+base {
+    archivesName = "rgw-filter-plugin-mock-http"
+}

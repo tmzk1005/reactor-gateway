@@ -28,7 +28,9 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-dashboard"
+base {
+    archivesName = "rgw-dashboard"
+}
 
 dependencies {
     implementation project(path: ":http", configuration: "default")

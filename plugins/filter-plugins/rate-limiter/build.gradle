@@ -18,4 +18,6 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-filter-plugin-rate-limiter"
+base {
+    archivesName = "rgw-filter-plugin-rate-limiter"
+}

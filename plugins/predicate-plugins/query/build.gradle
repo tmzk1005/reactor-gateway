@@ -18,4 +18,8 @@ plugins {
     id 'zk.rgw.java-base-conventions'
 }
 
-archivesBaseName = "rgw-predicate-plugin-query"
+base {
+    archivesName = "rgw-predicate-plugin-query"
+}
+
+
