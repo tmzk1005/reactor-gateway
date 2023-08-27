@@ -32,6 +32,7 @@ import zk.rgw.http.exchange.ChainBasedExchangeHandler;
 import zk.rgw.http.exchange.ExchangeImpl;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.locator.RouteLocator;
+import zk.rgw.http.utils.RouteUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;
 import zk.rgw.plugin.api.filter.FilterChain;
@@ -68,6 +69,7 @@ public class HttpHandler implements BiFunction<HttpServerRequest, HttpServerResp
                 .switchIfEmpty(Mono.just(ROUTE_404))
                 .next()
                 .flatMap(route -> {
+                    RouteUtil.setRoute(exchange, route);
                     Mono<RequestContext> requestContext = Mono.just(new RequestContextImpl(exchange));
                     return new ChainBasedExchangeHandler(route.getFilters())
                             .handle(exchange)

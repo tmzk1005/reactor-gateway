@@ -27,11 +27,11 @@ public class AccessLog {
 
     private String requestId;
 
-    private String reqTimestamp;
+    private long reqTimestamp;
 
-    private String respTimestamp;
+    private long respTimestamp;
 
-    private String millisCost;
+    private int millisCost;
 
     private String apiId;
 

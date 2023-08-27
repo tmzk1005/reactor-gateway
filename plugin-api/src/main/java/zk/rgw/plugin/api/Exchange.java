@@ -16,6 +16,10 @@
 
 package zk.rgw.plugin.api;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 
@@ -33,6 +37,22 @@ public interface Exchange extends AttributesHolder {
 
         Exchange build();
 
+    }
+
+    default void setAuditInfo(String key, Object value) {
+        String auditInfoKey = "__audit_info__";
+        Map<String, Object> auditInfo = getAttribute(auditInfoKey);
+        if (Objects.isNull(auditInfo)) {
+            auditInfo = new HashMap<>();
+            getAttributes().put(auditInfoKey, auditInfo);
+        }
+
+        auditInfo.put(key, value);
+    }
+
+    default Map<String, Object> getAuditInfo() {
+        String auditInfoKey = "__audit_info__";
+        return getAttributeOrDefault(auditInfoKey, new HashMap<>());
     }
 
 }

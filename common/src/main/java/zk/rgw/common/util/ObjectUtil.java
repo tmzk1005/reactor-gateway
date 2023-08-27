@@ -34,7 +34,7 @@ public class ObjectUtil {
             return ((Optional<?>) obj).isEmpty();
         }
         if (obj instanceof CharSequence cs) {
-            return cs.length() == 0;
+            return cs.isEmpty();
         }
         if (obj.getClass().isArray()) {
             return Array.getLength(obj) == 0;
