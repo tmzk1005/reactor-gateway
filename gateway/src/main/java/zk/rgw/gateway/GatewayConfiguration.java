@@ -70,6 +70,11 @@ public class GatewayConfiguration extends ServerConfiguration {
     @CommandLine.Option(names = "--server.schema", description = "The uri schema used for dashboard send http request to gateway, http or https.")
     private String serverSchema = "http";
 
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--kafka.bootstrap.servers", description = "The kafka bootstrap server used to write access log to.")
+    private String kafkaBootstrapServers = "127.0.0.1:9092";
+
     public GatewayConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;
         this.serverPort = DEFAULT_PORT;

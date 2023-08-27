@@ -24,6 +24,8 @@ dependencies {
     implementation project(path: ":http", configuration: "default")
     implementation project(path: ":common", configuration: "default")
 
+    implementation "org.apache.kafka:kafka-clients"
+
     for (dirName in rootDir.toPath().resolve("plugins").resolve("filter-plugins").toFile().list()) {
         implementation project(path: ":plugins:filter-plugins:${dirName}", configuration: "default")
     }

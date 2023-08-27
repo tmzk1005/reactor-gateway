@@ -58,6 +58,7 @@ def junitJupiterVersion = "5.9.3"
 def jwtLibVersion = "4.4.0"
 def mongodbReactiveDriverVersion = "4.9.1"
 def jsonSchemaVersion = "1.0.86"
+def kafkaVersion = "3.5.1"
 
 dependencies {
     implementation platform("org.projectlombok:lombok:${lombokVersion}")
@@ -71,6 +72,11 @@ dependencies {
     implementation platform("org.mongodb:mongodb-driver-reactivestreams:${mongodbReactiveDriverVersion}")
     implementation platform("org.mongodb:bson-record-codec:${mongodbReactiveDriverVersion}")
     // implementation platform("com.networknt:json-schema-validator:${jsonSchemaVersion}")
+
+    constraints {
+        // noinspection ForeignDelegate
+        implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
+    }
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}"
