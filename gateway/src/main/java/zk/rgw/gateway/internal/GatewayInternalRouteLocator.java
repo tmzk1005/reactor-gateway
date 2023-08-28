@@ -19,11 +19,13 @@ import java.util.List;
 
 import reactor.core.publisher.Flux;
 
+import zk.rgw.gateway.accesslog.AccessLogEnabledProvider;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.locator.RouteLocator;
 
+@SuppressWarnings("java:S1075")
 public class GatewayInternalRouteLocator implements RouteLocator {
 
     private static final String INTERNAL_CONTEXT_PATH = "/__rgw_internal";
@@ -32,11 +34,14 @@ public class GatewayInternalRouteLocator implements RouteLocator {
 
     private final Flux<Route> internalRoutes;
 
-    public GatewayInternalRouteLocator(PullFromDashboardRouteLocator pullFromDashboardRouteLocator) {
+    public GatewayInternalRouteLocator(
+            PullFromDashboardRouteLocator pullFromDashboardRouteLocator,
+            AccessLogEnabledProvider accessLogEnabledProvider
+    ) {
         Route route = new Route();
         route.setId("__rgw_internal");
         route.setPath(INTERNAL_CONTEXT_PATH);
-        route.setFilters(List.of(new GatewayInternalEndpoint(INTERNAL_CONTEXT_PATH, pullFromDashboardRouteLocator)));
+        route.setFilters(List.of(new GatewayInternalEndpoint(INTERNAL_CONTEXT_PATH, pullFromDashboardRouteLocator, accessLogEnabledProvider)));
         this.internalRoutes = Flux.just(route);
     }
 

@@ -15,6 +15,8 @@
  */
 package zk.rgw.common.heartbeat;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,5 +29,9 @@ public class Notification {
     private boolean subscriptionUpdated;
 
     private boolean environmentUpdated;
+
+    private List<String> enableAccessLogApiIds;
+
+    private List<String> disableAccessLogApiIds;
 
 }

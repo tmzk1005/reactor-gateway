@@ -44,7 +44,7 @@ public class GatewayNodeRepository extends BaseMongodbRepository<GatewayNode> {
             return Flux.empty();
         }
         Bson filter = Filters.and(
-                Filters.eq("envId", envObjId),
+                Filters.eq("environment", envObjId),
                 Filters.gt("heartbeat", System.currentTimeMillis() - 2 * 60 * 1000L)
         );
         return find(filter);

@@ -101,7 +101,7 @@ public class AccessLogFilter implements Filter {
             byte[] auditRequestBodyBytes = bodyAuditableRequest.getAuditBody();
             try {
                 String auditRequestBodyString = new String(auditRequestBodyBytes);
-                accessLog.getResponseInfo().setBody(auditRequestBodyString);
+                accessLog.getRequestInfo().setBody(auditRequestBodyString);
                 accessLog.getRequestInfo().setBodyBase64(false);
             } catch (Exception exception) {
                 accessLog.getRequestInfo().setBody(Base64.getEncoder().encodeToString(auditRequestBodyBytes));

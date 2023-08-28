@@ -19,13 +19,16 @@ package zk.rgw.gateway.route;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.Setter;
 
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.definition.PluginInstanceDefinition;
 import zk.rgw.common.definition.RouteDefinition;
+import zk.rgw.gateway.accesslog.AccessLogFilter;
 import zk.rgw.gateway.plugin.CustomPluginClassLoader;
 import zk.rgw.http.plugin.PluginLoadException;
 import zk.rgw.http.route.Route;
@@ -37,6 +40,9 @@ public class RouteConverter {
 
     private RouteConverter() {
     }
+
+    @Setter
+    private static AccessLogFilter accessLogFilter;
 
     public static Route convertRouteDefinition(IdRouteDefinition idRouteDefinition) throws RouteConvertException {
         Route route = new Route();
@@ -54,6 +60,10 @@ public class RouteConverter {
         // 暂不解析predicateDefinitions
 
         List<Filter> filters = new ArrayList<>(routeDefinition.getPluginDefinitions().size());
+
+        if (Objects.nonNull(accessLogFilter)) {
+            filters.add(accessLogFilter);
+        }
 
         for (PluginInstanceDefinition pluginInstanceDefinition : routeDefinition.getPluginDefinitions()) {
             try {

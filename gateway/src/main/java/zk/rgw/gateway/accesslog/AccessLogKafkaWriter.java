@@ -118,6 +118,7 @@ public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
             accessLog = queue.take();
         } catch (InterruptedException interruptedException) {
             log.error("InterruptedException happened while take AccessLog from queue.", interruptedException);
+            Thread.currentThread().interrupt();
             return;
         }
         doSend(accessLog);

@@ -16,13 +16,20 @@
 
 package zk.rgw.gateway;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 
+import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.gateway.accesslog.AccessLogEnabledProvider;
+import zk.rgw.gateway.accesslog.AccessLogFilter;
+import zk.rgw.gateway.accesslog.AccessLogKafkaWriter;
+import zk.rgw.gateway.accesslog.DefaultAccessLogEnabledProvider;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
+import zk.rgw.gateway.route.RouteConverter;
 import zk.rgw.http.route.locator.CompositeRouteLocator;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
@@ -34,9 +41,7 @@ public class ReactorGatewayServer extends ReactorHttpServer {
 
     private RouteLocator routeLocator;
 
-    private PullFromDashboardRouteLocator pullFromDashboardRouteLocator;
-
-    private HeartbeatReporter heartbeatReporter;
+    private final List<LifeCycle> lifeCycles = new ArrayList<>();
 
     protected ReactorGatewayServer(GatewayConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
@@ -51,7 +56,7 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     @Override
     protected void beforeStart() {
         initRouteLocator();
-        this.heartbeatReporter = new HeartbeatReporter(
+        HeartbeatReporter heartbeatReporter = new HeartbeatReporter(
                 configuration.getDashboardAddress(),
                 configuration.getDashboardApiContextPath(),
                 configuration.getEnvironmentId(),
@@ -60,18 +65,31 @@ public class ReactorGatewayServer extends ReactorHttpServer {
                 configuration.getServerPort()
         );
         heartbeatReporter.start();
+        this.lifeCycles.add(heartbeatReporter);
     }
 
     private void initRouteLocator() {
-        pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
+        AccessLogEnabledProvider accessLogEnabledProvider = new DefaultAccessLogEnabledProvider();
+        AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
+
+        accessLogKafkaWriter.start();
+        this.lifeCycles.add(accessLogKafkaWriter);
+
+        AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogEnabledProvider, accessLogKafkaWriter);
+
+        RouteConverter.setAccessLogFilter(accessLogFilter);
+
+        PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
                 configuration.getDashboardAddress(),
                 configuration.getDashboardApiContextPath(),
                 configuration.getDashboardAuthKey(),
                 configuration.getEnvironmentId()
         );
         pullFromDashboardRouteLocator.start();
+        this.lifeCycles.add(pullFromDashboardRouteLocator);
+
         this.routeLocator = new CompositeRouteLocator(
-                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator),
+                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator, accessLogEnabledProvider),
                 pullFromDashboardRouteLocator
         );
     }
@@ -88,11 +106,8 @@ public class ReactorGatewayServer extends ReactorHttpServer {
 
     @Override
     protected void afterStop() {
-        if (Objects.nonNull(pullFromDashboardRouteLocator)) {
-            pullFromDashboardRouteLocator.stop();
-        }
-        if (Objects.nonNull(heartbeatReporter)) {
-            heartbeatReporter.stop();
+        for (int i = lifeCycles.size() - 1; i >= 0; i--) {
+            lifeCycles.get(i).stop();
         }
     }
 }
