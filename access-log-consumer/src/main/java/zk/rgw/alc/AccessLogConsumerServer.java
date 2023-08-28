@@ -16,8 +16,16 @@
 
 package zk.rgw.alc;
 
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import lombok.extern.slf4j.Slf4j;
 
+import zk.rgw.alc.persist.AccessLogMongodbWriters;
 import zk.rgw.common.bootstrap.Server;
 
 @Slf4j
@@ -25,20 +33,51 @@ public class AccessLogConsumerServer implements Server {
 
     private final AlcConfiguration configuration;
 
+    private MongoClient mongoClient;
+
+    private AccessLogMongodbWriters accessLogMongodbWriters;
+
+    private final CountDownLatch shutdownWaiter = new CountDownLatch(1);
+
     public AccessLogConsumerServer(AlcConfiguration alcConfiguration) {
         this.configuration = alcConfiguration;
     }
 
     @Override
     public void start() {
-        // TODO
-        log.info("{} start: {}", this.getClass().getSimpleName(), configuration);
+        initMongoClient();
+        accessLogMongodbWriters = new AccessLogMongodbWriters(
+                configuration.getKafkaBootstrapServers(),
+                mongoClient.getDatabase(configuration.getMongodbDatabaseName()),
+                configuration.getEnvironments()
+        );
+        accessLogMongodbWriters.start();
+
+        log.info("{} started.", this.getClass().getSimpleName());
+
+        try {
+            shutdownWaiter.await();
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
     public void stop() {
-        // TODO
-        log.info("{} stop: {}", this.getClass().getSimpleName(), configuration);
+        accessLogMongodbWriters.stop();
+
+        if (Objects.nonNull(mongoClient)) {
+            mongoClient.close();
+        }
+
+        shutdownWaiter.countDown();
+        log.info("{} stopped.", this.getClass().getSimpleName());
+    }
+
+    private void initMongoClient() {
+        ConnectionString cs = new ConnectionString(configuration.getMongodbConnectString());
+        MongoClientSettings mongoClientSettings = MongoClientSettings.builder().applyConnectionString(cs).build();
+        this.mongoClient = MongoClients.create(mongoClientSettings);
     }
 
 }

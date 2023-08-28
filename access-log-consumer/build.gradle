@@ -24,6 +24,7 @@ base {
 
 dependencies {
     implementation project(path: ":common", configuration: "default")
+    implementation project(path: ":access-log-common", configuration: "default")
 
     implementation "org.projectlombok:lombok"
     implementation 'org.slf4j:slf4j-api'
@@ -32,7 +33,12 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation  'info.picocli:picocli'
+    implementation 'info.picocli:picocli'
 
     implementation "org.apache.kafka:kafka-clients"
+
+    implementation 'org.mongodb:mongodb-driver-reactivestreams'
+    implementation 'org.mongodb:bson-record-codec'
+
+    implementation 'io.projectreactor:reactor-core'
 }

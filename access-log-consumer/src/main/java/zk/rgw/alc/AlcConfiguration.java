@@ -16,6 +16,8 @@
 
 package zk.rgw.alc;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import picocli.CommandLine;
@@ -45,5 +47,22 @@ public class AlcConfiguration extends CommonConfiguration {
     @Setter
     @CommandLine.Option(names = "--kafka.bootstrap.servers", description = "The kafka bootstrap server used to read access log.")
     private String kafkaBootstrapServers = "127.0.0.1:9092";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--mongodb.database", description = "Mongodb database name to store access logs to.")
+    private String mongodbDatabaseName = "rgw";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--mongodb.connection", description = "Mongodb connection string used to connect to mongo.")
+    private String mongodbConnectString = "mongodb://127.0.0.1:27017";
+
+    @Getter
+    @Setter
+    @CommandLine.Option(
+            names = "--environments", required = true, split = ",", description = "Environment ids for consume access logs in kafka, split by ',' ."
+    )
+    private List<String> environments;
 
 }
