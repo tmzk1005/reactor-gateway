@@ -17,9 +17,9 @@
 package zk.rgw.alc.common;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.mongodb.MongoClientSettings;
@@ -46,7 +46,7 @@ public class AccessLogDocumentUtil {
 
     private static final String COLLECTION_NAME_PREFIX = "AccessLog_";
 
-    private static final Map<String, MongoCollection<AccessLogDocument>> COLLECTION_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Mono<MongoCollection<AccessLogDocument>>> COLLECTION_MAP = new HashMap<>();
 
     private AccessLogDocumentUtil() {
     }
@@ -56,41 +56,58 @@ public class AccessLogDocumentUtil {
         return COLLECTION_NAME_PREFIX + envId;
     }
 
-    public static MongoCollection<AccessLogDocument> getAccessLogCollectionForEnv(MongoDatabase mongoDatabase, String envId) {
-        return COLLECTION_MAP.computeIfAbsent(envId, key -> createIfNotExist(mongoDatabase, key));
+    public static Mono<MongoCollection<AccessLogDocument>> getAccessLogCollectionForEnv(MongoDatabase mongoDatabase, String envId) {
+        if (COLLECTION_MAP.containsKey(envId)) {
+            return COLLECTION_MAP.get(envId);
+        }
+        return createIfNotExist(mongoDatabase, envId).doOnNext(collection -> {
+            COLLECTION_MAP.put(envId, Mono.just(collection));
+        });
+
     }
 
-    private static MongoCollection<AccessLogDocument> createIfNotExist(MongoDatabase mongoDatabase, String envId) {
+    private static Mono<MongoCollection<AccessLogDocument>> createIfNotExist(MongoDatabase mongoDatabase, String envId) {
         String collectionName = collectionNameForEnv(envId);
-        Boolean alreadyExist = Flux.from(mongoDatabase.listCollectionNames()).hasElement(collectionName).block();
-        if (Boolean.FALSE.equals(alreadyExist)) {
-            TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(AccessLogDocument.TIME_FIELD)
-                    .granularity(TimeSeriesGranularity.SECONDS);
-            CreateCollectionOptions createCollectionOptions = new CreateCollectionOptions()
-                    .timeSeriesOptions(timeSeriesOptions)
-                    .expireAfter(EXPIRE_DAYS, TimeUnit.DAYS);
-            Mono.from(mongoDatabase.createCollection(collectionName, createCollectionOptions)).subscribe();
-            log.info("Create mongodb time series collection {}", collectionName);
+        Mono<Void> makeSureCollectionCreatedMono = Flux.from(mongoDatabase.listCollectionNames())
+                .hasElement(collectionName)
+                .flatMap(alreadyExist -> {
+                    if (Boolean.FALSE.equals(alreadyExist)) {
+                        TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(AccessLogDocument.TIME_FIELD)
+                                .granularity(TimeSeriesGranularity.SECONDS);
+                        CreateCollectionOptions createCollectionOptions = new CreateCollectionOptions()
+                                .timeSeriesOptions(timeSeriesOptions)
+                                .expireAfter(EXPIRE_DAYS, TimeUnit.DAYS);
+                        Mono<Void> createCollectionMono = Mono.from(mongoDatabase.createCollection(collectionName, createCollectionOptions));
 
-            MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
-            String requiredIndexName = "access-log-index";
-            Flux.from(collection.listIndexes()).filter(document -> document.get("name").equals(requiredIndexName)).count().flatMap(count -> {
-                if (count == 0) {
-                    IndexOptions indexOptions = new IndexOptions().name(requiredIndexName);
-                    String indexDefinition = "{\"apiId\": 1, \"requestId\": 1}";
-                    return Mono.from(collection.createIndex(Document.parse(indexDefinition), indexOptions))
-                            .doOnSuccess(ignore -> log.info("create index for mongodb time series collection {}", collectionName));
-                } else {
-                    return Mono.empty();
-                }
-            }).subscribe();
-        }
+                        String requiredIndexName = "access-log-index";
+                        MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
+
+                        Mono<Void> createIndexMono = Flux.from(collection.listIndexes())
+                                .filter(document -> document.get("name").equals(requiredIndexName))
+                                .count()
+                                .flatMap(count -> {
+                                    if (count == 0) {
+                                        IndexOptions indexOptions = new IndexOptions().name(requiredIndexName);
+                                        String indexDefinition = "{\"apiId\": 1, \"requestId\": 1}";
+                                        return Mono.from(collection.createIndex(Document.parse(indexDefinition), indexOptions))
+                                                .doOnSuccess(ignore -> log.info("create index for mongodb time series collection {}", collectionName));
+                                    } else {
+                                        return Mono.empty();
+                                    }
+                                }).then();
+
+                        return createCollectionMono.then(createIndexMono);
+                    } else {
+                        return Mono.empty();
+                    }
+                });
 
         CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
                 CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build())
         );
-        return mongoDatabase.getCollection(collectionName, AccessLogDocument.class).withCodecRegistry(codecRegistry);
+        MongoCollection<AccessLogDocument> collection = mongoDatabase.getCollection(collectionName, AccessLogDocument.class).withCodecRegistry(codecRegistry);
+        return makeSureCollectionCreatedMono.then(Mono.just(collection));
     }
 
     public static AccessLogDocument convertFromAccessLog(AccessLog accessLog) {
@@ -104,7 +121,7 @@ public class AccessLogDocumentUtil {
         accessLogDocument.setClientInfo(accessLog.getClientInfo());
         accessLogDocument.setRequestInfo(accessLog.getRequestInfo());
         accessLogDocument.setResponseInfo(accessLog.getResponseInfo());
-        accessLogDocument.setExtraInfo(accessLogDocument.getExtraInfo());
+        accessLogDocument.setExtraInfo(accessLog.getExtraInfo());
 
         accessLogDocument.setTimestampMillis(Instant.ofEpochMilli(accessLogDocument.getReqTimestamp()));
         return accessLogDocument;

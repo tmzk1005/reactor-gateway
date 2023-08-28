@@ -82,7 +82,8 @@ public class AccessLogMongodbWriter implements LifeCycle {
 
     @Override
     public void start() {
-        accessLogCollection = AccessLogDocumentUtil.getAccessLogCollectionForEnv(mongoDatabase, envId);
+        accessLogCollection = AccessLogDocumentUtil.getAccessLogCollectionForEnv(mongoDatabase, envId).block();
+        Objects.requireNonNull(accessLogCollection);
 
         subscribeScheduler = Schedulers.fromExecutor(executorService);
         subscribeScheduler.init();

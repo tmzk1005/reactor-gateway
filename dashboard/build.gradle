@@ -35,6 +35,7 @@ base {
 dependencies {
     implementation project(path: ":http", configuration: "default")
     implementation project(path: ":common", configuration: "default")
+    implementation project(path: ":access-log-common", configuration: "default")
 
     implementation 'org.mongodb:mongodb-driver-reactivestreams'
     implementation 'org.mongodb:bson-record-codec'

@@ -15,13 +15,16 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -33,6 +36,7 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.exception.NotObjectIdException;
 import zk.rgw.dashboard.framework.mongodb.MongodbOperations;
 import zk.rgw.dashboard.framework.mongodb.MongodbUtil;
+import zk.rgw.dashboard.framework.xo.IdAndName;
 import zk.rgw.dashboard.framework.xo.Po;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
@@ -154,6 +158,33 @@ public class BaseMongodbRepository<E extends Po<?>> {
             session.startTransaction();
             return mono.doOnError(ignore -> session.abortTransaction())
                     .flatMap(data -> Mono.from(session.commitTransaction()).thenReturn(data));
+        });
+    }
+
+    public Flux<IdAndName> findNamesForIds(List<String> ids) {
+        List<Bson> aggPipelines = new ArrayList<>(4);
+
+        List<ObjectId> objectIds = new ArrayList<>(ids.size());
+        for (String id : ids) {
+            objectIds.add(new ObjectId(id));
+        }
+        Bson filter = Filters.in("_id", objectIds);
+
+        aggPipelines.add(Aggregates.match(filter));
+
+        Bson project = Aggregates.project(Projections.fields(Projections.include("_id", "name")));
+        aggPipelines.add(project);
+
+        return Flux.from(mongoCollection.withDocumentClass(IdAndName.class).aggregate(aggPipelines));
+    }
+
+    public Mono<Map<String, IdAndName>> findNamesForIdsAsMap(List<String> ids) {
+        return findNamesForIds(ids).collectList().map(list -> {
+            Map<String, IdAndName> map = new HashMap<>(2 * list.size());
+            for (IdAndName item : list) {
+                map.put(item.getId(), item);
+            }
+            return map;
         });
     }
 

@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.exception.RgwRuntimeException;
+import zk.rgw.dashboard.web.controller.AccessLogController;
 import zk.rgw.dashboard.web.controller.ApiController;
 import zk.rgw.dashboard.web.controller.ApiPluginController;
 import zk.rgw.dashboard.web.controller.ApiSubscriptionController;
@@ -60,6 +61,7 @@ public class ControllerMethodInvokeFilter implements Filter {
         addController(ApiSubscriptionController.class);
         addController(GatewayNodeController.class);
         addController(ApiPluginController.class);
+        addController(AccessLogController.class);
     }
 
     private void addController(Class<?> controllerClass) {

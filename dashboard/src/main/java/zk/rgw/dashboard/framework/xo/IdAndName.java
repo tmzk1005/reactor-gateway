@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.dashboard.framework.xo;
 
-package zk.rgw.alc.common;
-
-import java.time.Instant;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.BsonType;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
-import zk.rgw.common.access.AccessLog;
-import zk.rgw.common.util.JsonUtil;
-
 @Getter
 @Setter
-public class AccessLogDocument extends AccessLog {
-
-    public static final String TIME_FIELD = "timestampMillis";
+public class IdAndName {
 
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
-    private Instant timestampMillis;
+    private String name;
 
 }
