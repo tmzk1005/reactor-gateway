@@ -28,6 +28,7 @@ include "plugin-api"
 include "http"
 include "gateway"
 include "dashboard"
+include "access-log-consumer"
 include "release"
 
 def findAndIncludePluginsProjects() {
