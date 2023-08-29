@@ -22,6 +22,12 @@ import zk.rgw.dashboard.web.bean.vo.AccessLogVo;
 
 public interface AccessLogService {
 
-    Mono<PageData<AccessLogVo>> searchAccessLogs(String envId, int pageNum, int pageSize);
+    @SuppressWarnings("java:S107")
+    Mono<PageData<AccessLogVo>> searchAccessLogs(
+            boolean asSubscriber,
+            String envId, int pageNum, int pageSize,
+            String requestId, String apiNameOrId, String clientIp, String clientNameOrId,
+            Integer[] responseStatuses, Integer minTimeCostMillis, Long minTimeMillis, Long maxTimeMillis
+    );
 
 }

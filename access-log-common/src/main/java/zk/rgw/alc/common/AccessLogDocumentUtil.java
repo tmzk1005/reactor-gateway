@@ -60,10 +60,7 @@ public class AccessLogDocumentUtil {
         if (COLLECTION_MAP.containsKey(envId)) {
             return COLLECTION_MAP.get(envId);
         }
-        return createIfNotExist(mongoDatabase, envId).doOnNext(collection -> {
-            COLLECTION_MAP.put(envId, Mono.just(collection));
-        });
-
+        return createIfNotExist(mongoDatabase, envId).doOnNext(collection -> COLLECTION_MAP.put(envId, Mono.just(collection)));
     }
 
     private static Mono<MongoCollection<AccessLogDocument>> createIfNotExist(MongoDatabase mongoDatabase, String envId) {

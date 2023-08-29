@@ -32,13 +32,28 @@ public class AccessLogController {
 
     private final AccessLogService accessLogService = ServiceFactory.get(AccessLogService.class);
 
+    @SuppressWarnings("java:S107")
     @RequestMapping
     public Mono<PageData<AccessLogVo>> listAccessLogs(
+            @RequestParam(name = "asSubscriber", required = false, defaultValue = "false") boolean asSubscriber,
             @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
             @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
-            @RequestParam(name = "envId") String envId
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "requestId", required = false) String requestId,
+            @RequestParam(name = "apiName", required = false) String apiNameOrId,
+            @RequestParam(name = "clientIp", required = false) String clientIp,
+            @RequestParam(name = "clientName", required = false) String clientNameOrId,
+            @RequestParam(name = "responseStatus", required = false) Integer[] responseStatuses,
+            @RequestParam(name = "timeCostMillis", required = false) Integer minTimeCostMillis,
+            @RequestParam(name = "minTimeMillis", required = false) Long minTimeMillis,
+            @RequestParam(name = "maxTimeMillis", required = false) Long maxTimeMillis
     ) {
-        return accessLogService.searchAccessLogs(envId, pageNum, pageSize);
+        return accessLogService.searchAccessLogs(
+                asSubscriber,
+                envId, pageNum, pageSize,
+                requestId, apiNameOrId, clientIp, clientNameOrId,
+                responseStatuses, minTimeCostMillis, minTimeMillis, maxTimeMillis
+        );
     }
 
 }
