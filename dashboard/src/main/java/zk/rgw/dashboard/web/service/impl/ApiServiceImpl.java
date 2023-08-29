@@ -98,6 +98,44 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
+    public Mono<Api> updateApi(String apiId, ApiDto apiDto) {
+        Mono<Api> oldApiMono = apiRepository.findOneById(apiId)
+                .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
+        Mono<User> userMono = ContextUtil.getUser();
+
+        return Mono.zip(oldApiMono, userMono).flatMap(tuple2 -> {
+            Api oldApi = tuple2.getT1();
+            User user = tuple2.getT2();
+
+            if (!user.getOrganization().getId().equals(oldApi.getOrganization().getId())) {
+                return Mono.error(BizException.of(ErrorMsgUtil.noApiRights(apiId)));
+            }
+
+            if (!oldApi.getName().equals(apiDto.getName())) {
+                return apiRepository.existOneByNameAndOrg(apiDto.getName(), user.getOrganization().getId())
+                        .flatMap(exist -> {
+                            if (Boolean.TRUE.equals(exist)) {
+                                return Mono.error(BizException.of("相同组织下已经存在具有名为" + apiDto.getName() + "的API"));
+                            } else {
+                                return doUpdateApiAndSave(oldApi, apiDto);
+                            }
+                        });
+            }
+            return doUpdateApiAndSave(oldApi, apiDto);
+        });
+    }
+
+    private Mono<Api> doUpdateApiAndSave(Api api, ApiDto apiDto) {
+        int hash1 = api.getRouteDefinition().hashCode();
+        api.initFromDto(apiDto);
+        int hash2 = api.getRouteDefinition().hashCode();
+        if (hash1 != hash2) {
+            api.setRouteDefinitionLastModifiedDate(Instant.now());
+        }
+        return apiRepository.save(api);
+    }
+
+    @Override
     public Mono<PageData<Api>> listApis(int pageNum, int pageSize) {
         return ContextUtil.getUser().map(user -> {
             if (user.isSystemAdmin()) {

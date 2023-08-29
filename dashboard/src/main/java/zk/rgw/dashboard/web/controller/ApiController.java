@@ -42,6 +42,14 @@ public class ApiController {
         return apiService.createApi(apiDto).map(new ApiVo()::initFromPo);
     }
 
+    @RequestMapping(path = "/{apiId}", method = RequestMapping.Method.POST)
+    public Mono<ApiVo> updateApi(
+            @PathVariable("apiId") @NotBlank(message = "参数apiId不能为空") String apiId,
+            @RequestBody ApiDto apiDto
+    ) {
+        return apiService.updateApi(apiId, apiDto).map(new ApiVo()::initFromPo);
+    }
+
     @RequestMapping
     public Mono<PageData<ApiVo>> listApis(
             @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,

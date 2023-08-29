@@ -30,6 +30,9 @@ public interface ApiService {
     @HasRole(Role.NORMAL_USER)
     Mono<Api> createApi(ApiDto apiDto);
 
+    @HasRole(Role.NORMAL_USER)
+    Mono<Api> updateApi(String apiId, ApiDto apiDto);
+
     Mono<PageData<Api>> listApis(int pageNum, int pageSize);
 
     Mono<ApiVo> getApiDetailById(String apiId);
