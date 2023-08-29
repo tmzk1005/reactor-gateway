@@ -33,7 +33,11 @@ public interface ApiService {
     @HasRole(Role.NORMAL_USER)
     Mono<Api> updateApi(String apiId, ApiDto apiDto);
 
-    Mono<PageData<Api>> listApis(int pageNum, int pageSize);
+    Mono<PageData<Api>> listApis(
+            int pageNum, int pageSize,
+            String apiId, String name, String method, String path,
+            String[] tags, boolean tagModeIsAnd, String description
+    );
 
     Mono<ApiVo> getApiDetailById(String apiId);
 

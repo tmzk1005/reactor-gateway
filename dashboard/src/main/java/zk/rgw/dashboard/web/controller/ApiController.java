@@ -53,9 +53,20 @@ public class ApiController {
     @RequestMapping
     public Mono<PageData<ApiVo>> listApis(
             @PageNum @RequestParam(name = "pageNum", required = false, defaultValue = "1") int pageNum,
-            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize
+            @PageSize @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
+            @RequestParam(name = "id", required = false) String apiId,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "method", required = false) String method,
+            @RequestParam(name = "path", required = false) String path,
+            @RequestParam(name = "tags", required = false) String[] tags,
+            @RequestParam(name = "tagModeIsAnd", required = false, defaultValue = "true") boolean tagModeIsAnd,
+            @RequestParam(name = "description", required = false) String description
     ) {
-        return apiService.listApis(pageNum, pageSize).map(page -> page.map(api -> new ApiVo().initFromPo(api)));
+        return apiService.listApis(
+                pageNum, pageSize,
+                apiId, name, method, path,
+                tags, tagModeIsAnd, description
+        ).map(page -> page.map(api -> new ApiVo().initFromPo(api)));
     }
 
     @RequestMapping(path = "/released/{envId}")

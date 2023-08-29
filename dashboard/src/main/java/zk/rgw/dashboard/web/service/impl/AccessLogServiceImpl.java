@@ -43,7 +43,7 @@ public class AccessLogServiceImpl implements AccessLogService {
 
     private final AppRepository appRepository = RepositoryFactory.get(AppRepository.class);
 
-    @SuppressWarnings("java:S107")
+    @SuppressWarnings({ "java:S107", "java:S3776" })
     @Override
     public Mono<PageData<AccessLogVo>> searchAccessLogs(
             boolean asSubscriber,

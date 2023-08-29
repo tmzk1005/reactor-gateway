@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.service.impl;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ import reactor.util.function.Tuple3;
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.EventPublisherImpl;
+import zk.rgw.common.util.ObjectUtil;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
@@ -136,14 +138,74 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public Mono<PageData<Api>> listApis(int pageNum, int pageSize) {
-        return ContextUtil.getUser().map(user -> {
-            if (user.isSystemAdmin()) {
-                return Filters.empty();
-            } else {
-                return Filters.eq("organization", new ObjectId(user.getOrganization().getId()));
+    public Mono<PageData<Api>> listApis(
+            int pageNum, int pageSize,
+            String apiId, String name, String method, String path,
+            String[] tags, boolean tagModeIsAnd, String description
+    ) {
+        if (!ObjectUtil.isEmpty(apiId)) {
+            try {
+                new ObjectId(apiId);
+            } catch (Exception exception) {
+                return Mono.just(PageData.empty(pageSize));
             }
+        }
+
+        return ContextUtil.getUser().map(user -> {
+            Bson finalFilter;
+
+            List<Bson> filters = createFilter(apiId, name, method, path, tags, tagModeIsAnd, description);
+
+            if (!user.isSystemAdmin()) {
+                filters.add(Filters.eq("organization", new ObjectId(user.getOrganization().getId())));
+            }
+
+            if (filters.size() == 1) {
+                finalFilter = filters.get(0);
+            } else if (filters.size() > 1) {
+                finalFilter = Filters.and(filters);
+            } else {
+                finalFilter = Filters.empty();
+            }
+            return finalFilter;
         }).flatMap(filter -> apiRepository.find(filter, null, Page.of(pageNum, pageSize)));
+    }
+
+    private List<Bson> createFilter(
+            String apiId, String name, String method, String path,
+            String[] tags, boolean tagModeIsAnd, String description
+    ) {
+        List<Bson> filters = new ArrayList<>();
+
+        if (!ObjectUtil.isEmpty(apiId)) {
+            filters.add(Filters.eq("_id", new ObjectId(apiId)));
+        }
+
+        if (!ObjectUtil.isEmpty(name)) {
+            filters.add(Filters.regex("name", name, "i"));
+        }
+
+        if (!ObjectUtil.isEmpty(method)) {
+            filters.add(Filters.all("routeDefinition.methods", method));
+        }
+
+        if (!ObjectUtil.isEmpty(path)) {
+            filters.add(Filters.regex("routeDefinition.path", path, "i"));
+        }
+
+        if (!ObjectUtil.isEmpty(tags)) {
+            if (tagModeIsAnd) {
+                filters.add(Filters.all("tags", tags));
+            } else {
+                filters.add(Filters.in("tags", tags));
+            }
+        }
+
+        if (!ObjectUtil.isEmpty(description)) {
+            filters.add(Filters.regex("description", description, "i"));
+        }
+
+        return filters;
     }
 
     @Override
