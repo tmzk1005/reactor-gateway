@@ -22,10 +22,8 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.bootstrap.LifeCycle;
-import zk.rgw.gateway.accesslog.AccessLogEnabledProvider;
 import zk.rgw.gateway.accesslog.AccessLogFilter;
 import zk.rgw.gateway.accesslog.AccessLogKafkaWriter;
-import zk.rgw.gateway.accesslog.DefaultAccessLogEnabledProvider;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
@@ -69,13 +67,12 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
-        AccessLogEnabledProvider accessLogEnabledProvider = new DefaultAccessLogEnabledProvider();
         AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
 
         accessLogKafkaWriter.start();
         this.lifeCycles.add(accessLogKafkaWriter);
 
-        AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogEnabledProvider, accessLogKafkaWriter);
+        AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
 
         RouteConverter.setAccessLogFilter(accessLogFilter);
 
@@ -89,7 +86,7 @@ public class ReactorGatewayServer extends ReactorHttpServer {
         this.lifeCycles.add(pullFromDashboardRouteLocator);
 
         this.routeLocator = new CompositeRouteLocator(
-                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator, accessLogEnabledProvider),
+                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator),
                 pullFromDashboardRouteLocator
         );
     }

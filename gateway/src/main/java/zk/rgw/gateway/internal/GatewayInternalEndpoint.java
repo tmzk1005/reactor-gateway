@@ -17,9 +17,7 @@
 package zk.rgw.gateway.internal;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,6 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
-import zk.rgw.gateway.accesslog.AccessLogEnabledProvider;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.plugin.api.Exchange;
@@ -42,18 +39,14 @@ public class GatewayInternalEndpoint implements Filter {
 
     private final PullFromDashboardRouteLocator pullFromDashboardRouteLocator;
 
-    private final AccessLogEnabledProvider accessLogEnabledProvider;
-
     private final String contextPath;
 
     public GatewayInternalEndpoint(
             String contextPath,
-            PullFromDashboardRouteLocator pullFromDashboardRouteLocator,
-            AccessLogEnabledProvider accessLogEnabledProvider
+            PullFromDashboardRouteLocator pullFromDashboardRouteLocator
     ) {
         this.contextPath = contextPath;
         this.pullFromDashboardRouteLocator = pullFromDashboardRouteLocator;
-        this.accessLogEnabledProvider = accessLogEnabledProvider;
         endpoints.put("/notification", new NotificationReceiverEndpoint());
     }
 
@@ -85,7 +78,6 @@ public class GatewayInternalEndpoint implements Filter {
                     return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.BAD_REQUEST);
                 }
                 checkIfApiUpdated(notification);
-                checkIfAccessLogEnabled(notification);
                 return ResponseUtil.sendOk(exchange.getResponse());
             });
         }
@@ -93,22 +85,6 @@ public class GatewayInternalEndpoint implements Filter {
         private void checkIfApiUpdated(Notification notification) {
             if (notification.isApiUpdated()) {
                 pullFromDashboardRouteLocator.update();
-            }
-        }
-
-        private void checkIfAccessLogEnabled(Notification notification) {
-            List<String> enableAccessLogApiIds = notification.getEnableAccessLogApiIds();
-            if (Objects.nonNull(enableAccessLogApiIds) && !enableAccessLogApiIds.isEmpty()) {
-                for (String routeId : enableAccessLogApiIds) {
-                    accessLogEnabledProvider.enable(routeId);
-                }
-            }
-
-            List<String> disableAccessLogApiIds = notification.getDisableAccessLogApiIds();
-            if (Objects.nonNull(disableAccessLogApiIds) && !disableAccessLogApiIds.isEmpty()) {
-                for (String routeId : disableAccessLogApiIds) {
-                    accessLogEnabledProvider.disable(routeId);
-                }
             }
         }
 

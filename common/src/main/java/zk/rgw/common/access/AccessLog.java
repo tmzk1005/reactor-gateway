@@ -57,6 +57,7 @@ public class AccessLog {
         private String method;
         private Map<String, List<String>> headers;
         private String body;
+        private long bodySize;
         private boolean bodyBase64;
     }
 
@@ -66,6 +67,7 @@ public class AccessLog {
         private int code;
         private Map<String, List<String>> headers;
         private String body;
+        private long bodySize;
         private boolean bodyBase64;
     }
 

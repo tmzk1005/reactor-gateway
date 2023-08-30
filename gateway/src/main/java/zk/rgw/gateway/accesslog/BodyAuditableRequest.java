@@ -23,10 +23,11 @@ import zk.rgw.http.exchange.HttpServerRequestDecorator;
 
 public class BodyAuditableRequest extends HttpServerRequestDecorator {
 
-    private final BytesCollector bytesCollector = new BytesCollector();
+    private final BytesCollector bytesCollector;
 
-    public BodyAuditableRequest(HttpServerRequest decorator) {
+    public BodyAuditableRequest(HttpServerRequest decorator, long bodyLimit) {
         super(decorator);
+        this.bytesCollector = new BytesCollector(bodyLimit);
     }
 
     @Override
@@ -36,6 +37,10 @@ public class BodyAuditableRequest extends HttpServerRequestDecorator {
 
     public byte[] getAuditBody() {
         return this.bytesCollector.allBytes();
+    }
+
+    public long getBodySize() {
+        return bytesCollector.getSize();
     }
 
 }

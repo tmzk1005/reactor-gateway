@@ -50,6 +50,8 @@ public class RouteConverter {
 
         RouteDefinition routeDefinition = idRouteDefinition.getRouteDefinition();
 
+        route.setAccessLogConf(routeDefinition.getAccessLogConf());
+
         route.setPath(routeDefinition.getPath());
         Set<HttpMethod> httpMethods = new HashSet<>(4);
         for (String method : routeDefinition.getMethods()) {

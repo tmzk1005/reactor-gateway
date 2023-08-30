@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import lombok.Getter;
 import lombok.Setter;
 
+import zk.rgw.common.definition.AccessLogConf;
 import zk.rgw.http.constant.Constants;
 import zk.rgw.plugin.api.filter.Filter;
 import zk.rgw.plugin.api.predicate.RoutePredicate;
@@ -40,5 +41,7 @@ public class Route {
     private RoutePredicate predicate = Constants.ROUTE_PREDICATE_TRUE;
 
     private List<Filter> filters;
+
+    private AccessLogConf accessLogConf;
 
 }

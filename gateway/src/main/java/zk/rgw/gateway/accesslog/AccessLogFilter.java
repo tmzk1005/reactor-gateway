@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServerRequest;
 
 import zk.rgw.common.access.AccessLog;
+import zk.rgw.common.definition.AccessLogConf;
 import zk.rgw.http.exchange.DefaultExchangeBuilder;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.utils.RouteUtil;
@@ -36,19 +37,16 @@ import zk.rgw.plugin.api.filter.FilterChain;
 
 public class AccessLogFilter implements Filter {
 
-    private final AccessLogEnabledProvider accessLogEnabledProvider;
-
     private final Consumer<AccessLog> accessLogConsumer;
 
-    public AccessLogFilter(AccessLogEnabledProvider accessLogEnabledProvider, Consumer<AccessLog> accessLogConsumer) {
-        this.accessLogEnabledProvider = accessLogEnabledProvider;
+    public AccessLogFilter(Consumer<AccessLog> accessLogConsumer) {
         this.accessLogConsumer = accessLogConsumer;
     }
 
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         Route route = RouteUtil.getRoute(exchange);
-        if (Objects.isNull(route) || !accessLogEnabledProvider.isAccessLogEnabled(route.getId())) {
+        if (Objects.isNull(route) || Objects.isNull(route.getAccessLogConf())) {
             return chain.filter(exchange);
         }
         return new AccessLogAuditContext(exchange, chain).run();
@@ -56,16 +54,22 @@ public class AccessLogFilter implements Filter {
 
     class AccessLogAuditContext {
 
-        private final Exchange exchange;
+        private Exchange exchange;
 
         private final AccessLog accessLog;
 
         private final FilterChain filterChain;
 
+        private final Route route;
+
+        private final AccessLogConf accessLogConf;
+
         AccessLogAuditContext(Exchange exchange, FilterChain filterChain) {
             this.exchange = exchange;
             this.filterChain = filterChain;
             this.accessLog = new AccessLog();
+            this.route = RouteUtil.getRoute(exchange);
+            this.accessLogConf = this.route.getAccessLogConf();
         }
 
         Mono<Void> run() {
@@ -73,7 +77,7 @@ public class AccessLogFilter implements Filter {
 
             accessLog.setRequestId(request.requestId());
             accessLog.setReqTimestamp(System.currentTimeMillis());
-            accessLog.setApiId(RouteUtil.getRoute(exchange).getId());
+            accessLog.setApiId(route.getId());
 
             String clientIp = Objects.requireNonNull(request.remoteAddress()).getAddress().getHostAddress();
             AccessLog.ClientInfo clientInfo = new AccessLog.ClientInfo();
@@ -83,21 +87,36 @@ public class AccessLogFilter implements Filter {
             AccessLog.RequestInfo requestInfo = new AccessLog.RequestInfo();
             requestInfo.setMethod(request.method().name());
             requestInfo.setUri(request.uri());
-            requestInfo.setHeaders(copyHeaders(request.requestHeaders()));
+
+            if (accessLogConf.isReqHeadersEnabled()) {
+                requestInfo.setHeaders(copyHeaders(request.requestHeaders()));
+            }
+
             accessLog.setRequestInfo(requestInfo);
 
-            BodyAuditableRequest bodyAuditableRequest = new BodyAuditableRequest(request);
-            BodyAuditableResponse bodyAuditableResponse = new BodyAuditableResponse(exchange.getResponse());
+            if (accessLogConf.isReqBodyEnabled() || accessLogConf.isRespBodyEnabled()) {
+                buildNewExchange();
+            }
 
-            Exchange modifiedExchange = new DefaultExchangeBuilder(exchange).request(bodyAuditableRequest).response(bodyAuditableResponse).build();
-
-            return filterChain.filter(modifiedExchange)
-                    .doOnSuccess(ignore -> doAuditInResponseStage(bodyAuditableRequest, bodyAuditableResponse, modifiedExchange))
-                    .doOnError(ignore -> doAuditInResponseStage(bodyAuditableRequest, bodyAuditableResponse, modifiedExchange))
-                    .doOnCancel(() -> doAuditInResponseStage(bodyAuditableRequest, bodyAuditableResponse, modifiedExchange));
+            return filterChain.filter(exchange)
+                    .doOnSuccess(ignore -> doAuditInResponseStage())
+                    .doOnError(ignore -> doAuditInResponseStage())
+                    .doOnCancel(this::doAuditInResponseStage);
         }
 
-        void doAuditInResponseStage(BodyAuditableRequest bodyAuditableRequest, BodyAuditableResponse bodyAuditableResponse, Exchange exchange) {
+        private void buildNewExchange() {
+            long reqBodyLimit = accessLogConf.isReqBodyEnabled() ? accessLogConf.getBodyLimit() : 0L;
+            BodyAuditableRequest bodyAuditableRequest = new BodyAuditableRequest(exchange.getRequest(), reqBodyLimit);
+
+            long respBodyLimit = accessLogConf.isRespBodyEnabled() ? accessLogConf.getBodyLimit() : 0L;
+            BodyAuditableResponse bodyAuditableResponse = new BodyAuditableResponse(exchange.getResponse(), respBodyLimit);
+
+            this.exchange = new DefaultExchangeBuilder(exchange).request(bodyAuditableRequest).response(bodyAuditableResponse).build();
+        }
+
+        void doAuditInResponseStage() {
+            BodyAuditableRequest bodyAuditableRequest = (BodyAuditableRequest) exchange.getRequest();
+            accessLog.getRequestInfo().setBodySize(bodyAuditableRequest.getBodySize());
             byte[] auditRequestBodyBytes = bodyAuditableRequest.getAuditBody();
             try {
                 String auditRequestBodyString = new String(auditRequestBodyBytes);
@@ -110,15 +129,20 @@ public class AccessLogFilter implements Filter {
 
             AccessLog.ResponseInfo responseInfo = new AccessLog.ResponseInfo();
             responseInfo.setCode(exchange.getResponse().status().code());
-            responseInfo.setHeaders(copyHeaders(exchange.getResponse().responseHeaders()));
 
+            if (accessLogConf.isRespHeadersEnabled()) {
+                responseInfo.setHeaders(copyHeaders(exchange.getResponse().responseHeaders()));
+            }
+
+            BodyAuditableResponse bodyAuditableResponse = (BodyAuditableResponse) exchange.getResponse();
+            responseInfo.setBodySize(bodyAuditableResponse.getBodySize());
             byte[] auditResponseBodyBytes = bodyAuditableResponse.getAuditBody();
             try {
                 String auditResponseBodyString = new String(auditResponseBodyBytes);
                 responseInfo.setBody(auditResponseBodyString);
                 responseInfo.setBodyBase64(false);
             } catch (Exception exception) {
-                responseInfo.setBody(Base64.getEncoder().encodeToString(auditRequestBodyBytes));
+                responseInfo.setBody(Base64.getEncoder().encodeToString(auditResponseBodyBytes));
                 responseInfo.setBodyBase64(true);
             }
 

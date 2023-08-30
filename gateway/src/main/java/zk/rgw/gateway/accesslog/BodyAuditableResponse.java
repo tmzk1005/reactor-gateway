@@ -26,10 +26,11 @@ import zk.rgw.http.exchange.HttpServerResponseDecorator;
 
 public class BodyAuditableResponse extends HttpServerResponseDecorator {
 
-    private final BytesCollector bytesCollector = new BytesCollector();
+    private final BytesCollector bytesCollector;
 
-    public BodyAuditableResponse(HttpServerResponse delegator) {
+    public BodyAuditableResponse(HttpServerResponse delegator, long bodyLimit) {
         super(delegator);
+        this.bytesCollector = new BytesCollector(bodyLimit);
     }
 
     @Override
@@ -39,6 +40,10 @@ public class BodyAuditableResponse extends HttpServerResponseDecorator {
 
     public byte[] getAuditBody() {
         return this.bytesCollector.allBytes();
+    }
+
+    public long getBodySize() {
+        return bytesCollector.getSize();
     }
 
 }
