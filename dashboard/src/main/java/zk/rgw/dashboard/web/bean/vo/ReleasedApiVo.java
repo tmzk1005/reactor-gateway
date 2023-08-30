@@ -45,6 +45,8 @@ public class ReleasedApiVo {
 
     private Set<String> tags;
 
+    private String mdDoc;
+
     private Set<String> methods;
 
     private String path;
@@ -54,6 +56,7 @@ public class ReleasedApiVo {
         this.name = api.getName();
         this.description = api.getDescription();
         this.tags = api.getTags();
+        this.mdDoc = api.getMdDoc();
         Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
         if (Objects.nonNull(publishSnapshots) && publishSnapshots.containsKey(envId)) {
             this.releaseTime = publishSnapshots.get(envId).getLastModifiedDate();

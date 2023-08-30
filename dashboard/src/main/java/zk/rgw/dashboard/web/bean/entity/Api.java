@@ -55,6 +55,8 @@ public class Api extends BaseAuditableEntity<ApiDto> {
 
     private Set<String> tags;
 
+    private String mdDoc;
+
     private RouteDefinition routeDefinition;
 
     private Instant routeDefinitionLastModifiedDate;
@@ -70,6 +72,7 @@ public class Api extends BaseAuditableEntity<ApiDto> {
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.tags = dto.getTags();
+        this.mdDoc = dto.getMdDoc();
         if (!Objects.equals(this.routeDefinition, dto.getRouteDefinition())) {
             this.routeDefinitionLastModifiedDate = Instant.now();
             this.routeDefinition = dto.getRouteDefinition();

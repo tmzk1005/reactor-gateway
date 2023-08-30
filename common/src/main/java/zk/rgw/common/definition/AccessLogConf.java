@@ -16,11 +16,9 @@
 
 package zk.rgw.common.definition;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class AccessLogConf {
 
     public static final long BODY_LIMIT_MAX = 1L << 20;
@@ -35,7 +33,7 @@ public class AccessLogConf {
 
     private long bodyLimit = BODY_LIMIT_MAX;
 
-    public void setBodyLimitMax(long bodyLimit) {
+    public void setBodyLimit(long bodyLimit) {
         if (bodyLimit <= 0) {
             throw new IllegalArgumentException("body limit can not must bigger than 0.");
         }

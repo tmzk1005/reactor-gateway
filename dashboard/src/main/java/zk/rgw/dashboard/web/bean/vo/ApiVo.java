@@ -45,6 +45,8 @@ public class ApiVo extends AuditableVo implements Vo<Api> {
 
     private Set<String> tags;
 
+    private String mdDoc;
+
     private RouteDefinition routeDefinition;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
@@ -60,6 +62,7 @@ public class ApiVo extends AuditableVo implements Vo<Api> {
         this.name = poInstance.getName();
         this.description = poInstance.getDescription();
         this.tags = poInstance.getTags();
+        this.mdDoc = poInstance.getMdDoc();
         this.routeDefinition = poInstance.getRouteDefinition();
         this.routeDefinitionLastModifiedDate = poInstance.getRouteDefinitionLastModifiedDate();
 

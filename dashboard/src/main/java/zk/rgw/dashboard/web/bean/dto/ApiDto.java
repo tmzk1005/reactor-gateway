@@ -48,6 +48,9 @@ public class ApiDto implements ValidatableDto {
     @Pattern(regexp = Patters.IDENTIFIER_ZH, message = "API标签只能包含字母，数字和下划线")
     private Set<String> tags;
 
+    @Size(max = 32 * 1024, message = "API的markdown文档长度不能超过32KB")
+    private String mdDoc;
+
     private RouteDefinition routeDefinition;
 
     @Override
