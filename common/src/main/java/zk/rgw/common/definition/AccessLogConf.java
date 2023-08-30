@@ -16,23 +16,30 @@
 
 package zk.rgw.common.definition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
-import lombok.Data;
+@Getter
+@Setter
+public class AccessLogConf {
 
-@Data
-public class RouteDefinition {
+    public static final long BODY_LIMIT_MAX = 1L << 20;
 
-    private Set<String> methods;
+    private boolean reqHeadersEnabled = false;
 
-    private String path;
+    private boolean respHeadersEnabled = false;
 
-    private AccessLogConf accessLogConf;
+    private boolean reqBodyEnabled = false;
 
-    private List<PredicateDefinition> predicateDefinitions = new ArrayList<>(1);
+    private boolean respBodyEnabled = false;
 
-    private List<PluginInstanceDefinition> pluginDefinitions = new ArrayList<>(4);
+    private long bodyLimit = BODY_LIMIT_MAX;
+
+    public void setBodyLimitMax(long bodyLimit) {
+        if (bodyLimit <= 0) {
+            throw new IllegalArgumentException("body limit can not must bigger than 0.");
+        }
+        this.bodyLimit = Math.min(bodyLimit, BODY_LIMIT_MAX);
+    }
 
 }
