@@ -32,7 +32,7 @@ public class BodyAuditableRequest extends HttpServerRequestDecorator {
 
     @Override
     public @NonNull ByteBufFlux receive() {
-        return (ByteBufFlux) super.receive().doOnNext(this.bytesCollector::append);
+        return ByteBufFlux.fromInbound(super.receive().doOnNext(this.bytesCollector::append));
     }
 
     public byte[] getAuditBody() {
