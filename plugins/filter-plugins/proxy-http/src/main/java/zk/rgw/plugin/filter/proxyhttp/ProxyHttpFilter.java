@@ -38,6 +38,8 @@ import zk.rgw.plugin.util.ResponseUtil;
 
 public class ProxyHttpFilter implements JsonConfFilterPlugin {
 
+    private static final HttpClient HTTP_CLIENT = HttpClient.create();
+
     @Getter
     @Setter
     private String upstreamEndpoint;
@@ -45,7 +47,7 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
     @JsonIgnore
     @Setter
     @Getter
-    private HttpClient httpClient;
+    private HttpClient httpClient = HTTP_CLIENT;
 
     @Getter
     @Setter
