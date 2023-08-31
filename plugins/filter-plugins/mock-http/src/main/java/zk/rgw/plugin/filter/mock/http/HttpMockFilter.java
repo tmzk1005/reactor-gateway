@@ -51,7 +51,8 @@ public class HttpMockFilter implements JsonConfFilterPlugin {
                 }
             });
         }
-        return response.sendString(Mono.just(content)).then();
+        // 虽然这里暂时没有用到请求体内容，但是仍然读取后才发送响应，以便可以审计到请求体
+        return exchange.getRequest().receive().then(response.sendString(Mono.just(content)).then());
     }
 
 }
