@@ -75,6 +75,11 @@ public class GatewayConfiguration extends ServerConfiguration {
     @CommandLine.Option(names = "--kafka.bootstrap.servers", description = "The kafka bootstrap server used to write access log to.")
     private String kafkaBootstrapServers = "127.0.0.1:9092";
 
+    @Getter
+    @Setter
+    @CommandLine.Option(names = "--access.log.enabled", description = "Set if access log should be audited and sent to kafka.")
+    private boolean accessLogEnabled = true;
+
     public GatewayConfiguration() {
         this.confFile = DEFAULT_CONF_FILE;
         this.serverPort = DEFAULT_PORT;

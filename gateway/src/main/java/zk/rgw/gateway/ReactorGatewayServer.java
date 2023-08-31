@@ -67,14 +67,16 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     }
 
     private void initRouteLocator() {
-        AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
+        if (configuration.isAccessLogEnabled()) {
+            AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
 
-        accessLogKafkaWriter.start();
-        this.lifeCycles.add(accessLogKafkaWriter);
+            accessLogKafkaWriter.start();
+            this.lifeCycles.add(accessLogKafkaWriter);
 
-        AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
+            AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
 
-        RouteConverter.setAccessLogFilter(accessLogFilter);
+            RouteConverter.setAccessLogFilter(accessLogFilter);
+        }
 
         PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
                 configuration.getDashboardAddress(),
