@@ -24,7 +24,9 @@ import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufFlux;
 import reactor.netty.http.client.HttpClient;
 
+import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.RgwEventListener;
+import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
@@ -35,7 +37,7 @@ import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 
 @SuppressWarnings("java:S1075")
 @Slf4j
-public class ApiPublishingListener implements RgwEventListener<ApiPublishingEvent> {
+public class DashboardEventListener implements RgwEventListener<RgwEvent> {
 
     private static final String GATEWAY_API_CONTEXT_PATH = "/__rgw_internal";
 
@@ -48,27 +50,53 @@ public class ApiPublishingListener implements RgwEventListener<ApiPublishingEven
     private final HttpClient httpClient = HttpClient.create();
 
     @Override
-    public void onEvent(ApiPublishingEvent event) {
+    public void onEvent(RgwEvent event) {
+        if (event instanceof ApiPublishingEvent apiPublishingEvent) {
+            handleApiPublishingEvent(apiPublishingEvent);
+        } else if (event instanceof EnvironmentChangedEvent environmentChangedEvent) {
+            handleEnvironmentChangedEvent(environmentChangedEvent);
+        }
+    }
+
+    private void handleApiPublishingEvent(ApiPublishingEvent event) {
         log.info(
                 "detect an api {} event, envId: {}, apiId: {}",
                 event.isAdd() ? "publish" : "unpublish",
                 event.getEnvId(),
                 event.getRouteDefinition().getId()
         );
-
-        executorService.submit(() -> notifyGatewayNodes(event.getEnvId()));
+        executorService.submit(() -> notifyGatewayNodesApiUpdated(event.getEnvId()));
     }
 
-    private void notifyGatewayNodes(String envId) {
+    private void handleEnvironmentChangedEvent(EnvironmentChangedEvent event) {
+        log.info(
+                "detect an environment changed event, env id: {}, org id: {}. going to notify gateway nodes.",
+                event.getEnvId(), event.getOrgId()
+        );
+        executorService.submit(() -> notifyGatewayNodesEnvironmentChanged(event));
+    }
+
+    private void notifyGatewayNodesApiUpdated(String envId) {
+        Notification notification = new Notification();
+        notification.setApiUpdated(true);
+        notifyByEnvId(envId, notification);
+    }
+
+    private void notifyGatewayNodesEnvironmentChanged(EnvironmentChangedEvent event) {
+        Notification notification = new Notification();
+        notification.setEnvironmentUpdated(true);
+        notification.setEnvironmentChangedEvent(event);
+        notifyByEnvId(event.getEnvId(), notification);
+    }
+
+    private void notifyByEnvId(String envId, Notification notification) {
         gatewayNodeRepository.findAllByEnvId(envId)
                 .parallel()
-                .flatMap(this::notifyGatewayNode)
+                .flatMap(gatewayNode -> notifyGatewayNode(gatewayNode, notification))
                 .subscribe();
     }
 
-    private Mono<Void> notifyGatewayNode(GatewayNode gatewayNode) {
-        Notification notification = new Notification();
-        notification.setApiUpdated(true);
+    private Mono<Void> notifyGatewayNode(GatewayNode gatewayNode, Notification notification) {
         String jsonStr;
         try {
             jsonStr = JsonUtil.toJson(notification);
@@ -78,7 +106,7 @@ public class ApiPublishingListener implements RgwEventListener<ApiPublishingEven
         }
 
         String uri = gatewayNode.getAddress() + GATEWAY_API_CONTEXT_PATH + PATH_NOTIFICATION;
-        log.debug("Send api updated notification to gateway node: {}", uri);
+        log.debug("Send notification to gateway node: {} , {}", uri, notification);
         return httpClient.post()
                 .uri(uri)
                 .send(ByteBufFlux.fromString(Mono.just(jsonStr)))

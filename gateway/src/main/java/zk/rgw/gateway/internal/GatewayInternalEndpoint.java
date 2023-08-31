@@ -18,13 +18,17 @@ package zk.rgw.gateway.internal;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.HeartbeatInfo;
+import zk.rgw.gateway.env.EnvironmentManager;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.plugin.api.Exchange;
@@ -39,14 +43,18 @@ public class GatewayInternalEndpoint implements Filter {
 
     private final PullFromDashboardRouteLocator pullFromDashboardRouteLocator;
 
+    private final EnvironmentManager environmentManager;
+
     private final String contextPath;
 
     public GatewayInternalEndpoint(
             String contextPath,
-            PullFromDashboardRouteLocator pullFromDashboardRouteLocator
+            PullFromDashboardRouteLocator pullFromDashboardRouteLocator,
+            EnvironmentManager environmentManager
     ) {
         this.contextPath = contextPath;
         this.pullFromDashboardRouteLocator = pullFromDashboardRouteLocator;
+        this.environmentManager = environmentManager;
         endpoints.put("/notification", new NotificationReceiverEndpoint());
     }
 
@@ -77,14 +85,37 @@ public class GatewayInternalEndpoint implements Filter {
                     log.error("Failed to deserialize to Notification.class", exception);
                     return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.BAD_REQUEST);
                 }
-                checkIfApiUpdated(notification);
+                try {
+                    handleNotification(notification);
+                } catch (Exception exception) {
+                    // just in case
+                    log.info("Exception while handle notification from dashboard.", exception);
+                }
+
                 return ResponseUtil.sendOk(exchange.getResponse());
             });
         }
 
+        private void handleNotification(Notification notification) {
+            checkIfApiUpdated(notification);
+            checkIfEnvUpdated(notification);
+        }
+
         private void checkIfApiUpdated(Notification notification) {
             if (notification.isApiUpdated()) {
+                log.info("Received api updated notification from dashboard.");
                 pullFromDashboardRouteLocator.update();
+            }
+        }
+
+        private void checkIfEnvUpdated(Notification notification) {
+            if (notification.isEnvironmentUpdated() && Objects.nonNull(notification.getEnvironmentChangedEvent())) {
+                EnvironmentChangedEvent event = notification.getEnvironmentChangedEvent();
+
+                log.info("Received environment updated notification from dashboard, orgId = {}", event.getOrgId());
+
+                environmentManager.setEnvForOrg(event.getOrgId(), event.getVariables());
+                HeartbeatInfo.setEnvOpSeqForOrg(event.getOrgId(), event.getOpSeq());
             }
         }
 

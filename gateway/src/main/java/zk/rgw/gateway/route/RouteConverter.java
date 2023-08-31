@@ -29,6 +29,7 @@ import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.definition.PluginInstanceDefinition;
 import zk.rgw.common.definition.RouteDefinition;
 import zk.rgw.gateway.accesslog.AccessLogFilter;
+import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.plugin.CustomPluginClassLoader;
 import zk.rgw.http.plugin.PluginLoadException;
 import zk.rgw.http.route.Route;
@@ -43,6 +44,9 @@ public class RouteConverter {
 
     @Setter
     private static AccessLogFilter accessLogFilter;
+
+    @Setter
+    private static EnvironmentPrepareFilter environmentPrepareFilter;
 
     public static Route convertRouteDefinition(IdRouteDefinition idRouteDefinition) throws RouteConvertException {
         Route route = new Route();
@@ -67,6 +71,10 @@ public class RouteConverter {
             filters.add(accessLogFilter);
         }
 
+        if (Objects.nonNull(environmentPrepareFilter)) {
+            filters.add(environmentPrepareFilter);
+        }
+
         for (PluginInstanceDefinition pluginInstanceDefinition : routeDefinition.getPluginDefinitions()) {
             try {
                 filters.add(convertPluginDefinition(pluginInstanceDefinition));
@@ -76,6 +84,9 @@ public class RouteConverter {
         }
 
         route.setFilters(filters);
+
+        // route需要用组织id当作自己的查找环境变量的key
+        route.setEnvKey(idRouteDefinition.getOrgId());
         return route;
     }
 

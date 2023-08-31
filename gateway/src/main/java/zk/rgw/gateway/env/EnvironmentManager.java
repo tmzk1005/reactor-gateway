@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.common.heartbeat;
+package zk.rgw.gateway.env;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.HashMap;
+import java.util.Map;
 
-import lombok.ToString;
-import zk.rgw.common.event.impl.EnvironmentChangedEvent;
+public class EnvironmentManager {
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-public class Notification {
+    private final Map<String, Map<String, String>> envMap = new HashMap<>();
 
-    private boolean apiUpdated;
+    public Map<String, String> getEnvForOrg(String orgId) {
+        return envMap.getOrDefault(orgId, Map.of());
+    }
 
-    private boolean subscriptionUpdated;
-
-    private boolean environmentUpdated;
-
-    private EnvironmentChangedEvent environmentChangedEvent;
+    public void setEnvForOrg(String orgId, Map<String, String> env) {
+        this.envMap.put(orgId, env);
+    }
 
 }

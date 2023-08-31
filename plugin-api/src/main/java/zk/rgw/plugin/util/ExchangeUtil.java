@@ -29,6 +29,8 @@ public class ExchangeUtil {
 
     public static final String PATH_PARAMS = qualify("pathParams");
 
+    public static final String ENVIRONMENT_VARS = qualify("environmentVars");
+
     private ExchangeUtil() {
     }
 
@@ -43,6 +45,10 @@ public class ExchangeUtil {
             exchange.getAttributes().put(QUERY_PARAMS, params);
         }
         return params;
+    }
+
+    public static Map<String, String> getEnvironment(Exchange exchange) {
+        return exchange.getAttributeOrDefault(ENVIRONMENT_VARS, Map.of());
     }
 
 }

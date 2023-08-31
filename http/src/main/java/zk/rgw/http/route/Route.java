@@ -34,6 +34,8 @@ public class Route {
 
     private String id;
 
+    private String envKey;
+
     private Set<HttpMethod> methods = Constants.HTTP_METHODS_ALL;
 
     private String path;

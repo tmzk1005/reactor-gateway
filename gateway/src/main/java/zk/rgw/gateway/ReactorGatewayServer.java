@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import zk.rgw.common.bootstrap.LifeCycle;
 import zk.rgw.gateway.accesslog.AccessLogFilter;
 import zk.rgw.gateway.accesslog.AccessLogKafkaWriter;
+import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
@@ -53,15 +54,10 @@ public class ReactorGatewayServer extends ReactorHttpServer {
 
     @Override
     protected void beforeStart() {
+        GlobalSingletons.init(this.configuration);
         initRouteLocator();
-        HeartbeatReporter heartbeatReporter = new HeartbeatReporter(
-                configuration.getDashboardAddress(),
-                configuration.getDashboardApiContextPath(),
-                configuration.getEnvironmentId(),
-                configuration.getHeartbeatInterval(),
-                configuration.getServerSchema(),
-                configuration.getServerPort()
-        );
+        RouteConverter.setEnvironmentPrepareFilter(GlobalSingletons.get(EnvironmentPrepareFilter.class));
+        HeartbeatReporter heartbeatReporter = GlobalSingletons.get(HeartbeatReporter.class);
         heartbeatReporter.start();
         this.lifeCycles.add(heartbeatReporter);
     }
@@ -78,17 +74,14 @@ public class ReactorGatewayServer extends ReactorHttpServer {
             RouteConverter.setAccessLogFilter(accessLogFilter);
         }
 
-        PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
-                configuration.getDashboardAddress(),
-                configuration.getDashboardApiContextPath(),
-                configuration.getDashboardAuthKey(),
-                configuration.getEnvironmentId()
-        );
+        PullFromDashboardRouteLocator pullFromDashboardRouteLocator = GlobalSingletons.get(PullFromDashboardRouteLocator.class);
         pullFromDashboardRouteLocator.start();
         this.lifeCycles.add(pullFromDashboardRouteLocator);
 
+        GatewayInternalRouteLocator gatewayInternalRouteLocator = GlobalSingletons.get(GatewayInternalRouteLocator.class);
+
         this.routeLocator = new CompositeRouteLocator(
-                new GatewayInternalRouteLocator(pullFromDashboardRouteLocator),
+                gatewayInternalRouteLocator,
                 pullFromDashboardRouteLocator
         );
     }

@@ -27,9 +27,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+import zk.rgw.common.event.EventPublisher;
+import zk.rgw.common.event.RgwEvent;
+import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.global.GlobalSingletons;
 import zk.rgw.dashboard.web.bean.KeyValue;
 import zk.rgw.dashboard.web.bean.dto.EnvVariables;
 import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
@@ -39,6 +43,7 @@ import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
+import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.EnvironmentService;
 
@@ -50,6 +55,11 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     private final EnvBindingRepository envBindingRepository = RepositoryFactory.get(EnvBindingRepository.class);
 
     private final OrganizationRepository organizationRepository = RepositoryFactory.get(OrganizationRepository.class);
+
+    private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
+
+    @SuppressWarnings("unchecked")
+    private final EventPublisher<RgwEvent> eventPublisher = GlobalSingletons.get(EventPublisher.class);
 
     @Override
     public Mono<Environment> createEnvironment(EnvironmentDto environmentDto) {
@@ -86,19 +96,26 @@ public class EnvironmentServiceImpl implements EnvironmentService {
     }
 
     @Override
-    public Mono<EnvBinding> setEnvVariables(String evnId, String orgId, EnvVariables envVariables, boolean append) {
-        return getOneEnvBinding(evnId, orgId).flatMap(envBinding -> {
+    public Mono<EnvBinding> setEnvVariables(String envId, String orgId, EnvVariables envVariables, boolean append) {
+        return getOneEnvBinding(envId, orgId).flatMap(envBinding -> {
             Map<String, String> variables = append ? envBinding.getVariables() : new HashMap<>();
             for (KeyValue keyValue : envVariables.getKeyValues()) {
                 variables.put(keyValue.getKey(), keyValue.getValue());
             }
             envBinding.setVariables(variables);
-            return envBindingRepository.save(envBinding).map(theResult -> {
-                theResult.setEnvironment(envBinding.getEnvironment());
-                theResult.setOrganization(envBinding.getOrganization());
-                return theResult;
+
+            String seqName = String.format(EnvBinding.SEQ_NAME_FORMATTER, envId, orgId);
+
+            return rgwSequenceRepository.next(seqName).flatMap(opSeq -> {
+                envBinding.setOpSeq(opSeq);
+
+                return envBindingRepository.save(envBinding).map(theResult -> {
+                    theResult.setEnvironment(envBinding.getEnvironment());
+                    theResult.setOrganization(envBinding.getOrganization());
+                    return theResult;
+                });
             });
-        });
+        }).doOnSuccess(this::emitEvent);
     }
 
     private Mono<Tuple2<Environment, Organization>> getEnvAndOrg(String envId, String orgId) {
@@ -106,12 +123,21 @@ public class EnvironmentServiceImpl implements EnvironmentService {
             if (!user.isSystemAdmin() && !user.getOrganization().getId().equals(orgId)) {
                 return Mono.error(new AccessDeniedException("无权访问其他组织数据"));
             }
-
             return Mono.zip(
                     environmentRepository.findOneById(envId),
                     organizationRepository.findOneById(orgId)
             ).switchIfEmpty(Mono.error(BizException.of("指定的环境或者组织不存在")));
         });
+    }
+
+    private void emitEvent(EnvBinding envBinding) {
+        EnvironmentChangedEvent rgwEvent = new EnvironmentChangedEvent(
+                envBinding.getEnvironment().getId(),
+                envBinding.getOrganization().getId(),
+                envBinding.getOpSeq(),
+                envBinding.getVariables()
+        );
+        eventPublisher.publishEvent(rgwEvent);
     }
 
 }

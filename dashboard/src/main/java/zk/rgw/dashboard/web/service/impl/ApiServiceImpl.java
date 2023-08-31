@@ -32,10 +32,11 @@ import reactor.util.function.Tuple3;
 
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.event.EventPublisher;
-import zk.rgw.common.event.EventPublisherImpl;
+import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.util.ObjectUtil;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.global.GlobalSingletons;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.Page;
@@ -51,7 +52,6 @@ import zk.rgw.dashboard.web.bean.vo.ApiVo;
 import zk.rgw.dashboard.web.bean.vo.ReleasedApiVo;
 import zk.rgw.dashboard.web.bean.vo.SimpleEnvironmentVo;
 import zk.rgw.dashboard.web.event.ApiPublishingEvent;
-import zk.rgw.dashboard.web.event.listener.ApiPublishingListener;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
@@ -74,11 +74,11 @@ public class ApiServiceImpl implements ApiService {
 
     private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
 
-    private final EventPublisher<ApiPublishingEvent> eventPublisher;
+    private final EventPublisher<RgwEvent> eventPublisher;
 
+    @SuppressWarnings("unchecked")
     public ApiServiceImpl() {
-        this.eventPublisher = new EventPublisherImpl<>();
-        this.eventPublisher.registerListener(new ApiPublishingListener());
+        this.eventPublisher = GlobalSingletons.get(EventPublisher.class);
     }
 
     @Override

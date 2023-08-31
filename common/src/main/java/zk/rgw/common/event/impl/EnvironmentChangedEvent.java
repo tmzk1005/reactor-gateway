@@ -13,25 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.common.heartbeat;
+package zk.rgw.common.event.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import lombok.ToString;
-import zk.rgw.common.event.impl.EnvironmentChangedEvent;
+
+import zk.rgw.common.event.RgwEvent;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-public class Notification {
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "variables")
+public class EnvironmentChangedEvent implements RgwEvent {
 
-    private boolean apiUpdated;
+    private String envId;
 
-    private boolean subscriptionUpdated;
+    private String orgId;
 
-    private boolean environmentUpdated;
+    private long opSeq;
 
-    private EnvironmentChangedEvent environmentChangedEvent;
+    private Map<String, String> variables = new HashMap<>();
 
 }
