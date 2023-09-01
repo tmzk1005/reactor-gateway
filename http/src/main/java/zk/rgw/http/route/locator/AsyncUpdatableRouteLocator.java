@@ -55,7 +55,9 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
             return;
         }
         log.info("Start {}.", this.getClass().getSimpleName());
-        scheduledExecutorService.scheduleAtFixedRate(this::doUpdate, 0, periodInSeconds, TimeUnit.SECONDS);
+        // initialDelay 设置为2秒，2秒的时间应该足够gateway程序启动，完成向dashboard的注册，并发送第一个心跳
+        // 一般收到第一个心跳的响应后就会有API需要同步，会执行update()
+        scheduledExecutorService.scheduleAtFixedRate(this::doUpdate, 2, periodInSeconds, TimeUnit.SECONDS);
     }
 
     @Override
