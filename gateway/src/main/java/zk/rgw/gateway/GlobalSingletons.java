@@ -18,7 +18,9 @@ package zk.rgw.gateway;
 import java.util.HashMap;
 import java.util.Map;
 
-import zk.rgw.gateway.env.EnvironmentManager;
+import zk.rgw.common.event.EventPublisher;
+import zk.rgw.common.event.EventPublisherImpl;
+import zk.rgw.common.event.RgwEvent;
 import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalEndpoint;
@@ -35,10 +37,7 @@ public class GlobalSingletons {
     static void init(GatewayConfiguration configuration) {
         INSTANCES.put(GatewayConfiguration.class, configuration);
 
-        EnvironmentManager environmentManager = new EnvironmentManager();
-        INSTANCES.put(EnvironmentManager.class, environmentManager);
-
-        EnvironmentPrepareFilter environmentPrepareFilter = new EnvironmentPrepareFilter(environmentManager);
+        EnvironmentPrepareFilter environmentPrepareFilter = new EnvironmentPrepareFilter();
         INSTANCES.put(EnvironmentPrepareFilter.class, environmentPrepareFilter);
 
         PullFromDashboardRouteLocator pullFromDashboardRouteLocator = new PullFromDashboardRouteLocator(
@@ -49,11 +48,7 @@ public class GlobalSingletons {
         );
         INSTANCES.put(PullFromDashboardRouteLocator.class, pullFromDashboardRouteLocator);
 
-        GatewayInternalEndpoint gatewayInternalEndpoint = new GatewayInternalEndpoint(
-                GatewayInternalRouteLocator.INTERNAL_CONTEXT_PATH,
-                pullFromDashboardRouteLocator,
-                environmentManager
-        );
+        GatewayInternalEndpoint gatewayInternalEndpoint = new GatewayInternalEndpoint(GatewayInternalRouteLocator.INTERNAL_CONTEXT_PATH);
         INSTANCES.put(GatewayInternalEndpoint.class, gatewayInternalEndpoint);
 
         GatewayInternalRouteLocator gatewayInternalRouteLocator = new GatewayInternalRouteLocator(gatewayInternalEndpoint);
@@ -68,6 +63,15 @@ public class GlobalSingletons {
                 configuration.getServerPort()
         );
         INSTANCES.put(HeartbeatReporter.class, heartbeatReporter);
+
+        EventPublisher<RgwEvent> eventPublisher = new EventPublisherImpl<>();
+        INSTANCES.put(EventPublisher.class, eventPublisher);
+
+        eventPublisher.registerListener(environmentPrepareFilter);
+        eventPublisher.registerListener(pullFromDashboardRouteLocator);
+        eventPublisher.registerListener(heartbeatReporter);
+
+        gatewayInternalEndpoint.setEventPublisher(eventPublisher);
     }
 
     @SuppressWarnings("unchecked")

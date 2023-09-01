@@ -31,6 +31,8 @@ import reactor.netty.ByteBufFlux;
 import reactor.netty.http.client.HttpClient;
 
 import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.common.event.RgwEvent;
+import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwRegisterPayload;
@@ -40,7 +42,7 @@ import zk.rgw.plugin.util.Shuck;
 
 @SuppressWarnings("java:S1075")
 @Slf4j
-public class HeartbeatReporter implements LifeCycle {
+public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> {
 
     private static final String PATH_REGISTER = "/gateway/_register";
     private static final String PATH_HEARTBEAT = "/gateway/_heartbeat";
@@ -148,6 +150,11 @@ public class HeartbeatReporter implements LifeCycle {
                     );
                     System.exit(2);
                 });
+    }
+
+    @Override
+    public void onEvent(RgwEvent event) {
+        // TODO
     }
 
     private static Publisher<? extends ByteBuf> toByteBufFlux(Object data) {

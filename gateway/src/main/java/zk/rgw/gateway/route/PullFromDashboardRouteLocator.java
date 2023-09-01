@@ -30,8 +30,12 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.event.RgwEvent;
+import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.exception.RgwRuntimeException;
+import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.RouteEvent;
 import zk.rgw.http.route.locator.AsyncUpdatableRouteLocator;
@@ -39,7 +43,7 @@ import zk.rgw.http.utils.UriBuilder;
 import zk.rgw.plugin.util.Shuck;
 
 @Slf4j
-public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
+public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator implements RgwEventListener<RgwEvent> {
 
     private static final String PARAMETER_ENV_ID = "envId";
 
@@ -130,6 +134,17 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator {
                         throw new RgwRuntimeException("Failed to deserialize response of sync route definitions request sent to " + uri);
                     }
                 }).flatMapMany((Function<List<IdRouteDefinition>, Flux<IdRouteDefinition>>) Flux::fromIterable);
+    }
+
+    @Override
+    public void onEvent(RgwEvent event) {
+        if (event instanceof NotificationEvent notificationEvent) {
+            Notification notification = notificationEvent.getNotification();
+            if (notification.isApiUpdated()) {
+                log.info("Received api updated notification.");
+                update();
+            }
+        }
     }
 
     static class SyncRouteResp extends Shuck<List<IdRouteDefinition>> {

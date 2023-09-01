@@ -13,31 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.common.heartbeat;
+package zk.rgw.gateway.event;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import zk.rgw.common.event.RgwEvent;
+import zk.rgw.common.heartbeat.Notification;
 
 @Getter
 @Setter
-public class GwHeartbeatPayload {
+@NoArgsConstructor
+@AllArgsConstructor
+public class NotificationEvent implements RgwEvent {
 
-    /**
-     * 通过向dashboard注册而被分配到的节点id
-     */
-    private String nodeId;
-
-    /**
-     * 节点上的最新拉取到的api操作序列号
-     */
-    private long apiOpSeq;
-
-    /**
-     * 每个组织的环境操作序列号
-     */
-    private Map<String, Long> orgEnvOpSeqMap = new HashMap<>();
+    private Notification notification;
 
 }

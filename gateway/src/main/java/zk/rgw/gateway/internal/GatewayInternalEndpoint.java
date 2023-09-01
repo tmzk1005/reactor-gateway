@@ -18,18 +18,17 @@ package zk.rgw.gateway.internal;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import zk.rgw.common.event.impl.EnvironmentChangedEvent;
+import zk.rgw.common.event.EventPublisher;
+import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
-import zk.rgw.gateway.HeartbeatInfo;
-import zk.rgw.gateway.env.EnvironmentManager;
-import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
+import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.http.path.PathUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;
@@ -41,20 +40,13 @@ public class GatewayInternalEndpoint implements Filter {
 
     private final Map<String, Endpoint> endpoints = new HashMap<>();
 
-    private final PullFromDashboardRouteLocator pullFromDashboardRouteLocator;
-
-    private final EnvironmentManager environmentManager;
-
     private final String contextPath;
 
-    public GatewayInternalEndpoint(
-            String contextPath,
-            PullFromDashboardRouteLocator pullFromDashboardRouteLocator,
-            EnvironmentManager environmentManager
-    ) {
+    @Setter
+    private EventPublisher<RgwEvent> eventPublisher;
+
+    public GatewayInternalEndpoint(String contextPath) {
         this.contextPath = contextPath;
-        this.pullFromDashboardRouteLocator = pullFromDashboardRouteLocator;
-        this.environmentManager = environmentManager;
         endpoints.put("/notification", new NotificationReceiverEndpoint());
     }
 
@@ -97,26 +89,7 @@ public class GatewayInternalEndpoint implements Filter {
         }
 
         private void handleNotification(Notification notification) {
-            checkIfApiUpdated(notification);
-            checkIfEnvUpdated(notification);
-        }
-
-        private void checkIfApiUpdated(Notification notification) {
-            if (notification.isApiUpdated()) {
-                log.info("Received api updated notification from dashboard.");
-                pullFromDashboardRouteLocator.update();
-            }
-        }
-
-        private void checkIfEnvUpdated(Notification notification) {
-            if (notification.isEnvironmentUpdated() && Objects.nonNull(notification.getEnvironmentChangedEvent())) {
-                EnvironmentChangedEvent event = notification.getEnvironmentChangedEvent();
-
-                log.info("Received environment updated notification from dashboard, orgId = {}", event.getOrgId());
-
-                environmentManager.setEnvForOrg(event.getOrgId(), event.getVariables());
-                HeartbeatInfo.setEnvOpSeqForOrg(event.getOrgId(), event.getOpSeq());
-            }
+            eventPublisher.publishEvent(new NotificationEvent(notification));
         }
 
     }
