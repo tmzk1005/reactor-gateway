@@ -29,7 +29,7 @@ public class SyncState {
     /**
      * 节点上的最新拉取到的api操作序列号
      */
-    private long apiOpSeq;
+    private long apiOpSeq = 0L;
 
     /**
      * 每个组织的环境操作序列号

@@ -55,7 +55,6 @@ public abstract class AsyncUpdatableRouteLocator extends UpdatableRouteLocator {
             return;
         }
         log.info("Start {}.", this.getClass().getSimpleName());
-        updated.set(true);
         scheduledExecutorService.scheduleAtFixedRate(this::doUpdate, 0, periodInSeconds, TimeUnit.SECONDS);
     }
 

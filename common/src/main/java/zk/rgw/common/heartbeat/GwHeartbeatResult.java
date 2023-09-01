@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.gateway.env;
+package zk.rgw.common.heartbeat;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class EnvironmentManager {
+import lombok.Getter;
+import lombok.Setter;
 
-    private final Map<String, Map<String, String>> envMap = new HashMap<>();
+@Getter
+@Setter
+public class GwHeartbeatResult {
 
-    public Map<String, String> getEnvForOrg(String orgId) {
-        return envMap.getOrDefault(orgId, Map.of());
-    }
+    private boolean apiBehind = false;
 
-    public void setEnvForOrg(String orgId, Map<String, String> env) {
-        this.envMap.put(orgId, env);
-    }
+    private boolean envBehind = false;
 
-    public void merge(Map<String, Map<String, String>> data) {
-        envMap.putAll(data);
-    }
+    private SyncState syncState;
+
+    private Map<String, Map<String, String>> environments;
 
 }

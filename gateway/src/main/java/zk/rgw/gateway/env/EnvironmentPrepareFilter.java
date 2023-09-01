@@ -24,6 +24,7 @@ import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.common.heartbeat.Notification;
+import zk.rgw.gateway.event.EnvBehindEvent;
 import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.utils.RouteUtil;
@@ -58,6 +59,9 @@ public class EnvironmentPrepareFilter implements Filter, RgwEventListener<RgwEve
                     environmentManager.setEnvForOrg(environmentChangedEvent.getOrgId(), environmentChangedEvent.getVariables());
                 }
             }
+        } else if (event instanceof EnvBehindEvent envBehindEvent) {
+            log.info("Environment sequence is behind, going to updated.");
+            environmentManager.merge(envBehindEvent.getData());
         }
     }
 

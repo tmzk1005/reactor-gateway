@@ -24,23 +24,31 @@ import java.util.concurrent.TimeUnit;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufFlux;
+import reactor.netty.Connection;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientResponse;
 
 import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterPayload;
 import zk.rgw.common.heartbeat.GwRegisterResult;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.event.ApiOpSeqBehindEvent;
 import zk.rgw.gateway.event.ApiOpSeqUpdateEvent;
+import zk.rgw.gateway.event.EnvBehindEvent;
 import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.plugin.util.Shuck;
 
@@ -68,6 +76,9 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
     private final int serverPort;
 
     private final GwHeartbeatPayload heartbeatPayload = new GwHeartbeatPayload();
+
+    @Setter
+    private EventPublisher<RgwEvent> eventPublisher;
 
     public HeartbeatReporter(
             String dashboardAddress, String dashboardApiContextPath, String environmentId,
@@ -115,7 +126,7 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
         httpClient.post()
                 .uri(pathHeartbeat)
                 .send(toByteBufFlux(heartbeatPayload))
-                .response()
+                .responseConnection(this::handleHeartbeatResp)
                 .doOnError(exception -> log.error("Failed to send heartbeat information to dashboard.", exception))
                 .subscribe();
     }
@@ -166,6 +177,37 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
         }
     }
 
+    private Mono<Void> handleHeartbeatResp(HttpClientResponse clientResponse, Connection connection) {
+        HttpResponseStatus status = clientResponse.status();
+        if (HttpResponseStatus.OK.code() != status.code()) {
+            log.error("Heartbeat response status not ok!");
+            return Mono.empty();
+        }
+        return connection.inbound().receive().aggregate().asString().flatMap(jsonStr -> {
+            HeartbeatResp heartbeatResp;
+            try {
+                heartbeatResp = JsonUtil.readValue(jsonStr, HeartbeatResp.class);
+            } catch (Exception exception) {
+                log.error("Failed to deserialize to HeartbeatResp.class", exception);
+                return Mono.empty();
+            }
+            return handleHeartbeatResult(heartbeatResp.getData());
+        });
+    }
+
+    private Mono<Void> handleHeartbeatResult(GwHeartbeatResult heartbeatResult) {
+        heartbeatPayload.setSyncState(heartbeatResult.getSyncState());
+
+        if (heartbeatResult.isApiBehind()) {
+            eventPublisher.publishEvent(new ApiOpSeqBehindEvent());
+        }
+        if (heartbeatResult.isEnvBehind()) {
+            eventPublisher.publishEvent(new EnvBehindEvent(heartbeatResult.getEnvironments()));
+        }
+
+        return Mono.empty();
+    }
+
     private static Publisher<? extends ByteBuf> toByteBufFlux(Object data) {
         try {
             String jsonContent = JsonUtil.toJson(data);
@@ -176,6 +218,9 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
     }
 
     static class RegisterResp extends Shuck<GwRegisterResult> {
+    }
+
+    static class HeartbeatResp extends Shuck<GwHeartbeatResult> {
     }
 
 }

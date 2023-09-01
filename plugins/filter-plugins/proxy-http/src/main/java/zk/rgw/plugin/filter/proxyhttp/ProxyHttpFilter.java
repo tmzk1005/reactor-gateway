@@ -80,7 +80,7 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
             HttpServerResponse serverResponse = exchange.getResponse();
             return serverResponse.status(httpClientResponse.status())
                     .headers(httpClientResponse.responseHeaders())
-                    .send(connection.inbound().receive().retain())
+                    .send(connection.inbound().receive())
                     .then()
                     .thenReturn("");
         }).timeout(

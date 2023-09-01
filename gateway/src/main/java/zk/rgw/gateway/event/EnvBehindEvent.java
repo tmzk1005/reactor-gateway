@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.gateway.env;
+package zk.rgw.gateway.event;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class EnvironmentManager {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    private final Map<String, Map<String, String>> envMap = new HashMap<>();
+import zk.rgw.common.event.RgwEvent;
 
-    public Map<String, String> getEnvForOrg(String orgId) {
-        return envMap.getOrDefault(orgId, Map.of());
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class EnvBehindEvent implements RgwEvent {
 
-    public void setEnvForOrg(String orgId, Map<String, String> env) {
-        this.envMap.put(orgId, env);
-    }
-
-    public void merge(Map<String, Map<String, String>> data) {
-        envMap.putAll(data);
-    }
+    private Map<String, Map<String, String>> data;
 
 }

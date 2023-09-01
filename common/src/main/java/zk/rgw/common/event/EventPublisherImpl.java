@@ -32,7 +32,7 @@ public class EventPublisherImpl<E extends RgwEvent> implements EventPublisher<E>
     }
 
     @Override
-    public void publishEvent(E rgwEvent) {
+    public synchronized void publishEvent(E rgwEvent) {
         Sinks.EmitResult emitResult = sink.tryEmitNext(rgwEvent);
         if (emitResult.isFailure()) {
             log.error("Failed to publish an event, emit result is {}, event object is {}", emitResult, rgwEvent);
@@ -40,7 +40,7 @@ public class EventPublisherImpl<E extends RgwEvent> implements EventPublisher<E>
     }
 
     @Override
-    public void registerListener(RgwEventListener<E> listener) {
+    public synchronized void registerListener(RgwEventListener<E> listener) {
         this.eventStream.subscribe(listener::onEvent);
     }
 

@@ -15,6 +15,7 @@
  */
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterResult;
 import zk.rgw.common.heartbeat.SyncState;
 import zk.rgw.dashboard.framework.exception.BizException;
@@ -42,6 +44,7 @@ import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.repository.ApiRepository;
+import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
 import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
@@ -64,6 +67,8 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
 
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
 
+    private final EnvBindingRepository envBindingRepository = RepositoryFactory.get(EnvBindingRepository.class);
+
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
@@ -84,17 +89,45 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     }
 
     @Override
-    public Mono<SyncState> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload) {
+    public Mono<GwHeartbeatResult> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload) {
         return gatewayNodeRepository.findOneById(gwHeartbeatPayload.getNodeId())
                 .switchIfEmpty(Mono.error(BizException.of("网关节点未注册")))
                 .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
                 .flatMap(gatewayNodeRepository::save)
-                .flatMap(this::expectSyncState);
+                .flatMap(gatewayNode -> checkSyncState(gatewayNode, gwHeartbeatPayload.getSyncState()));
     }
 
-    private Mono<SyncState> expectSyncState(GatewayNode gatewayNode) {
+    private Mono<GwHeartbeatResult> checkSyncState(GatewayNode gatewayNode, SyncState reportedSyncState) {
         return rgwSequenceRepository.getAll(gatewayNode.getEnvironment().getId())
-                .map(GatewayNodeServiceImpl::parseSeqValuesToExpectSyncState);
+                .map(GatewayNodeServiceImpl::parseSeqValuesToExpectSyncState)
+                .flatMap(expect -> generateGwHeartbeatResult(gatewayNode.getEnvironment().getId(), reportedSyncState, expect));
+    }
+
+    private Mono<GwHeartbeatResult> generateGwHeartbeatResult(String envId, SyncState reportedSyncState, SyncState expectSyncState) {
+        GwHeartbeatResult gwHeartbeatResult = new GwHeartbeatResult();
+        gwHeartbeatResult.setSyncState(expectSyncState);
+
+        if (reportedSyncState.getApiOpSeq() < expectSyncState.getApiOpSeq()) {
+            gwHeartbeatResult.setApiBehind(true);
+        }
+        List<String> envBehind = new ArrayList<>();
+        Map<String, Long> orgEnvOpSeqMap = reportedSyncState.getOrgEnvOpSeqMap();
+        for (Map.Entry<String, Long> entry : expectSyncState.getOrgEnvOpSeqMap().entrySet()) {
+            String orgId = entry.getKey();
+            if (orgEnvOpSeqMap.getOrDefault(orgId, 0L) < entry.getValue()) {
+                envBehind.add(orgId);
+            }
+        }
+
+        if (envBehind.isEmpty()) {
+            return Mono.just(gwHeartbeatResult);
+        }
+
+        gwHeartbeatResult.setEnvBehind(true);
+        return envBindingRepository.findByEnvAndOrgIdsAsMap(envId, envBehind).map(mapData -> {
+            gwHeartbeatResult.setEnvironments(mapData);
+            return gwHeartbeatResult;
+        });
     }
 
     @Override
@@ -169,10 +202,10 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
             String rawKey = entry.getKey();
             String key = rawKey.substring(prefixLen);
             if (RgwSequence.API_PUBLISH_ACTION.equals(key)) {
-                syncState.setApiOpSeq(entry.getValue());
+                syncState.setApiOpSeq(entry.getValue() - 1);
             } else if (key.startsWith("org_") && key.endsWith("_binding_action")) {
                 String orgId = key.substring(4, 4 + 24);
-                syncState.getOrgEnvOpSeqMap().put(orgId, entry.getValue());
+                syncState.getOrgEnvOpSeqMap().put(orgId, entry.getValue() - 1);
             }
         }
         return syncState;

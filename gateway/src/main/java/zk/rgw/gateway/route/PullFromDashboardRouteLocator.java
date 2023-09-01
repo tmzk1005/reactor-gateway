@@ -37,6 +37,7 @@ import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.event.ApiOpSeqBehindEvent;
 import zk.rgw.gateway.event.ApiOpSeqUpdateEvent;
 import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.http.route.Route;
@@ -150,6 +151,9 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator im
                 log.info("Received api updated notification.");
                 update();
             }
+        } else if (event instanceof ApiOpSeqBehindEvent) {
+            log.info("Api operation sequence is behind, going to sync from dashboard.");
+            update();
         }
     }
 

@@ -13,25 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.gateway.env;
+package zk.rgw.gateway.event;
 
-import java.util.HashMap;
-import java.util.Map;
+import zk.rgw.common.event.RgwEvent;
 
-public class EnvironmentManager {
-
-    private final Map<String, Map<String, String>> envMap = new HashMap<>();
-
-    public Map<String, String> getEnvForOrg(String orgId) {
-        return envMap.getOrDefault(orgId, Map.of());
-    }
-
-    public void setEnvForOrg(String orgId, Map<String, String> env) {
-        this.envMap.put(orgId, env);
-    }
-
-    public void merge(Map<String, Map<String, String>> data) {
-        envMap.putAll(data);
-    }
-
+public class ApiOpSeqBehindEvent implements RgwEvent {
 }

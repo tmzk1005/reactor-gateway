@@ -73,6 +73,7 @@ public class GlobalSingletons {
 
         gatewayInternalEndpoint.setEventPublisher(eventPublisher);
         pullFromDashboardRouteLocator.setEventPublisher(eventPublisher);
+        heartbeatReporter.setEventPublisher(eventPublisher);
     }
 
     @SuppressWarnings("unchecked")

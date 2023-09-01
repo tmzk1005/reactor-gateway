@@ -26,8 +26,8 @@ import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
+import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterResult;
-import zk.rgw.common.heartbeat.SyncState;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestBody;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
@@ -45,7 +45,7 @@ public class GatewayNodeController {
     private final GatewayNodeService gatewayNodeService = ServiceFactory.get(GatewayNodeService.class);
 
     @RequestMapping(path = "/_heartbeat", method = RequestMapping.Method.POST)
-    public Mono<SyncState> heartbeat(@RequestBody GwHeartbeatPayload gwHeartbeatPayload) {
+    public Mono<GwHeartbeatResult> heartbeat(@RequestBody GwHeartbeatPayload gwHeartbeatPayload) {
         return gatewayNodeService.handleHeartbeat(gwHeartbeatPayload);
     }
 
