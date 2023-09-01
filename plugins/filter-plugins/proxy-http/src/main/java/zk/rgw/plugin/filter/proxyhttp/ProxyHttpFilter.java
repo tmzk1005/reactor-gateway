@@ -16,11 +16,14 @@
 
 package zk.rgw.plugin.filter.proxyhttp;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Getter;
@@ -30,63 +33,103 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 
+import zk.rgw.common.exception.RgwRuntimeException;
+import zk.rgw.common.util.EnvNameExtractUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 public class ProxyHttpFilter implements JsonConfFilterPlugin {
+
+    private static final String ENV_NAME_EXTRACT_PATTERN = "";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.create();
 
     @Getter
     @Setter
-    private String upstreamEndpoint;
-
-    @JsonIgnore
-    @Setter
-    @Getter
     private HttpClient httpClient = HTTP_CLIENT;
 
-    @Getter
-    @Setter
-    private int timeout = Integer.MAX_VALUE;
+    private final ProxyConf proxyConf = new ProxyConf();
 
-    @JsonIgnore
-    private URI upstreamUri;
+    private URI uri;
+
+    private List<String> envNames;
 
     @Override
     public void configure(String conf) throws PluginConfException {
-        JsonConfFilterPlugin.super.configure(conf);
         try {
-            this.upstreamUri = new URI(upstreamEndpoint);
-        } catch (URISyntaxException exception) {
-            String message = "Failed to parse " + upstreamEndpoint + " to URI";
-            throw new PluginConfException(message, exception);
+            OM.readerForUpdating(this.proxyConf).readValue(conf);
+        } catch (IOException ioException) {
+            throw new PluginConfException(ioException.getMessage(), ioException);
         }
-        if (timeout <= 0) {
-            timeout = Integer.MAX_VALUE;
+
+        if (proxyConf.timeout <= 0) {
+            proxyConf.timeout = Integer.MAX_VALUE;
+        }
+
+        envNames = EnvNameExtractUtil.extract(proxyConf.upstreamEndpoint);
+
+        if (envNames.isEmpty()) {
+            try {
+                uri = new URI(proxyConf.getUpstreamEndpoint());
+            } catch (URISyntaxException exception) {
+                String message = "Failed to parse " + proxyConf.getUpstreamEndpoint() + " to URI";
+                throw new PluginConfException(message, exception);
+            }
         }
     }
 
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         HttpServerRequest request = exchange.getRequest();
+        URI uriToUser = uri;
+
+        if (Objects.isNull(uriToUser)) {
+            String uriStr = proxyConf.upstreamEndpoint;
+            Map<String, String> environment = ExchangeUtil.getEnvironment(exchange);
+            for (String envName : envNames) {
+                String value = environment.get(envName);
+                if (Objects.isNull(value)) {
+                    throw new RgwRuntimeException("ProxyHttpFilter error: required environment variable named " + envName);
+                }
+                uriStr = uriStr.replace("{" + envName + "}", value);
+            }
+
+            try {
+                uriToUser = new URI(uriStr);
+            } catch (URISyntaxException exception) {
+                String message = "ProxyHttpFilter error: failed to parse " + uriStr + " to URI";
+                throw new RgwRuntimeException(message);
+            }
+        }
+
         return this.httpClient.headers(headers -> {
             headers.add(request.requestHeaders());
             headers.remove(HttpHeaderNames.HOST);
-        }).request(request.method()).uri(upstreamUri).send(request.receive()).responseConnection((httpClientResponse, connection) -> {
+        }).request(request.method()).uri(uriToUser).send(request.receive()).responseConnection((httpClientResponse, connection) -> {
             HttpServerResponse serverResponse = exchange.getResponse();
             return serverResponse.status(httpClientResponse.status())
                     .headers(httpClientResponse.responseHeaders())
-                    .send(connection.inbound().receive())
+                    .send(connection.inbound().receive().retain())
                     .then()
                     .thenReturn("");
         }).timeout(
-                Duration.ofSeconds(timeout),
+                Duration.ofSeconds(proxyConf.timeout),
                 Mono.defer(() -> ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.GATEWAY_TIMEOUT).thenReturn(""))
         ).then();
+    }
+
+    @Getter
+    @Setter
+    public static class ProxyConf {
+
+        private String upstreamEndpoint;
+
+        private int timeout = Integer.MAX_VALUE;
+
     }
 
 }
