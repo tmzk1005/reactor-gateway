@@ -40,6 +40,7 @@ import zk.rgw.dashboard.web.bean.dto.EnvironmentDto;
 import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
+import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
@@ -104,8 +105,7 @@ public class EnvironmentServiceImpl implements EnvironmentService {
             }
             envBinding.setVariables(variables);
 
-            String seqName = String.format(EnvBinding.SEQ_NAME_FORMATTER, envId, orgId);
-
+            String seqName = RgwSequence.generateNameForEnvBindingChanged(envId, orgId);
             return rgwSequenceRepository.next(seqName).flatMap(opSeq -> {
                 envBinding.setOpSeq(opSeq);
 

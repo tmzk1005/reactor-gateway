@@ -33,11 +33,15 @@ import reactor.netty.http.client.HttpClient;
 import zk.rgw.common.bootstrap.LifeCycle;
 import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.RgwEventListener;
+import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwRegisterPayload;
 import zk.rgw.common.heartbeat.GwRegisterResult;
+import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.event.ApiOpSeqUpdateEvent;
+import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.plugin.util.Shuck;
 
 @SuppressWarnings("java:S1075")
@@ -63,7 +67,7 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
 
     private final int serverPort;
 
-    private String nodeId;
+    private final GwHeartbeatPayload heartbeatPayload = new GwHeartbeatPayload();
 
     public HeartbeatReporter(
             String dashboardAddress, String dashboardApiContextPath, String environmentId,
@@ -91,7 +95,7 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
             return;
         }
         log.info("Start {}.", this.getClass().getSimpleName());
-        register().doOnNext(id -> this.nodeId = id)
+        register().doOnNext(this.heartbeatPayload::setNodeId)
                 .doOnSuccess(
                         unused -> scheduledExecutorService.scheduleAtFixedRate(HeartbeatReporter.this::heartbeat, 0, interval, TimeUnit.SECONDS)
                 ).subscribe();
@@ -108,12 +112,9 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
     private void heartbeat() {
         log.debug("Send heart beat to dashboard");
 
-        GwHeartbeatPayload gwHeartbeatPayload = new GwHeartbeatPayload();
-        gwHeartbeatPayload.setNodeId(this.nodeId);
-
         httpClient.post()
                 .uri(pathHeartbeat)
-                .send(toByteBufFlux(gwHeartbeatPayload))
+                .send(toByteBufFlux(heartbeatPayload))
                 .response()
                 .doOnError(exception -> log.error("Failed to send heartbeat information to dashboard.", exception))
                 .subscribe();
@@ -154,7 +155,15 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
 
     @Override
     public void onEvent(RgwEvent event) {
-        // TODO
+        if (event instanceof NotificationEvent notificationEvent) {
+            Notification notification = notificationEvent.getNotification();
+            if (notification.isEnvironmentUpdated()) {
+                EnvironmentChangedEvent environmentChangedEvent = notification.getEnvironmentChangedEvent();
+                heartbeatPayload.getSyncState().getOrgEnvOpSeqMap().put(environmentChangedEvent.getOrgId(), environmentChangedEvent.getOpSeq());
+            }
+        } else if (event instanceof ApiOpSeqUpdateEvent apiOpSeqUpdateEvent) {
+            heartbeatPayload.getSyncState().setApiOpSeq(apiOpSeqUpdateEvent.getValue());
+        }
     }
 
     private static Publisher<? extends ByteBuf> toByteBufFlux(Object data) {

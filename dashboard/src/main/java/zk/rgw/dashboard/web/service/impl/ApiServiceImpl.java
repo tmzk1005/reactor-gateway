@@ -47,6 +47,7 @@ import zk.rgw.dashboard.web.bean.dto.ApiDto;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.Organization;
+import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.bean.vo.ApiVo;
 import zk.rgw.dashboard.web.bean.vo.ReleasedApiVo;
@@ -61,8 +62,6 @@ import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.ApiService;
 
 public class ApiServiceImpl implements ApiService {
-
-    private static final String SEQ_NAME_API_PUBLISH = "api_publish_action";
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
@@ -319,7 +318,8 @@ public class ApiServiceImpl implements ApiService {
 
         publishSnapshots.put(envId, publishSnapshot);
 
-        return rgwSequenceRepository.next(SEQ_NAME_API_PUBLISH).flatMap(seq -> {
+        String seqName = RgwSequence.generateNameForApiPublishing(envId);
+        return rgwSequenceRepository.next(seqName).flatMap(seq -> {
             publishSnapshot.setOpSeq(seq);
             return apiRepository.save(api);
         });
@@ -342,7 +342,8 @@ public class ApiServiceImpl implements ApiService {
         publishSnapshot.setLastModifiedDate(Instant.now());
         publishSnapshot.setPublisherId(user.getId());
 
-        return rgwSequenceRepository.next(SEQ_NAME_API_PUBLISH).flatMap(seq -> {
+        String seqName = RgwSequence.generateNameForApiPublishing(envId);
+        return rgwSequenceRepository.next(seqName).flatMap(seq -> {
             publishSnapshot.setOpSeq(seq);
             return apiRepository.save(api);
         });

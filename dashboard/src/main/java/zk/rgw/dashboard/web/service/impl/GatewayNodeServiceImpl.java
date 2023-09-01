@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.mongodb.client.model.Aggregates;
@@ -31,6 +32,7 @@ import reactor.core.publisher.Mono;
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwRegisterResult;
+import zk.rgw.common.heartbeat.SyncState;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
@@ -38,9 +40,11 @@ import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
+import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
+import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.GatewayNodeService;
 
@@ -62,6 +66,8 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
+    private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
+
     @Override
     public Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload) {
         String envId = registerPayload.getEnvId();
@@ -78,12 +84,17 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     }
 
     @Override
-    public Mono<Void> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload) {
+    public Mono<SyncState> handleHeartbeat(GwHeartbeatPayload gwHeartbeatPayload) {
         return gatewayNodeRepository.findOneById(gwHeartbeatPayload.getNodeId())
                 .switchIfEmpty(Mono.error(BizException.of("网关节点未注册")))
                 .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
                 .flatMap(gatewayNodeRepository::save)
-                .then();
+                .flatMap(this::expectSyncState);
+    }
+
+    private Mono<SyncState> expectSyncState(GatewayNode gatewayNode) {
+        return rgwSequenceRepository.getAll(gatewayNode.getEnvironment().getId())
+                .map(GatewayNodeServiceImpl::parseSeqValuesToExpectSyncState);
     }
 
     @Override
@@ -147,6 +158,24 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
             );
         }
         return filter;
+    }
+
+    private static SyncState parseSeqValuesToExpectSyncState(Map<String, Long> seqValues) {
+        SyncState syncState = new SyncState();
+        // env_${envId}_
+        // envId是24个字符
+        int prefixLen = 29;
+        for (Map.Entry<String, Long> entry : seqValues.entrySet()) {
+            String rawKey = entry.getKey();
+            String key = rawKey.substring(prefixLen);
+            if (RgwSequence.API_PUBLISH_ACTION.equals(key)) {
+                syncState.setApiOpSeq(entry.getValue());
+            } else if (key.startsWith("org_") && key.endsWith("_binding_action")) {
+                String orgId = key.substring(4, 4 + 24);
+                syncState.getOrgEnvOpSeqMap().put(orgId, entry.getValue());
+            }
+        }
+        return syncState;
     }
 
 }

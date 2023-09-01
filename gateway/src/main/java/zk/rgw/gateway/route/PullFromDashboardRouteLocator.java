@@ -24,17 +24,20 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.RgwEventListener;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
+import zk.rgw.gateway.event.ApiOpSeqUpdateEvent;
 import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.route.RouteEvent;
@@ -69,6 +72,9 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator im
     private long latestSequenceNum = 0L;
 
     private final UriBuilder uriBuilder;
+
+    @Setter
+    private EventPublisher<RgwEvent> eventPublisher;
 
     public PullFromDashboardRouteLocator(String dashboardAddress, String dashboardApiContextPath, String dashboardAuthKey, String environmentId) {
         this.dashboardAddress = dashboardAddress;
@@ -108,7 +114,7 @@ public class PullFromDashboardRouteLocator extends AsyncUpdatableRouteLocator im
                         }
                     }
                     return routeEvent;
-                });
+                }).doOnComplete(() -> eventPublisher.publishEvent(new ApiOpSeqUpdateEvent(latestSequenceNum)));
     }
 
     private Flux<IdRouteDefinition> fetchRouteDefinitions() {

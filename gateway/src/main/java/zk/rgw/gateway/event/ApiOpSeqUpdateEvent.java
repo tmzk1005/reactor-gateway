@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.common.heartbeat;
+package zk.rgw.gateway.event;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import zk.rgw.common.event.RgwEvent;
 
 @Getter
 @Setter
-public class GwHeartbeatPayload {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ApiOpSeqUpdateEvent implements RgwEvent {
 
-    /**
-     * 通过向dashboard注册而被分配到的节点id
-     */
-    private String nodeId;
-
-    private SyncState syncState = new SyncState();
+    private long value;
 
 }

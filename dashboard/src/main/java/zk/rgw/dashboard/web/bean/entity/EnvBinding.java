@@ -34,8 +34,6 @@ import zk.rgw.dashboard.framework.xo.NoDto;
 @Document(collection = "EnvBinding")
 public class EnvBinding extends BaseAuditableEntity<NoDto> {
 
-    public static final String SEQ_NAME_FORMATTER = "env_%s_%s";
-
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;

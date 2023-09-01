@@ -33,6 +33,22 @@ import zk.rgw.dashboard.framework.mongodb.Index;
 @Index(name = "RgwSequenceIndex-name", unique = true, def = "{\"name\": 1}")
 public class RgwSequence {
 
+    public static final String NAME_PATTERN = "env_%s_%s";
+
+    public static final String API_PUBLISH_ACTION = "api_publish_action";
+
+    public static String generateName(String envId, String realName) {
+        return String.format(NAME_PATTERN, envId, realName);
+    }
+
+    public static String generateNameForApiPublishing(String envId) {
+        return generateName(envId, API_PUBLISH_ACTION);
+    }
+
+    public static String generateNameForEnvBindingChanged(String envId, String orgId) {
+        return generateName(envId, "org_" + orgId + "_binding_action");
+    }
+
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;

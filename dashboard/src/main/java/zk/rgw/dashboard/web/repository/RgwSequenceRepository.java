@@ -15,6 +15,8 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import com.mongodb.client.model.Filters;
@@ -22,6 +24,7 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.exception.RgwRuntimeException;
@@ -54,6 +57,17 @@ public class RgwSequenceRepository {
         return Mono.from(mongoCollection.findOneAndUpdate(filter, UPDATE))
                 .map(RgwSequence::getValue)
                 .switchIfEmpty(initForSeqName(seqName));
+    }
+
+    public Mono<Map<String, Long>> getAll(String envId) {
+        Bson filter = Filters.regex("name", "^env_" + envId + "_");
+        return Flux.from(mongoCollection.find(filter)).collectList().map(list -> {
+            Map<String, Long> map = new HashMap<>(list.size() * 2);
+            for (RgwSequence rgwSequence : list) {
+                map.put(rgwSequence.getName(), rgwSequence.getValue());
+            }
+            return map;
+        });
     }
 
 }
