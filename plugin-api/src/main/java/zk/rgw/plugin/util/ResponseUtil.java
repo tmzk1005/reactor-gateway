@@ -67,6 +67,10 @@ public class ResponseUtil {
         return sendStatus(response, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
+    public static Mono<Void> sendError(HttpServerResponse response, String message) {
+        return send(response, HttpResponseStatus.INTERNAL_SERVER_ERROR, Shuck.CODE_ERROR, message);
+    }
+
     public static Mono<Void> sendNotFound(HttpServerResponse response) {
         return sendStatus(response, HttpResponseStatus.NOT_FOUND);
     }

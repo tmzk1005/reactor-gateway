@@ -33,7 +33,6 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.server.HttpServerRequest;
 import reactor.netty.http.server.HttpServerResponse;
 
-import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.common.util.EnvNameExtractUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
@@ -43,8 +42,6 @@ import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 public class ProxyHttpFilter implements JsonConfFilterPlugin {
-
-    private static final String ENV_NAME_EXTRACT_PATTERN = "";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.create();
 
@@ -93,7 +90,10 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
             for (String envName : envNames) {
                 String value = environment.get(envName);
                 if (Objects.isNull(value)) {
-                    throw new RgwRuntimeException("ProxyHttpFilter error: required environment variable named " + envName);
+                    return ResponseUtil.sendError(
+                            exchange.getResponse(),
+                            "ProxyHttpFilter error: required environment variable named " + envName + " not found."
+                    );
                 }
                 uriStr = uriStr.replace("{" + envName + "}", value);
             }
@@ -102,7 +102,7 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
                 uriToUser = new URI(uriStr);
             } catch (URISyntaxException exception) {
                 String message = "ProxyHttpFilter error: failed to parse " + uriStr + " to URI";
-                throw new RgwRuntimeException(message);
+                return ResponseUtil.sendError(exchange.getResponse(), message);
             }
         }
 
