@@ -103,9 +103,11 @@ public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
         List<AccessLog> leftInQueue = new ArrayList<>();
         int leftCount = queue.drainTo(leftInQueue);
         if (leftCount > 0) {
+            log.info("Send {} access log before stop.", leftCount);
             for (AccessLog accessLog : leftInQueue) {
                 doSend(accessLog);
             }
+            log.info("Send access log done.");
         }
 
         producer.close();
@@ -117,7 +119,10 @@ public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
         try {
             accessLog = queue.take();
         } catch (InterruptedException interruptedException) {
-            log.error("InterruptedException happened while take AccessLog from queue.", interruptedException);
+            if (running) {
+                // 非正常，非主动停止，打印下日志
+                log.error("InterruptedException happened while take AccessLog from queue.", interruptedException);
+            }
             Thread.currentThread().interrupt();
             return;
         }
