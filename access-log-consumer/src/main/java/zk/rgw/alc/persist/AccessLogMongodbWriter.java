@@ -120,9 +120,11 @@ public class AccessLogMongodbWriter implements LifeCycle {
 
     private void initAccessLogConsumer() {
         Properties properties = new Properties();
-        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, this.getClass().getName());
+        String clientId = "rgw_kafka_consumer_client_" + this.getClass().getSimpleName() + "_" + envId;
+        String groupId = "rgw_kafka_consumer_group_" + this.getClass().getSimpleName() + "_" + envId;
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, this.getClass().getName());
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         accessLogConsumer = new KafkaConsumer<>(properties);

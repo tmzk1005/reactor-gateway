@@ -144,7 +144,8 @@ public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
         properties.put(ProducerConfig.ACKS_CONFIG, "0");
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG, this.getClass().getName());
+        String clientId = "rgw_kafka_producer_" + this.getClass().getSimpleName();
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
         properties.put(ProducerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, 5000);
         properties.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, 5000);
 
