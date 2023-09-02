@@ -36,6 +36,7 @@ import zk.rgw.dashboard.web.service.AccessLogService;
 import zk.rgw.dashboard.web.service.ApiPluginService;
 import zk.rgw.dashboard.web.service.ApiService;
 import zk.rgw.dashboard.web.service.AppService;
+import zk.rgw.dashboard.web.service.DashboardService;
 import zk.rgw.dashboard.web.service.EnvironmentService;
 import zk.rgw.dashboard.web.service.GatewayNodeService;
 import zk.rgw.dashboard.web.service.OrganizationService;
@@ -45,6 +46,7 @@ import zk.rgw.dashboard.web.service.impl.AccessLogServiceImpl;
 import zk.rgw.dashboard.web.service.impl.ApiPluginServiceImpl;
 import zk.rgw.dashboard.web.service.impl.ApiServiceImpl;
 import zk.rgw.dashboard.web.service.impl.AppServiceImpl;
+import zk.rgw.dashboard.web.service.impl.DashboardServiceImpl;
 import zk.rgw.dashboard.web.service.impl.EnvironmentServiceImpl;
 import zk.rgw.dashboard.web.service.impl.GatewayNodeServiceImpl;
 import zk.rgw.dashboard.web.service.impl.OrganizationServiceImpl;
@@ -65,6 +67,7 @@ public class ServiceFactory {
         SERVICES.put(SubscriptionService.class, new SecurityProxy<>(SubscriptionService.class, new SubscriptionServiceImpl()).getProxy());
         SERVICES.put(ApiPluginService.class, new SecurityProxy<>(ApiPluginService.class, new ApiPluginServiceImpl()).getProxy());
         SERVICES.put(AccessLogService.class, new SecurityProxy<>(AccessLogService.class, new AccessLogServiceImpl()).getProxy());
+        SERVICES.put(DashboardService.class, new SecurityProxy<>(DashboardService.class, new DashboardServiceImpl()).getProxy());
 
         SERVICES.put(GatewayNodeService.class, new GatewayNodeServiceImpl());
     }

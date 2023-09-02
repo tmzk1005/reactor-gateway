@@ -81,6 +81,10 @@ public class BaseMongodbRepository<E extends Po<?>> {
         return MongodbOperations.count(mongoCollection, filter).map(num -> num > 0);
     }
 
+    public Mono<Long> count(Bson filter) {
+        return MongodbOperations.count(mongoCollection, filter);
+    }
+
     public Mono<Boolean> existsById(String id) {
         Bson filter;
         try {

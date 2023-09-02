@@ -29,6 +29,7 @@ import zk.rgw.dashboard.web.controller.ApiController;
 import zk.rgw.dashboard.web.controller.ApiPluginController;
 import zk.rgw.dashboard.web.controller.ApiSubscriptionController;
 import zk.rgw.dashboard.web.controller.AppController;
+import zk.rgw.dashboard.web.controller.DashboardController;
 import zk.rgw.dashboard.web.controller.EnvironmentController;
 import zk.rgw.dashboard.web.controller.GatewayNodeController;
 import zk.rgw.dashboard.web.controller.OrganizationController;
@@ -62,6 +63,7 @@ public class ControllerMethodInvokeFilter implements Filter {
         addController(GatewayNodeController.class);
         addController(ApiPluginController.class);
         addController(AccessLogController.class);
+        addController(DashboardController.class);
     }
 
     private void addController(Class<?> controllerClass) {
