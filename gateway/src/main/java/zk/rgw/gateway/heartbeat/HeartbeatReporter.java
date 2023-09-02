@@ -123,6 +123,8 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
     private void heartbeat() {
         log.debug("Send heart beat to dashboard");
 
+        heartbeatPayload.getJvmMetrics().refresh();
+
         httpClient.post()
                 .uri(pathHeartbeat)
                 .send(toByteBufFlux(heartbeatPayload))

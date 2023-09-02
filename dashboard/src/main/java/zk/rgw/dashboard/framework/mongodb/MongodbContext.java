@@ -20,12 +20,17 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.TimeSeriesGranularity;
+import com.mongodb.client.model.TimeSeriesOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
@@ -54,6 +59,7 @@ import zk.rgw.dashboard.web.bean.entity.App;
 import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
+import zk.rgw.dashboard.web.bean.entity.GatewayNodeMetrics;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.bean.entity.User;
@@ -113,6 +119,7 @@ public class MongodbContext {
                 .then(initCollectionForEntity(GatewayNode.class))
                 .then(initCollectionForEntity(ApiPlugin.class))
                 .then(initCollectionForEntity(RgwSequence.class))
+                .then(initCollectionForEntity(GatewayNodeMetrics.class, true, this::createGatewayNodeMetricsTimeSeriesIfNotExist))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);
@@ -130,19 +137,43 @@ public class MongodbContext {
     }
 
     private Mono<Void> initCollectionForEntity(Class<?> entityClass) {
+        return initCollectionForEntity(entityClass, false, null);
+    }
+
+    private Mono<Void> initCollectionForEntity(Class<?> entityClass, boolean isTimeSeries, Supplier<Mono<MongoCollection<Document>>> collectionSupplier) {
         String collectionName = MongodbUtil.getCollectionName(entityClass);
-        MongoCollection<Document> collection = database.getCollection(collectionName);
-        Index annotation = entityClass.getAnnotation(Index.class);
-        if (Objects.nonNull(annotation)) {
-            return Flux.from(collection.listIndexes()).filter(document -> document.get("name").equals(annotation.name())).count().flatMap(count -> {
-                if (count == 0) {
-                    log.info("Create collection {} in mongodb database {}, and create index named {}", collectionName, databaseName, annotation.name());
-                    return createIndex(collection, annotation.name(), annotation.unique(), annotation.def());
-                }
+        Mono<MongoCollection<Document>> collectionMono = isTimeSeries ? collectionSupplier.get() : Mono.just(database.getCollection(collectionName));
+
+        return collectionMono.flatMap(collection -> {
+            Index annotation = entityClass.getAnnotation(Index.class);
+            if (Objects.nonNull(annotation)) {
+                return Flux.from(collection.listIndexes()).filter(document -> document.get("name").equals(annotation.name())).count().flatMap(count -> {
+                    if (count == 0) {
+                        log.info("Create collection {} in mongodb database {}, and create index named {}", collectionName, databaseName, annotation.name());
+                        return createIndex(collection, annotation.name(), annotation.unique(), annotation.def());
+                    }
+                    return Mono.empty();
+                });
+            } else {
                 return Mono.empty();
-            });
-        }
-        return Mono.empty();
+            }
+        });
+    }
+
+    private Mono<MongoCollection<Document>> createGatewayNodeMetricsTimeSeriesIfNotExist() {
+        String collectionName = MongodbUtil.getCollectionName(GatewayNodeMetrics.class);
+        return Flux.from(database.listCollectionNames()).hasElement(collectionName).flatMap(alreadyExist -> {
+            if (Boolean.TRUE.equals(alreadyExist)) {
+                return Mono.just(database.getCollection(collectionName));
+            } else {
+                TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(GatewayNodeMetrics.TIME_FIELD)
+                        .granularity(TimeSeriesGranularity.SECONDS);
+                CreateCollectionOptions createCollectionOptions = new CreateCollectionOptions()
+                        .timeSeriesOptions(timeSeriesOptions)
+                        .expireAfter(2, TimeUnit.DAYS);
+                return Mono.from(database.createCollection(collectionName, createCollectionOptions)).thenReturn(database.getCollection(collectionName));
+            }
+        });
     }
 
     private static Mono<Void> createIndex(MongoCollection<Document> collection, String name, boolean unique, String definition) {

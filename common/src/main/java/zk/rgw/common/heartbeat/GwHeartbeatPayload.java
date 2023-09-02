@@ -29,4 +29,6 @@ public class GwHeartbeatPayload {
 
     private SyncState syncState = new SyncState();
 
+    private JvmMetrics jvmMetrics = new JvmMetrics();
+
 }

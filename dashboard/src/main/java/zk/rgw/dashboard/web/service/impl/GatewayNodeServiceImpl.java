@@ -34,6 +34,7 @@ import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterResult;
+import zk.rgw.common.heartbeat.JvmMetrics;
 import zk.rgw.common.heartbeat.SyncState;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
@@ -46,6 +47,7 @@ import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
+import zk.rgw.dashboard.web.repository.GatewayNodeMetricsRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
 import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
@@ -64,6 +66,8 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     );
 
     private final GatewayNodeRepository gatewayNodeRepository = RepositoryFactory.get(GatewayNodeRepository.class);
+
+    private final GatewayNodeMetricsRepository gatewayNodeMetricsRepository = RepositoryFactory.get(GatewayNodeMetricsRepository.class);
 
     private final EnvironmentRepository environmentRepository = RepositoryFactory.get(EnvironmentRepository.class);
 
@@ -94,7 +98,19 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
                 .switchIfEmpty(Mono.error(BizException.of("网关节点未注册")))
                 .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
                 .flatMap(gatewayNodeRepository::save)
-                .flatMap(gatewayNode -> checkSyncState(gatewayNode, gwHeartbeatPayload.getSyncState()));
+                .flatMap(
+                        gatewayNode -> saveJvmMetricsIfReported(gatewayNode, gwHeartbeatPayload.getJvmMetrics()).then(
+                                checkSyncState(gatewayNode, gwHeartbeatPayload.getSyncState())
+                        )
+                );
+    }
+
+    private Mono<Void> saveJvmMetricsIfReported(GatewayNode node, JvmMetrics jvmMetrics) {
+        if (Objects.nonNull(jvmMetrics)) {
+            return gatewayNodeMetricsRepository.insert(node, jvmMetrics);
+        } else {
+            return Mono.empty();
+        }
     }
 
     private Mono<GwHeartbeatResult> checkSyncState(GatewayNode gatewayNode, SyncState reportedSyncState) {
