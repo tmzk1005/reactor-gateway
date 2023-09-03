@@ -34,6 +34,8 @@ public class AccessLogDocument extends AccessLog {
 
     public static final String TIME_FIELD = "timestampMillis";
 
+    public static final String META_FIELD = "apiId";
+
     @BsonId
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;

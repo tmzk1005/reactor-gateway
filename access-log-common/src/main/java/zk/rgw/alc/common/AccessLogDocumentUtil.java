@@ -69,7 +69,7 @@ public class AccessLogDocumentUtil {
                 .hasElement(collectionName)
                 .flatMap(alreadyExist -> {
                     if (Boolean.FALSE.equals(alreadyExist)) {
-                        TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(AccessLogDocument.TIME_FIELD)
+                        TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(AccessLogDocument.TIME_FIELD).metaField(AccessLogDocument.META_FIELD)
                                 .granularity(TimeSeriesGranularity.SECONDS);
                         CreateCollectionOptions createCollectionOptions = new CreateCollectionOptions()
                                 .timeSeriesOptions(timeSeriesOptions)
@@ -85,7 +85,7 @@ public class AccessLogDocumentUtil {
                                 .flatMap(count -> {
                                     if (count == 0) {
                                         IndexOptions indexOptions = new IndexOptions().name(requiredIndexName);
-                                        String indexDefinition = "{\"apiId\": 1, \"requestId\": 1}";
+                                        String indexDefinition = "{\"requestId\": 1, \"clientInfo.appId\": 1}";
                                         return Mono.from(collection.createIndex(Document.parse(indexDefinition), indexOptions))
                                                 .doOnSuccess(ignore -> log.info("create index for mongodb time series collection {}", collectionName));
                                     } else {
