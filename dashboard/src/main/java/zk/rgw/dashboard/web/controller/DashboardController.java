@@ -37,4 +37,16 @@ public class DashboardController {
         return dashboardService.apiCallsCount(envId, orgId);
     }
 
+    @RequestMapping(path = "/access-log-archive", method = RequestMapping.Method.POST)
+    public Mono<Void> archiveAccessLog(
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "minTimestamp") long minTimestamp,
+            @RequestParam(name = "maxTimestamp") long maxTimestamp
+    ) {
+        if (minTimestamp >= maxTimestamp) {
+            return Mono.empty();
+        }
+        return dashboardService.archiveAccessLog(envId, minTimestamp, maxTimestamp);
+    }
+
 }

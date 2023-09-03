@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
+package zk.rgw.dashboard.web.repository;
 
-import reactor.core.publisher.Mono;
+import lombok.extern.slf4j.Slf4j;
 
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
-
-public interface DashboardService {
-
-    Mono<ApiCallsCount> apiCallsCount(String envId, String orgId);
-
-    Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp);
+@Slf4j
+public class AccessLogStatisticsRepository {
 
 }

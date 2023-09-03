@@ -35,8 +35,11 @@ import reactor.core.publisher.Mono;
 import zk.rgw.alc.common.AccessLogDocument;
 import zk.rgw.alc.common.AccessLogDocumentUtil;
 import zk.rgw.common.util.ObjectUtil;
+import zk.rgw.dashboard.framework.xo.AccessLogStatisticsArchiveLevel;
+import zk.rgw.dashboard.utils.AccessLogStatisticsHelper;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
+import zk.rgw.dashboard.web.bean.entity.AccessLogStatisticsDocument;
 
 public class AccessLogRepository {
 
@@ -95,6 +98,28 @@ public class AccessLogRepository {
 
         return Mono.zip(dataMono, countMono)
                 .map(tuple -> new PageData<>(tuple.getT1(), tuple.getT2(), page.getPageNum(), page.getPageSize()));
+    }
+
+    public Mono<Void> archiveAccessLogsByMinutes(String envId, long beginTime, long endTime) {
+        List<Bson> aggPipelines = new ArrayList<>();
+
+        // step-1 : match
+        Bson matchFilter = Filters.and(
+                Filters.gte("timestampMillis", Instant.ofEpochMilli(beginTime)),
+                Filters.lt("timestampMillis", Instant.ofEpochMilli(endTime))
+        );
+        aggPipelines.add(Aggregates.match(matchFilter));
+
+        // step-2 : group
+        aggPipelines.add(AccessLogStatisticsHelper.AGG_GROUP_DEF);
+
+        // step-3 : merge into AccessLogStatistics
+        String targetCollectionName = AccessLogStatisticsHelper.collectionNameForEnvAndArchiveLevel(envId, AccessLogStatisticsArchiveLevel.MINUTES);
+        Bson merge = Aggregates.merge(targetCollectionName, AccessLogStatisticsHelper.MERGE_OPTIONS);
+        aggPipelines.add(merge);
+
+        return AccessLogDocumentUtil.getAccessLogCollectionForEnv(database, envId)
+                .flatMap(collection -> Mono.from(collection.withDocumentClass(AccessLogStatisticsDocument.class).aggregate(aggPipelines)).then());
     }
 
     @SuppressWarnings({ "java:S3776", "java:S107" })

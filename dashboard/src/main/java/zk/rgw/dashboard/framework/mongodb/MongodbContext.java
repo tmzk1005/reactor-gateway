@@ -143,21 +143,24 @@ public class MongodbContext {
     private Mono<Void> initCollectionForEntity(Class<?> entityClass, boolean isTimeSeries, Supplier<Mono<MongoCollection<Document>>> collectionSupplier) {
         String collectionName = MongodbUtil.getCollectionName(entityClass);
         Mono<MongoCollection<Document>> collectionMono = isTimeSeries ? collectionSupplier.get() : Mono.just(database.getCollection(collectionName));
+        return collectionMono.flatMap(collection -> createIndexForCollection(collection, entityClass.getAnnotation(Index.class)));
+    }
 
-        return collectionMono.flatMap(collection -> {
-            Index annotation = entityClass.getAnnotation(Index.class);
-            if (Objects.nonNull(annotation)) {
-                return Flux.from(collection.listIndexes()).filter(document -> document.get("name").equals(annotation.name())).count().flatMap(count -> {
-                    if (count == 0) {
-                        log.info("Create collection {} in mongodb database {}, and create index named {}", collectionName, databaseName, annotation.name());
-                        return createIndex(collection, annotation.name(), annotation.unique(), annotation.def());
-                    }
-                    return Mono.empty();
-                });
-            } else {
+    private Mono<Void> createIndexForCollection(MongoCollection<Document> collection, Index annotation) {
+        if (Objects.nonNull(annotation)) {
+            return Flux.from(collection.listIndexes()).filter(document -> document.get("name").equals(annotation.name())).count().flatMap(count -> {
+                if (count == 0) {
+                    log.info(
+                            "Create collection {} in mongodb database {}, and create index named {}",
+                            collection.getNamespace().getCollectionName(), databaseName, annotation.name()
+                    );
+                    return createIndex(collection, annotation.name(), annotation.unique(), annotation.def());
+                }
                 return Mono.empty();
-            }
-        });
+            });
+        } else {
+            return Mono.empty();
+        }
     }
 
     private Mono<MongoCollection<Document>> createGatewayNodeMetricsTimeSeriesIfNotExist() {

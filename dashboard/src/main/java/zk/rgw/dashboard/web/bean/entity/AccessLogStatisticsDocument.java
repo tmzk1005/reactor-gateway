@@ -13,16 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
+package zk.rgw.dashboard.web.bean.entity;
 
-import reactor.core.publisher.Mono;
+import java.time.Instant;
 
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
+import lombok.Getter;
+import lombok.Setter;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-public interface DashboardService {
+import zk.rgw.dashboard.framework.xo.AccessLogStatistics;
 
-    Mono<ApiCallsCount> apiCallsCount(String envId, String orgId);
+@Getter
+@Setter
+public class AccessLogStatisticsDocument extends AccessLogStatistics {
 
-    Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp);
+    @BsonId
+    private Id id;
+
+    @Getter
+    @Setter
+    public static class Id {
+        private String apiId;
+        private Instant timestampMillis;
+    }
 
 }

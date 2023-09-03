@@ -15,14 +15,5 @@
  */
 package zk.rgw.dashboard.web.service;
 
-import reactor.core.publisher.Mono;
-
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
-
-public interface DashboardService {
-
-    Mono<ApiCallsCount> apiCallsCount(String envId, String orgId);
-
-    Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp);
-
+public interface AccessLogStatisticsService {
 }

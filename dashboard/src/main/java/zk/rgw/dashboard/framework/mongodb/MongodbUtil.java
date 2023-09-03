@@ -49,7 +49,6 @@ public class MongodbUtil {
         } catch (IllegalArgumentException exception) {
             throw new NotObjectIdException(id);
         }
-
     }
 
 }

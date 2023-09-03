@@ -26,6 +26,7 @@ import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
+import zk.rgw.dashboard.web.repository.AccessLogRepository;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.DashboardService;
@@ -33,6 +34,8 @@ import zk.rgw.dashboard.web.service.DashboardService;
 public class DashboardServiceImpl implements DashboardService {
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
+
+    private final AccessLogRepository accessLogRepository = RepositoryFactory.get(AccessLogRepository.class);
 
     @Override
     public Mono<ApiCallsCount> apiCallsCount(String envId, String orgId) {
@@ -44,6 +47,11 @@ public class DashboardServiceImpl implements DashboardService {
             // TODO : set api calls count, succeed and failed
             return apiCallsCount;
         });
+    }
+
+    @Override
+    public Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp) {
+        return accessLogRepository.archiveAccessLogsByMinutes(envId, minTimestamp, maxTimestamp);
     }
 
     private Mono<Bson> getApiFilterByEnvAndOrg(final String envId, final String orgId) {

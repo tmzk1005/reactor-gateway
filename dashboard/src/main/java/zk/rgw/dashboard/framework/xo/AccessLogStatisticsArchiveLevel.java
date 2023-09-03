@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
+package zk.rgw.dashboard.framework.xo;
 
-import reactor.core.publisher.Mono;
+public enum AccessLogStatisticsArchiveLevel {
 
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
-
-public interface DashboardService {
-
-    Mono<ApiCallsCount> apiCallsCount(String envId, String orgId);
-
-    Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp);
+    MINUTES,
+    HOURS,
+    DAYS,
+    MONTHS
 
 }
