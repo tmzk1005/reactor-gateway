@@ -167,6 +167,7 @@ public class MongodbContext {
                 return Mono.just(database.getCollection(collectionName));
             } else {
                 TimeSeriesOptions timeSeriesOptions = new TimeSeriesOptions(GatewayNodeMetrics.TIME_FIELD)
+                        .metaField(GatewayNodeMetrics.META_FILED)
                         .granularity(TimeSeriesGranularity.SECONDS);
                 CreateCollectionOptions createCollectionOptions = new CreateCollectionOptions()
                         .timeSeriesOptions(timeSeriesOptions)
