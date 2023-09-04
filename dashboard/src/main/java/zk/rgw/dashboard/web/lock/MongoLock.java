@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.framework.mongodb;
+package zk.rgw.dashboard.web.lock;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import reactor.core.publisher.Mono;
 
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
-public @interface Index {
+public interface MongoLock {
 
-    String def();
+    Mono<Boolean> tryLock();
 
-    boolean unique() default false;
-
-    String name();
-
-    long expireSeconds() default 0L;
+    Mono<Void> release();
 
 }

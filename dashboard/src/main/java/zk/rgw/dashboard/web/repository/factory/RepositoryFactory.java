@@ -33,6 +33,7 @@ import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeMetricsRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
+import zk.rgw.dashboard.web.repository.MongoLockRepository;
 import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
@@ -61,6 +62,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(RgwSequenceRepository.class, new RgwSequenceRepository(mongoDatabase));
         REPOSITORY_MAP.put(AccessLogStatisticsRepository.class, new AccessLogStatisticsRepository(mongoDatabase));
         REPOSITORY_MAP.put(AccessLogRepository.class, new AccessLogRepository(mongoDatabase));
+        REPOSITORY_MAP.put(MongoLockRepository.class, new MongoLockRepository(mongoDatabase));
     }
 
     @SuppressWarnings("unchecked")

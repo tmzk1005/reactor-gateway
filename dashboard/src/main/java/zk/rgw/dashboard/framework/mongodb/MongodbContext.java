@@ -60,6 +60,7 @@ import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.entity.GatewayNodeMetrics;
+import zk.rgw.dashboard.web.bean.entity.MongoLockDocument;
 import zk.rgw.dashboard.web.bean.entity.Organization;
 import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.bean.entity.User;
@@ -120,6 +121,7 @@ public class MongodbContext {
                 .then(initCollectionForEntity(ApiPlugin.class))
                 .then(initCollectionForEntity(RgwSequence.class))
                 .then(initCollectionForEntity(GatewayNodeMetrics.class, true, this::createGatewayNodeMetricsTimeSeriesIfNotExist))
+                .then(initCollectionForEntity(MongoLockDocument.class))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);
@@ -154,7 +156,7 @@ public class MongodbContext {
                             "Create collection {} in mongodb database {}, and create index named {}",
                             collection.getNamespace().getCollectionName(), databaseName, annotation.name()
                     );
-                    return createIndex(collection, annotation.name(), annotation.unique(), annotation.def());
+                    return createIndex(collection, annotation.name(), annotation.unique(), annotation.def(), annotation.expireSeconds());
                 }
                 return Mono.empty();
             });
@@ -180,8 +182,11 @@ public class MongodbContext {
         });
     }
 
-    private static Mono<Void> createIndex(MongoCollection<Document> collection, String name, boolean unique, String definition) {
+    private static Mono<Void> createIndex(MongoCollection<Document> collection, String name, boolean unique, String definition, long expireSeconds) {
         IndexOptions indexOptions = new IndexOptions().name(name).unique(unique);
+        if (expireSeconds > 0) {
+            indexOptions.expireAfter(expireSeconds, TimeUnit.SECONDS);
+        }
         return Mono.from(collection.createIndex(Document.parse(definition), indexOptions)).then();
     }
 

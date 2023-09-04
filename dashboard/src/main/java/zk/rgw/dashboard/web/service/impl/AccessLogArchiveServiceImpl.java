@@ -17,19 +17,25 @@ package zk.rgw.dashboard.web.service.impl;
 
 import java.util.Objects;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
+import zk.rgw.dashboard.web.lock.MongoLock;
 import zk.rgw.dashboard.web.repository.AccessLogRepository;
 import zk.rgw.dashboard.web.repository.AccessLogStatisticsRepository;
+import zk.rgw.dashboard.web.repository.MongoLockRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.AccessLogArchiveService;
 
+@Slf4j
 public class AccessLogArchiveServiceImpl implements AccessLogArchiveService {
 
     private final AccessLogRepository accessLogRepository = RepositoryFactory.get(AccessLogRepository.class);
 
     private final AccessLogStatisticsRepository accessLogStatisticsRepository = RepositoryFactory.get(AccessLogStatisticsRepository.class);
+
+    private final MongoLockRepository mongoLockRepository = RepositoryFactory.get(MongoLockRepository.class);
 
     @Override
     public Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp, AccessLogStatisticsArchiveLevel level) {
@@ -44,7 +50,17 @@ public class AccessLogArchiveServiceImpl implements AccessLogArchiveService {
 
     @Override
     public Mono<Void> archiveAccessLogForNow(String envId) {
+        String lockName = "access_log_archive_for_env_" + envId;
+        MongoLock lock = mongoLockRepository.getLock(lockName);
+        return lock.tryLock().filter(Boolean.TRUE::equals)
+                .flatMap(locked -> doArchiveAccessLogForNow(envId).then(lock.release()))
+                .onErrorResume(throwable -> lock.release());
+    }
+
+    private Mono<Void> doArchiveAccessLogForNow(String envId) {
+        log.info("Going to archive access logs from environment {}", envId);
         // TODO
         return Mono.empty();
     }
+
 }
