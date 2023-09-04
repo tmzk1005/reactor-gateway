@@ -29,7 +29,4 @@ public interface AccessLogArchiveService {
     @HasRole(Role.SYSTEM_ADMIN)
     Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp, AccessLogStatisticsArchiveLevel level);
 
-    @HasRole(Role.SYSTEM_ADMIN)
-    Mono<Void> archiveAccessLogForNow(String envId);
-
 }

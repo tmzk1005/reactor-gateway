@@ -37,7 +37,11 @@ public class TimeUtil {
     }
 
     public static Range lastMinuteRange(Instant instant) {
-        long begin = instant.truncatedTo(ChronoUnit.MINUTES).minusSeconds(60).toEpochMilli();
+        return minutesAgoRange(instant, 1);
+    }
+
+    public static Range minutesAgoRange(Instant instant, int minutes) {
+        long begin = instant.truncatedTo(ChronoUnit.MINUTES).minusSeconds(60L * minutes).toEpochMilli();
         return new Range(begin, begin + 60_000L);
     }
 

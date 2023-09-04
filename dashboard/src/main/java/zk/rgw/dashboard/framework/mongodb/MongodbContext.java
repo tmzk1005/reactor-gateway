@@ -56,6 +56,7 @@ import zk.rgw.dashboard.web.bean.entity.ApiPlugin;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscription;
 import zk.rgw.dashboard.web.bean.entity.App;
+import zk.rgw.dashboard.web.bean.entity.ArchiveProgress;
 import zk.rgw.dashboard.web.bean.entity.EnvBinding;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
@@ -122,6 +123,7 @@ public class MongodbContext {
                 .then(initCollectionForEntity(RgwSequence.class))
                 .then(initCollectionForEntity(GatewayNodeMetrics.class, true, this::createGatewayNodeMetricsTimeSeriesIfNotExist))
                 .then(initCollectionForEntity(MongoLockDocument.class))
+                .then(initCollectionForEntity(ArchiveProgress.class))
                 .subscribe();
 
         RepositoryFactory.init(this.mongoClient, this.database);

@@ -16,15 +16,19 @@
 
 package zk.rgw.dashboard;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import zk.rgw.common.bootstrap.LifeCycle;
 import zk.rgw.common.util.StringUtil;
 import zk.rgw.dashboard.framework.mongodb.MongodbContext;
 import zk.rgw.dashboard.framework.security.UserJwtUtil;
+import zk.rgw.dashboard.web.schedule.AccessLogArchiveScheduler;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
 
@@ -37,6 +41,8 @@ public class DashboardServer extends ReactorHttpServer {
 
     @Getter
     private MongodbContext mongodbContext;
+
+    private final List<LifeCycle> lifeCycles = new ArrayList<>();
 
     public DashboardServer(DashboardConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
@@ -78,6 +84,16 @@ public class DashboardServer extends ReactorHttpServer {
                 configuration.getRgwHome(), configuration.getConfFile(),
                 host, port
         );
+        AccessLogArchiveScheduler accessLogArchiveScheduler = new AccessLogArchiveScheduler();
+        lifeCycles.add(accessLogArchiveScheduler);
+        accessLogArchiveScheduler.start();
+    }
+
+    @Override
+    protected void afterStop() {
+        for (int i = lifeCycles.size() - 1; i >= 0; i--) {
+            lifeCycles.get(i).stop();
+        }
     }
 
 }

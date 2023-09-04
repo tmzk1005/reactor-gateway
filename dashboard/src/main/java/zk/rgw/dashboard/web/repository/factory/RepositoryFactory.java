@@ -29,6 +29,7 @@ import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
 import zk.rgw.dashboard.web.repository.AppRepository;
+import zk.rgw.dashboard.web.repository.ArchiveProgressRepository;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeMetricsRepository;
@@ -62,6 +63,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(RgwSequenceRepository.class, new RgwSequenceRepository(mongoDatabase));
         REPOSITORY_MAP.put(AccessLogStatisticsRepository.class, new AccessLogStatisticsRepository(mongoDatabase));
         REPOSITORY_MAP.put(AccessLogRepository.class, new AccessLogRepository(mongoDatabase));
+        REPOSITORY_MAP.put(ArchiveProgressRepository.class, new ArchiveProgressRepository(mongoDatabase));
         REPOSITORY_MAP.put(MongoLockRepository.class, new MongoLockRepository(mongoDatabase));
     }
 
