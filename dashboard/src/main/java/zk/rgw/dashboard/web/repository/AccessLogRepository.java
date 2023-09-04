@@ -111,7 +111,7 @@ public class AccessLogRepository {
         aggPipelines.add(Aggregates.match(matchFilter));
 
         // step-2 : group
-        aggPipelines.add(AccessLogStatisticsHelper.AGG_GROUP_DEF);
+        aggPipelines.add(AccessLogStatisticsHelper.AGG_GROUP_MINUTE);
 
         // step-3 : merge into AccessLogStatistics
         String targetCollectionName = AccessLogStatisticsHelper.collectionNameForEnvAndArchiveLevel(envId, AccessLogStatisticsArchiveLevel.MINUTES);

@@ -23,6 +23,7 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import zk.rgw.dashboard.web.repository.AccessLogRepository;
+import zk.rgw.dashboard.web.repository.AccessLogStatisticsRepository;
 import zk.rgw.dashboard.web.repository.ApiPluginRepository;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
@@ -58,6 +59,7 @@ public class RepositoryFactory {
         REPOSITORY_MAP.put(GatewayNodeMetricsRepository.class, new GatewayNodeMetricsRepository(mongoDatabase));
         REPOSITORY_MAP.put(ApiPluginRepository.class, new ApiPluginRepository(mongoClient, mongoDatabase));
         REPOSITORY_MAP.put(RgwSequenceRepository.class, new RgwSequenceRepository(mongoDatabase));
+        REPOSITORY_MAP.put(AccessLogStatisticsRepository.class, new AccessLogStatisticsRepository(mongoDatabase));
         REPOSITORY_MAP.put(AccessLogRepository.class, new AccessLogRepository(mongoDatabase));
     }
 

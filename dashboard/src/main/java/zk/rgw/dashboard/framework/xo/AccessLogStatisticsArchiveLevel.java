@@ -22,4 +22,6 @@ public enum AccessLogStatisticsArchiveLevel {
     DAYS,
     MONTHS
 
+    // 不能随意改变顺序，会用到 ordinal
+
 }

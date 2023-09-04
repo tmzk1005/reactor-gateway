@@ -15,9 +15,7 @@
  */
 package zk.rgw.dashboard.utils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
@@ -37,39 +35,72 @@ public class AccessLogStatisticsHelper {
 
     private static final String BASE_COLLECTION_NAME = "AccessLogStatistics";
 
-    private static final Document GROUP_ID_DEF = Document.parse(
-            """
-                    {
-                        "apiId": "$apiId",
-                        "timestampMillis": {
-                            "$dateTrunc": {
-                                "date": "$timestampMillis",
-                                "unit": "minute",
-                                "binSize": 1
-                            }
+    public static final Bson AGG_GROUP_MINUTE;
+    public static final Bson AGG_GROUP_HOUR;
+    public static final Bson AGG_GROUP_DAY;
+    public static final Bson AGG_GROUP_MONTH;
+
+    public static final MergeOptions MERGE_OPTIONS = new MergeOptions().whenMatched(MergeOptions.WhenMatched.REPLACE);
+
+    static {
+        // init some constant
+        String groupIdMinuteDef = """
+                {
+                    "apiId": "$apiId",
+                    "timestampMillis": {
+                        "$dateTrunc": {
+                            "date": "$timestampMillis",
+                            "unit": "minute",
+                            "binSize": 1
                         }
-                    }"""
-    );
+                    }
+                }""";
+        Document groupIdMinute = Document.parse(groupIdMinuteDef);
 
-    public static final Bson AGG_GROUP_DEF = Aggregates.group(
-            GROUP_ID_DEF,
-            AccessLogStatisticsHelper.accumulatorForRespCode(1),
-            AccessLogStatisticsHelper.accumulatorForRespCode(2),
-            AccessLogStatisticsHelper.accumulatorForRespCode(3),
-            AccessLogStatisticsHelper.accumulatorForRespCode(4),
-            AccessLogStatisticsHelper.accumulatorForRespCode(5),
-            Accumulators.sum("millisCost", "$millisCost"),
-            Accumulators.sum("upFlow", "$requestInfo.bodySize"),
-            Accumulators.sum("downFlow", "$responseInfo.bodySize")
-    );
+        String template = """
+                {
+                    "apiId": "$_id.apiId",
+                    "timestampMillis": {
+                        "$dateTrunc": {
+                            "date": "$_id.timestampMillis",
+                            "unit": "%s",
+                            "binSize": 1
+                        }
+                    }
+                }""";
+        Document groupIdHour = Document.parse(String.format(template, "hour"));
+        Document groupIdDay = Document.parse(String.format(template, "day"));
+        Document groupIdMonth = Document.parse(String.format(template, "month"));
 
-    public static final MergeOptions MERGE_OPTIONS = new MergeOptions()
-            .whenMatched(MergeOptions.WhenMatched.REPLACE);
+        AGG_GROUP_MINUTE = Aggregates.group(
+                groupIdMinute,
+                AccessLogStatisticsHelper.accumulatorForRespCode(1),
+                AccessLogStatisticsHelper.accumulatorForRespCode(2),
+                AccessLogStatisticsHelper.accumulatorForRespCode(3),
+                AccessLogStatisticsHelper.accumulatorForRespCode(4),
+                AccessLogStatisticsHelper.accumulatorForRespCode(5),
+                Accumulators.sum("millisCost", "$millisCost"),
+                Accumulators.sum("upFlow", "$requestInfo.bodySize"),
+                Accumulators.sum("downFlow", "$responseInfo.bodySize")
+        );
+
+        BsonField count1xx = Accumulators.sum("count1xx", "$count1xx");
+        BsonField count2xx = Accumulators.sum("count2xx", "$count2xx");
+        BsonField count3xx = Accumulators.sum("count3xx", "$count3xx");
+        BsonField count4xx = Accumulators.sum("count4xx", "$count4xx");
+        BsonField count5xx = Accumulators.sum("count5xx", "$count5xx");
+
+        BsonField millisCostSum = Accumulators.sum("millisCost", "$millisCost");
+        BsonField upFlowSum = Accumulators.sum("upFlow", "$upFlow");
+        BsonField downFlowSum = Accumulators.sum("downFlow", "$downFlow");
+
+        AGG_GROUP_HOUR = Aggregates.group(groupIdHour, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
+        AGG_GROUP_DAY = Aggregates.group(groupIdDay, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
+        AGG_GROUP_MONTH = Aggregates.group(groupIdMonth, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
+    }
 
     private AccessLogStatisticsHelper() {
     }
-
-    private static final Map<String, MongoCollection<AccessLogStatistics>> COLLECTION_MAP = new HashMap<>();
 
     public static String collectionNameForEnvAndArchiveLevel(String envId, AccessLogStatisticsArchiveLevel level) {
         return BASE_COLLECTION_NAME + "_" + level.name() + "_" + envId;
@@ -80,16 +111,11 @@ public class AccessLogStatisticsHelper {
             String envId,
             AccessLogStatisticsArchiveLevel level
     ) {
-        if (COLLECTION_MAP.containsKey(envId)) {
-            return COLLECTION_MAP.get(envId);
-        }
         String collectionName = collectionNameForEnvAndArchiveLevel(envId, level);
-        MongoCollection<AccessLogStatistics> collection = mongoDatabase.getCollection(collectionName, AccessLogStatistics.class);
-        COLLECTION_MAP.put(envId, collection);
-        return collection;
+        return mongoDatabase.getCollection(collectionName, AccessLogStatistics.class);
     }
 
-    public static BsonField accumulatorForRespCode(int bigCode) {
+    private static BsonField accumulatorForRespCode(int bigCode) {
         String fieldName = "count" + bigCode + "xx";
         String initFunc = "function () { return { count: 0 } }";
 
