@@ -20,8 +20,9 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
-import zk.rgw.dashboard.framework.xo.AccessLogStatisticsArchiveLevel;
+import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
 import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
+import zk.rgw.dashboard.web.service.AccessLogArchiveService;
 import zk.rgw.dashboard.web.service.DashboardService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
@@ -29,6 +30,8 @@ import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 public class DashboardController {
 
     private final DashboardService dashboardService = ServiceFactory.get(DashboardService.class);
+
+    private final AccessLogArchiveService accessLogArchiveService = ServiceFactory.get(AccessLogArchiveService.class);
 
     @RequestMapping(path = "/api-calls-count")
     public Mono<ApiCallsCount> apiCallsCount(
@@ -48,7 +51,7 @@ public class DashboardController {
         if (minTimestamp >= maxTimestamp) {
             return Mono.empty();
         }
-        return dashboardService.archiveAccessLog(envId, minTimestamp, maxTimestamp, level);
+        return accessLogArchiveService.archiveAccessLog(envId, minTimestamp, maxTimestamp, level);
     }
 
 }

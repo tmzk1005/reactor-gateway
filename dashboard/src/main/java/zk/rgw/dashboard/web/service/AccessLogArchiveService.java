@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean.entity;
+package zk.rgw.dashboard.web.service;
 
-import java.time.Instant;
+import reactor.core.publisher.Mono;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.bson.codecs.pojo.annotations.BsonId;
+import zk.rgw.dashboard.framework.security.HasRole;
+import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
 
-import zk.rgw.dashboard.web.bean.AccessLogStatistics;
+public interface AccessLogArchiveService {
 
-@Getter
-@Setter
-public class AccessLogStatisticsDocument extends AccessLogStatistics {
+    /**
+     * 归档访问日志
+     */
+    @HasRole(Role.SYSTEM_ADMIN)
+    Mono<Void> archiveAccessLog(String envId, long minTimestamp, long maxTimestamp, AccessLogStatisticsArchiveLevel level);
 
-    @BsonId
-    private Id id;
-
-    @Getter
-    @Setter
-    public static class Id {
-        private String apiId;
-        private Instant timestampMillis;
-    }
+    @HasRole(Role.SYSTEM_ADMIN)
+    Mono<Void> archiveAccessLogForNow(String envId);
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.framework.xo;
+package zk.rgw.dashboard.web.bean;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -32,6 +32,7 @@ import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
+import zk.rgw.dashboard.web.service.AccessLogArchiveService;
 import zk.rgw.dashboard.web.service.AccessLogService;
 import zk.rgw.dashboard.web.service.AccessLogStatisticsService;
 import zk.rgw.dashboard.web.service.ApiPluginService;
@@ -43,6 +44,7 @@ import zk.rgw.dashboard.web.service.GatewayNodeService;
 import zk.rgw.dashboard.web.service.OrganizationService;
 import zk.rgw.dashboard.web.service.SubscriptionService;
 import zk.rgw.dashboard.web.service.UserService;
+import zk.rgw.dashboard.web.service.impl.AccessLogArchiveServiceImpl;
 import zk.rgw.dashboard.web.service.impl.AccessLogServiceImpl;
 import zk.rgw.dashboard.web.service.impl.AccessLogStatisticsServiceImpl;
 import zk.rgw.dashboard.web.service.impl.ApiPluginServiceImpl;
@@ -71,6 +73,7 @@ public class ServiceFactory {
         SERVICES.put(AccessLogService.class, new SecurityProxy<>(AccessLogService.class, new AccessLogServiceImpl()).getProxy());
         SERVICES.put(DashboardService.class, new SecurityProxy<>(DashboardService.class, new DashboardServiceImpl()).getProxy());
         SERVICES.put(AccessLogStatisticsService.class, new SecurityProxy<>(AccessLogStatisticsService.class, new AccessLogStatisticsServiceImpl()).getProxy());
+        SERVICES.put(AccessLogArchiveService.class, new SecurityProxy<>(AccessLogArchiveService.class, new AccessLogArchiveServiceImpl()).getProxy());
 
         SERVICES.put(GatewayNodeService.class, new GatewayNodeServiceImpl());
     }

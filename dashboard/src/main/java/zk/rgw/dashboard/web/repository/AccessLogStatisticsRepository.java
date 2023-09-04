@@ -27,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.conversions.Bson;
 import reactor.core.publisher.Mono;
 
-import zk.rgw.dashboard.framework.xo.AccessLogStatistics;
-import zk.rgw.dashboard.framework.xo.AccessLogStatisticsArchiveLevel;
 import zk.rgw.dashboard.utils.AccessLogStatisticsHelper;
+import zk.rgw.dashboard.web.bean.AccessLogStatistics;
+import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
 
 @Slf4j
 public class AccessLogStatisticsRepository {
