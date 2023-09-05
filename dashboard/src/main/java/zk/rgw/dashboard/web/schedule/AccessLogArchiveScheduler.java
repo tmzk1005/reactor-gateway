@@ -20,7 +20,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -48,7 +50,7 @@ public class AccessLogArchiveScheduler implements LifeCycle {
 
     @Override
     public void start() {
-        scheduledExecutorService = Executors.newScheduledThreadPool(4);
+        scheduledExecutorService = Executors.newScheduledThreadPool(4, new ArchiveThreadFactory());
         scheduledExecutorService.scheduleAtFixedRate(this::runArchive, 0, 1, TimeUnit.MINUTES);
     }
 
@@ -61,24 +63,27 @@ public class AccessLogArchiveScheduler implements LifeCycle {
 
     private void runArchive() {
         final Instant now = Instant.now();
-        environmentRepository.findAll().doOnNext(environment -> {
-            scheduledExecutorService.submit(() -> archive(environment.getId(), now).subscribe());
-        }).subscribe();
+        environmentRepository.findAll().doOnNext(
+                environment -> scheduledExecutorService.submit(() -> archive(environment.getId(), now).subscribe())
+        ).subscribe();
     }
 
     private Mono<Void> archive(String envId, Instant instant) {
-        return archiveProgressRepository.save(envId, instant).flatMap(succeed -> {
+        // 对2分钟之前的数据进行归档
+        TimeUtil.Range twoMinutesAgoRange = TimeUtil.minutesAgoRange(instant, 2);
+        Instant twoMinutesAgo = Instant.ofEpochMilli(twoMinutesAgoRange.getBegin());
+        return archiveProgressRepository.save(envId, twoMinutesAgo).flatMap(succeed -> {
             if (Boolean.TRUE.equals(succeed)) {
+                log.debug("Going to archive access logs for environment {} and time {}", envId, twoMinutesAgo);
                 return doArchive(envId, instant);
             } else {
+                log.debug("Failed to write archive progress for environment {} and time {} , another node got the chance", envId, twoMinutesAgo);
                 return Mono.empty();
             }
         });
     }
 
     private Mono<Void> doArchive(String envId, Instant instant) {
-        log.debug("Going to archive access logs from environment {}", envId);
-        // 对2分钟之前的数据进行归档
         TimeUtil.Range twoMinutesAgoRange = TimeUtil.minutesAgoRange(instant, 2);
         Mono<Void> mono = accessLogArchiveService.archiveAccessLog(
                 envId, twoMinutesAgoRange.getBegin(),
@@ -118,6 +123,21 @@ public class AccessLogArchiveScheduler implements LifeCycle {
         }
 
         return mono;
+    }
+
+    public static class ArchiveThreadFactory implements ThreadFactory {
+
+        private final AtomicLong seq = new AtomicLong(0);
+
+        @Override
+        public Thread newThread(Runnable runnable) {
+            Thread thread = new Thread(runnable);
+            thread.setName("AccessLogArchiveThread-" + seq.incrementAndGet());
+            thread.setDaemon(true);
+            thread.setPriority(Thread.MIN_PRIORITY);
+            return thread;
+        }
+
     }
 
 }
