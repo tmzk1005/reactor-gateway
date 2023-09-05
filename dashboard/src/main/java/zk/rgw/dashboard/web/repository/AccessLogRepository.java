@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.reactivestreams.client.MongoCollection;
@@ -36,6 +37,7 @@ import zk.rgw.alc.common.AccessLogDocument;
 import zk.rgw.alc.common.AccessLogDocumentUtil;
 import zk.rgw.common.util.ObjectUtil;
 import zk.rgw.dashboard.utils.AccessLogStatisticsHelper;
+import zk.rgw.dashboard.web.bean.AccessLogStatistics;
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
@@ -119,7 +121,26 @@ public class AccessLogRepository {
         aggPipelines.add(merge);
 
         return AccessLogDocumentUtil.getAccessLogCollectionForEnv(database, envId)
-                .flatMap(collection -> Mono.from(collection.withDocumentClass(AccessLogStatisticsDocument.class).aggregate(aggPipelines)).then());
+                .flatMap(collection -> Mono.from(collection.withDocumentClass(AccessLogStatisticsDocument.class).aggregate(aggPipelines)).then())
+                .then(accumulateToTotal(envId, beginTime));
+    }
+
+    private Mono<Void> accumulateToTotal(String envId, long beginTime) {
+        List<Bson> aggPipelines = new ArrayList<>();
+
+        Bson filter = Filters.gte("_id.timestampMillis", Instant.ofEpochMilli(beginTime));
+        aggPipelines.add(Aggregates.match(filter));
+
+        // 把timestampMillis设置为一个固定的值
+        aggPipelines.add(Aggregates.set(new Field<>("_id.timestampMillis", Instant.ofEpochMilli(0))));
+
+        String totalCollectionName = AccessLogStatisticsHelper.collectionNameForEnvAndArchiveLevel(envId, AccessLogStatisticsArchiveLevel.ALL);
+        aggPipelines.add(Aggregates.merge(totalCollectionName, AccessLogStatisticsHelper.MERGE_OPTIONS_FOR_TOTAL));
+
+        MongoCollection<AccessLogStatistics> minutesCollection = AccessLogStatisticsHelper.getAccessLogStatisticsCollection(
+                database, envId, AccessLogStatisticsArchiveLevel.MINUTES
+        );
+        return Mono.from(minutesCollection.aggregate(aggPipelines)).then();
     }
 
     @SuppressWarnings({ "java:S3776", "java:S107" })

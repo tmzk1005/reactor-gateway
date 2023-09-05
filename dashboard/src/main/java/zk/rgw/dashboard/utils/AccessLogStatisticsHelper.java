@@ -20,6 +20,7 @@ import java.util.List;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.BsonField;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.model.MergeOptions;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -41,6 +42,8 @@ public class AccessLogStatisticsHelper {
     public static final Bson AGG_GROUP_MONTH;
 
     public static final MergeOptions MERGE_OPTIONS = new MergeOptions().whenMatched(MergeOptions.WhenMatched.REPLACE);
+
+    public static final MergeOptions MERGE_OPTIONS_FOR_TOTAL;
 
     static {
         // init some constant
@@ -97,6 +100,20 @@ public class AccessLogStatisticsHelper {
         AGG_GROUP_HOUR = Aggregates.group(groupIdHour, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
         AGG_GROUP_DAY = Aggregates.group(groupIdDay, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
         AGG_GROUP_MONTH = Aggregates.group(groupIdMonth, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
+
+        List<Bson> matchedPipeline = List.of(
+                Aggregates.set(
+                        new Field<>("count1xx", Document.parse("{\"$add\": [\"$count1xx\", \"$$new.count1xx\"]}")),
+                        new Field<>("count2xx", Document.parse("{\"$add\": [\"$count2xx\", \"$$new.count2xx\"]}")),
+                        new Field<>("count3xx", Document.parse("{\"$add\": [\"$count3xx\", \"$$new.count3xx\"]}")),
+                        new Field<>("count4xx", Document.parse("{\"$add\": [\"$count4xx\", \"$$new.count4xx\"]}")),
+                        new Field<>("count5xx", Document.parse("{\"$add\": [\"$count5xx\", \"$$new.count5xx\"]}")),
+                        new Field<>("millisCost", Document.parse("{\"$add\": [\"$millisCost\", \"$$new.millisCost\"]}")),
+                        new Field<>("upFlow", Document.parse("{\"$add\": [\"$upFlow\", \"$$new.upFlow\"]}")),
+                        new Field<>("downFlow", Document.parse("{\"$add\": [\"$downFlow\", \"$$new.downFlow\"]}"))
+                )
+        );
+        MERGE_OPTIONS_FOR_TOTAL = new MergeOptions().whenMatched(MergeOptions.WhenMatched.PIPELINE).whenMatchedPipeline(matchedPipeline);
     }
 
     private AccessLogStatisticsHelper() {
