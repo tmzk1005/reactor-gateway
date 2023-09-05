@@ -33,7 +33,7 @@ import zk.rgw.dashboard.framework.mongodb.Index;
 @Getter
 @Setter
 @Document(collection = "ArchiveProgress")
-@Index(name = "ArchiveProgress-latestArchiveTimeAndEnv", unique = true, def = "{\"latestArchiveTime\": 1, \"envId\": 1}", expireSeconds = 3600 * 24 * 2)
+@Index(name = "ArchiveProgress-envIdAndLatestArchiveTime", unique = true, def = "{\"envIdAndLatestArchiveTime\": 1}", expireSeconds = 3600 * 24 * 2)
 @NoArgsConstructor
 public class ArchiveProgress {
 
@@ -41,13 +41,14 @@ public class ArchiveProgress {
     @BsonRepresentation(BsonType.OBJECT_ID)
     private String id;
 
-    private String envId;
-
-    private Instant latestArchiveTime;
+    /**
+     * 环境和最后归档时间记录在一个字段
+     * 因为mongodb的TTL index不支持多字段联合索引
+     */
+    private String envIdAndLatestArchiveTime;
 
     public ArchiveProgress(String envId, Instant latestArchiveTime) {
-        this.envId = envId;
-        this.latestArchiveTime = latestArchiveTime;
+        this.envIdAndLatestArchiveTime = envId + "_" + latestArchiveTime.toString();
     }
 
 }
