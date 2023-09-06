@@ -21,7 +21,6 @@ import zk.rgw.dashboard.framework.annotation.Controller;
 import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
 import zk.rgw.dashboard.web.service.AccessLogArchiveService;
 import zk.rgw.dashboard.web.service.DashboardService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
@@ -33,12 +32,20 @@ public class DashboardController {
 
     private final AccessLogArchiveService accessLogArchiveService = ServiceFactory.get(AccessLogArchiveService.class);
 
-    @RequestMapping(path = "/api-calls-count")
-    public Mono<ApiCallsCount> apiCallsCount(
+    @RequestMapping(path = "/apis-count")
+    public Mono<Long> apisCount(
             @RequestParam(name = "envId") String envId,
             @RequestParam(name = "orgId", required = false) String orgId
     ) {
-        return dashboardService.apiCallsCount(envId, orgId);
+        return dashboardService.apisCount(envId, orgId);
+    }
+
+    @RequestMapping(path = "/api-calls-count")
+    public Mono<Long> apiCallsCount(
+            @RequestParam(name = "envId") String envId,
+            @RequestParam(name = "orgId", required = false) String orgId
+    ) {
+        return dashboardService.apisCount(envId, orgId);
     }
 
     @RequestMapping(path = "/access-log-archive", method = RequestMapping.Method.POST)

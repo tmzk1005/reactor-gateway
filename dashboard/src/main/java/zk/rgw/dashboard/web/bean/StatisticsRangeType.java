@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.bean.vo.dashboard;
+package zk.rgw.dashboard.web.bean;
 
-import lombok.Getter;
-import lombok.Setter;
+public enum StatisticsRangeType {
 
-@Getter
-@Setter
-public class ApiCallsCount {
-
-    private int apiCount;
-
-    private long succeedCallsCount;
-
-    private long failedCallsCount;
+    LAST_ONE_HOUR, LAST_SIX_HOUR, LAST_HALF_DAY, LAST_DAY, LAST_MONTH, ALL_TIME
 
 }

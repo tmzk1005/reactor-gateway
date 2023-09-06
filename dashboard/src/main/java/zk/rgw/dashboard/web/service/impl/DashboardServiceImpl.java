@@ -25,7 +25,6 @@ import reactor.core.publisher.Mono;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
-import zk.rgw.dashboard.web.bean.vo.dashboard.ApiCallsCount;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.DashboardService;
@@ -35,15 +34,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
     @Override
-    public Mono<ApiCallsCount> apiCallsCount(String envId, String orgId) {
-        Mono<Long> apiCountMono = getApiFilterByEnvAndOrg(envId, orgId).flatMap(apiRepository::count);
-
-        return apiCountMono.map(apiCount -> {
-            ApiCallsCount apiCallsCount = new ApiCallsCount();
-            apiCallsCount.setApiCount(apiCount.intValue());
-            // TODO : set api calls count, succeed and failed
-            return apiCallsCount;
-        });
+    public Mono<Long> apisCount(String envId, String orgId) {
+        return getApiFilterByEnvAndOrg(envId, orgId).flatMap(apiRepository::count);
     }
 
     private Mono<Bson> getApiFilterByEnvAndOrg(final String envId, final String orgId) {
