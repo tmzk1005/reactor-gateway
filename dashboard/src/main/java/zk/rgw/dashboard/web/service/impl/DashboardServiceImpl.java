@@ -21,7 +21,6 @@ import java.util.Objects;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.util.ObjectUtil;
@@ -48,8 +47,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Flux<AccessLogStatisticsWithTime> apiCallsCountTrend(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
-        return OrgIdDecideUtil.decideOrgId(orgId).flatMapMany(finalOrgId -> {
+    public Mono<List<AccessLogStatisticsWithTime>> apiCallsCountTrend(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
+        return OrgIdDecideUtil.decideOrgId(orgId).flatMap(finalOrgId -> {
             Mono<Boolean> boolMono;
             if (!ObjectUtil.isEmpty(finalOrgId) && !ObjectUtil.isEmpty(apiId)) {
                 boolMono = apiRepository.belongsToOrg(apiId, finalOrgId);
@@ -57,7 +56,7 @@ public class DashboardServiceImpl implements DashboardService {
                 boolMono = Mono.just(Boolean.TRUE);
             }
 
-            return boolMono.flatMapMany(boolValue -> {
+            return boolMono.flatMap(boolValue -> {
                 if (Boolean.TRUE.equals(boolValue)) {
                     return doComputeApiCallsCount(envId, finalOrgId, apiId, timeRangeType);
                 } else {
@@ -69,12 +68,13 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public Mono<AccessLogStatistics> apiCallsCount(String envId, String orgId, String apiId) {
-        return apiCallsCountTrend(envId, orgId, apiId, TimeRangeType.ALL_TIME)
-                .next()
-                .switchIfEmpty(Mono.just(new AccessLogStatisticsWithTime())).map(item -> {
-                    item.setTimestampMillis(null);
-                    return item;
-                });
+        return apiCallsCountTrend(envId, orgId, apiId, TimeRangeType.ALL_TIME).map(list -> {
+            if (list.isEmpty()) {
+                return new AccessLogStatisticsWithTime();
+            } else {
+                return list.get(0);
+            }
+        });
     }
 
     private Mono<Bson> getApiFilterByEnvAndOrg(final String envId, final String orgId) {
@@ -92,7 +92,7 @@ public class DashboardServiceImpl implements DashboardService {
         });
     }
 
-    private Flux<AccessLogStatisticsWithTime> doComputeApiCallsCount(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
+    private Mono<List<AccessLogStatisticsWithTime>> doComputeApiCallsCount(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
         Mono<List<String>> apiIdsMono;
         if (!ObjectUtil.isEmpty(apiId)) {
             apiIdsMono = Mono.just(List.of(apiId));
@@ -101,7 +101,7 @@ public class DashboardServiceImpl implements DashboardService {
         } else {
             apiIdsMono = Mono.just(List.of());
         }
-        return apiIdsMono.flatMapMany(apiIds -> accessLogStatisticsRepository.searchAccessLogStatistics(envId, apiIds, timeRangeType));
+        return apiIdsMono.flatMap(apiIds -> accessLogStatisticsRepository.searchAccessLogStatistics(envId, apiIds, timeRangeType));
     }
 
 }

@@ -15,7 +15,6 @@
  */
 package zk.rgw.dashboard.web.controller;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.framework.annotation.Controller;
@@ -23,8 +22,8 @@ import zk.rgw.dashboard.framework.annotation.RequestMapping;
 import zk.rgw.dashboard.framework.annotation.RequestParam;
 import zk.rgw.dashboard.web.bean.AccessLogStatistics;
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsArchiveLevel;
-import zk.rgw.dashboard.web.bean.AccessLogStatisticsWithTime;
 import zk.rgw.dashboard.web.bean.TimeRangeType;
+import zk.rgw.dashboard.web.bean.vo.chart.LineChartVo;
 import zk.rgw.dashboard.web.service.AccessLogArchiveService;
 import zk.rgw.dashboard.web.service.DashboardService;
 import zk.rgw.dashboard.web.service.factory.ServiceFactory;
@@ -45,13 +44,13 @@ public class DashboardController {
     }
 
     @RequestMapping(path = "/api-calls-count-trend")
-    public Flux<AccessLogStatisticsWithTime> apiCallsCountTrend(
+    public Mono<LineChartVo> apiCallsCountTrend(
             @RequestParam(name = "envId") String envId,
             @RequestParam(name = "orgId", required = false) String orgId,
             @RequestParam(name = "apiId", required = false) String apiId,
             @RequestParam(name = "timeRangeType") TimeRangeType timeRangeType
     ) {
-        return dashboardService.apiCallsCountTrend(envId, orgId, apiId, timeRangeType);
+        return dashboardService.apiCallsCountTrend(envId, orgId, apiId, timeRangeType).map(LineChartVo::fromAccessLogStatisticsWithTimeList);
     }
 
     @RequestMapping(path = "/api-calls-count")

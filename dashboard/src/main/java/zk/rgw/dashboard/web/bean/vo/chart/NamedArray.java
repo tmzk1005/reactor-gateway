@@ -13,22 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.dashboard.web.service;
+package zk.rgw.dashboard.web.bean.vo.chart;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import reactor.core.publisher.Mono;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import zk.rgw.dashboard.web.bean.AccessLogStatistics;
-import zk.rgw.dashboard.web.bean.AccessLogStatisticsWithTime;
-import zk.rgw.dashboard.web.bean.TimeRangeType;
+@Getter
+@Setter
+@NoArgsConstructor
+public class NamedArray {
 
-public interface DashboardService {
+    private String name = "";
 
-    Mono<Long> apisCount(String envId, String orgId);
+    public NamedArray(String name) {
+        this.name = name;
+    }
 
-    Mono<List<AccessLogStatisticsWithTime>> apiCallsCountTrend(String envId, String orgId, String apiId, TimeRangeType timeRangeType);
+    private List<Object> data = new ArrayList<>(0);
 
-    Mono<AccessLogStatistics> apiCallsCount(String envId, String orgId, String apiId);
+    public boolean add(Object number) {
+        return data.add(number);
+    }
 
 }

@@ -17,6 +17,8 @@ package zk.rgw.dashboard.web.repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,27 +81,59 @@ public class AccessLogStatisticsRepository {
         return Mono.from(collection.aggregate(aggPipelines)).then();
     }
 
-    public Flux<AccessLogStatisticsWithTime> searchAccessLogStatistics(String envId, List<String> apiIds, TimeRangeType timeRangeType) {
-        AccessLogStatisticsArchiveLevel level = switch (timeRangeType) {
-            case LAST_ONE_HOUR -> AccessLogStatisticsArchiveLevel.MINUTES;
-            case LAST_SIX_HOUR, LAST_HALF_DAY, LAST_DAY -> AccessLogStatisticsArchiveLevel.HOURS;
-            case LAST_MONTH -> AccessLogStatisticsArchiveLevel.DAYS;
-            case LAST_YEAR -> AccessLogStatisticsArchiveLevel.MONTHS;
-            case ALL_TIME -> AccessLogStatisticsArchiveLevel.ALL;
-        };
+    public Mono<List<AccessLogStatisticsWithTime>> searchAccessLogStatistics(String envId, List<String> apiIds, TimeRangeType timeRangeType) {
+        AccessLogStatisticsArchiveLevel level = null;
+        Instant now = Instant.now();
+        long beginTime = 0;
+        long endTime = 0;
+        long step = 0;
+        switch (timeRangeType) {
+            case LAST_ONE_HOUR -> {
+                level = AccessLogStatisticsArchiveLevel.MINUTES;
+                endTime = TimeUtil.minutesAgoRange(now, 2).getEnd();
+                step = 60_000L;
+                beginTime = endTime - 60 * step;
+            }
+            case LAST_SIX_HOUR -> {
+                level = AccessLogStatisticsArchiveLevel.HOURS;
+                endTime = TimeUtil.lastHourRange(now).getEnd();
+                step = 60 * 60_000L;
+                beginTime = endTime - 6 * step;
+            }
+            case LAST_HALF_DAY -> {
+                level = AccessLogStatisticsArchiveLevel.HOURS;
+                endTime = TimeUtil.lastHourRange(now).getEnd();
+                step = 60 * 60_000L;
+                beginTime = endTime - 12 * step;
+            }
+            case LAST_DAY -> {
+                level = AccessLogStatisticsArchiveLevel.HOURS;
+                endTime = TimeUtil.lastHourRange(now).getEnd();
+                step = 60 * 60_000L;
+                beginTime = endTime - 24 * step;
+            }
+            case LAST_MONTH -> {
+                level = AccessLogStatisticsArchiveLevel.DAYS;
+                endTime = TimeUtil.lastDayRange(now).getEnd();
+                step = 24 * 60 * 60_000L;
+                beginTime = endTime - 30 * step;
+            }
+            case LAST_YEAR -> level = AccessLogStatisticsArchiveLevel.MONTHS;
+            case ALL_TIME -> level = AccessLogStatisticsArchiveLevel.ALL;
+        }
+
         MongoCollection<AccessLogStatistics> collection = AccessLogStatisticsHelper.getAccessLogStatisticsCollection(database, envId, level);
 
         List<Bson> aggPipeline = new ArrayList<>();
 
         Bson matchFilter = null;
-        if (level != AccessLogStatisticsArchiveLevel.ALL) {
-            TimeUtil.Range range = timeRangeType.toRange();
+
+        if (level != AccessLogStatisticsArchiveLevel.ALL && endTime != 0 && beginTime != 0) {
             matchFilter = Filters.and(
-                    Filters.gte("_id.timestampMillis", Instant.ofEpochMilli(range.getBegin())),
-                    Filters.lt("_id.timestampMillis", Instant.ofEpochMilli(range.getEnd()))
+                    Filters.gte("_id.timestampMillis", Instant.ofEpochMilli(beginTime)),
+                    Filters.lt("_id.timestampMillis", Instant.ofEpochMilli(endTime))
             );
         }
-
         if (!ObjectUtil.isEmpty(apiIds)) {
             Bson apiIdFilter = Filters.in("_id.apiId", apiIds);
             if (Objects.isNull(matchFilter)) {
@@ -132,7 +166,39 @@ public class AccessLogStatisticsRepository {
 
         aggPipeline.add(Aggregates.sort(Sorts.ascending("timestampMillis")));
 
-        return Flux.from(collection.withDocumentClass(AccessLogStatisticsWithTime.class).aggregate(aggPipeline));
+        Mono<List<AccessLogStatisticsWithTime>> resultMono = Flux.from(
+                collection.withDocumentClass(AccessLogStatisticsWithTime.class).aggregate(aggPipeline)
+        ).collectList();
+
+        if (step != 0) {
+            long finalBeginTime = beginTime;
+            long finalEndTime = endTime;
+            long finalStep = step;
+            resultMono = resultMono.map(list -> fillBlankPoint(list, finalBeginTime, finalEndTime, finalStep));
+        }
+        return resultMono;
+    }
+
+    private List<AccessLogStatisticsWithTime> fillBlankPoint(List<AccessLogStatisticsWithTime> list, long beginTime, long endTime, long step) {
+        List<AccessLogStatisticsWithTime> result = new LinkedList<>();
+
+        Iterator<AccessLogStatisticsWithTime> iterator = list.iterator();
+        AccessLogStatisticsWithTime nextItem = iterator.hasNext() ? iterator.next() : null;
+
+        long dot = beginTime;
+
+        while (dot < endTime) {
+            Instant instant = Instant.ofEpochMilli(dot);
+            if (Objects.nonNull(nextItem) && instant.equals(nextItem.getTimestampMillis())) {
+                result.add(nextItem);
+                nextItem = iterator.hasNext() ? iterator.next() : null;
+            } else {
+                result.add(new AccessLogStatisticsWithTime(instant));
+            }
+            dot += step;
+        }
+
+        return result;
     }
 
 }
