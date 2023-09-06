@@ -45,6 +45,16 @@ public class AccessLogStatisticsHelper {
 
     public static final MergeOptions MERGE_OPTIONS_FOR_TOTAL;
 
+    public static final BsonField COUNT_1_XX = Accumulators.sum("count1xx", "$count1xx");
+    public static final BsonField COUNT_2_XX = Accumulators.sum("count2xx", "$count2xx");
+    public static final BsonField COUNT_3_XX = Accumulators.sum("count3xx", "$count3xx");
+    public static final BsonField COUNT_4_XX = Accumulators.sum("count4xx", "$count4xx");
+    public static final BsonField COUNT_5_XX = Accumulators.sum("count5xx", "$count5xx");
+
+    public static final BsonField MILLIS_COST_SUM = Accumulators.sum("millisCost", "$millisCost");
+    public static final BsonField UP_FLOW_SUM = Accumulators.sum("upFlow", "$upFlow");
+    public static final BsonField DOWN_FLOW_SUM = Accumulators.sum("downFlow", "$downFlow");
+
     static {
         // init some constant
         String groupIdMinuteDef = """
@@ -87,19 +97,18 @@ public class AccessLogStatisticsHelper {
                 Accumulators.sum("downFlow", "$responseInfo.bodySize")
         );
 
-        BsonField count1xx = Accumulators.sum("count1xx", "$count1xx");
-        BsonField count2xx = Accumulators.sum("count2xx", "$count2xx");
-        BsonField count3xx = Accumulators.sum("count3xx", "$count3xx");
-        BsonField count4xx = Accumulators.sum("count4xx", "$count4xx");
-        BsonField count5xx = Accumulators.sum("count5xx", "$count5xx");
-
-        BsonField millisCostSum = Accumulators.sum("millisCost", "$millisCost");
-        BsonField upFlowSum = Accumulators.sum("upFlow", "$upFlow");
-        BsonField downFlowSum = Accumulators.sum("downFlow", "$downFlow");
-
-        AGG_GROUP_HOUR = Aggregates.group(groupIdHour, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
-        AGG_GROUP_DAY = Aggregates.group(groupIdDay, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
-        AGG_GROUP_MONTH = Aggregates.group(groupIdMonth, count1xx, count2xx, count3xx, count4xx, count5xx, millisCostSum, upFlowSum, downFlowSum);
+        AGG_GROUP_HOUR = Aggregates.group(
+                groupIdHour, COUNT_1_XX, COUNT_2_XX, COUNT_3_XX, COUNT_4_XX,
+                COUNT_5_XX, MILLIS_COST_SUM, UP_FLOW_SUM, DOWN_FLOW_SUM
+        );
+        AGG_GROUP_DAY = Aggregates.group(
+                groupIdDay, COUNT_1_XX, COUNT_2_XX, COUNT_3_XX, COUNT_4_XX,
+                COUNT_5_XX, MILLIS_COST_SUM, UP_FLOW_SUM, DOWN_FLOW_SUM
+        );
+        AGG_GROUP_MONTH = Aggregates.group(
+                groupIdMonth, COUNT_1_XX, COUNT_2_XX, COUNT_3_XX, COUNT_4_XX,
+                COUNT_5_XX, MILLIS_COST_SUM, UP_FLOW_SUM, DOWN_FLOW_SUM
+        );
 
         List<Bson> matchedPipeline = List.of(
                 Aggregates.set(

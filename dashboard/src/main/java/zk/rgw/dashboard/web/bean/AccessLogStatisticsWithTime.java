@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package zk.rgw.dashboard.web.bean;
 
-public enum StatisticsRangeType {
+import java.time.Instant;
 
-    LAST_ONE_HOUR, LAST_SIX_HOUR, LAST_HALF_DAY, LAST_DAY, LAST_MONTH, ALL_TIME
+import lombok.Getter;
+import lombok.Setter;
+import org.bson.codecs.pojo.annotations.BsonId;
+
+@Getter
+@Setter
+public class AccessLogStatisticsWithTime extends AccessLogStatistics {
+
+    @BsonId
+    private Instant timestampMillis;
 
 }

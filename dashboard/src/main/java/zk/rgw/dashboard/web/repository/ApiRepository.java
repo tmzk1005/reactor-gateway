@@ -15,14 +15,20 @@
  */
 package zk.rgw.dashboard.web.repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
@@ -43,6 +49,14 @@ public class ApiRepository extends BaseAuditableEntityMongodbRepository<Api> {
         return exists(filer);
     }
 
+    public Mono<Boolean> belongsToOrg(String apiId, String orgId) {
+        Bson filer = Filters.and(
+                Filters.eq("_id", new ObjectId(apiId)),
+                Filters.eq("organization", new ObjectId(orgId))
+        );
+        return exists(filer);
+    }
+
     @Override
     public Mono<Api> findOneById(String id) {
         return super.findOneById(id).doOnNext(api -> {
@@ -58,6 +72,13 @@ public class ApiRepository extends BaseAuditableEntityMongodbRepository<Api> {
                 }
             }
         });
+    }
+
+    public Flux<String> getApiIdsByOrgId(String orgId) {
+        List<Bson> aggPipeline = new ArrayList<>();
+        aggPipeline.add(Aggregates.match(Filters.eq("organization", new ObjectId(orgId))));
+        aggPipeline.add(Aggregates.project(Projections.include("_id")));
+        return Flux.from(mongoCollection.withDocumentClass(Document.class).aggregate(aggPipeline)).map(doc -> doc.getObjectId("_id").toString());
     }
 
 }

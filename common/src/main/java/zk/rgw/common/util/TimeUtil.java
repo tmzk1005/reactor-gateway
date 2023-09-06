@@ -46,15 +46,23 @@ public class TimeUtil {
     }
 
     public static Range lastHourRange(Instant instant) {
-        long begin = instant.truncatedTo(ChronoUnit.HOURS).minusSeconds(3600).toEpochMilli();
-        return new Range(begin, begin + 3600_000L);
+        return hoursAgeRange(instant, 1);
+    }
+
+    public static Range hoursAgeRange(Instant instant, int hourCount) {
+        long begin = instant.truncatedTo(ChronoUnit.HOURS).minusSeconds(3600L * hourCount).toEpochMilli();
+        return new Range(begin, begin + 3600_000L * hourCount);
     }
 
     public static Range lastDayRange(Instant instant) {
+        return daysAgeRange(instant, 1);
+    }
+
+    public static Range daysAgeRange(Instant instant, int daysCount) {
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, TZ_ID);
         ZoneOffset offset = TZ_ID.getRules().getOffset(dateTime);
-        long begin = dateTime.truncatedTo(ChronoUnit.DAYS).minusDays(1L).toEpochSecond(offset) * 1000L;
-        return new Range(begin, begin + 24 * 3600_000L);
+        long begin = dateTime.truncatedTo(ChronoUnit.DAYS).minusDays(daysCount).toEpochSecond(offset) * 1000L;
+        return new Range(begin, begin + 24 * 3600_000L * daysCount);
     }
 
     public static Range lastMonthRange(Instant instant) {
