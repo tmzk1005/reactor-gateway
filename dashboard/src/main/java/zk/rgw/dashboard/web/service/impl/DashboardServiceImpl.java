@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 import zk.rgw.common.util.ObjectUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.utils.OrgIdDecideUtil;
+import zk.rgw.dashboard.web.bean.AccessLogStatistics;
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsWithTime;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.TimeRangeType;
@@ -47,7 +48,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public Flux<AccessLogStatisticsWithTime> apiCallsCount(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
+    public Flux<AccessLogStatisticsWithTime> apiCallsCountTrend(String envId, String orgId, String apiId, TimeRangeType timeRangeType) {
         return OrgIdDecideUtil.decideOrgId(orgId).flatMapMany(finalOrgId -> {
             Mono<Boolean> boolMono;
             if (!ObjectUtil.isEmpty(finalOrgId) && !ObjectUtil.isEmpty(apiId)) {
@@ -64,6 +65,16 @@ public class DashboardServiceImpl implements DashboardService {
                 }
             });
         });
+    }
+
+    @Override
+    public Mono<AccessLogStatistics> apiCallsCount(String envId, String orgId, String apiId) {
+        return apiCallsCountTrend(envId, orgId, apiId, TimeRangeType.ALL_TIME)
+                .next()
+                .switchIfEmpty(Mono.just(new AccessLogStatisticsWithTime())).map(item -> {
+                    item.setTimestampMillis(null);
+                    return item;
+                });
     }
 
     private Mono<Bson> getApiFilterByEnvAndOrg(final String envId, final String orgId) {

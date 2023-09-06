@@ -18,6 +18,7 @@ package zk.rgw.dashboard.web.service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.dashboard.web.bean.AccessLogStatistics;
 import zk.rgw.dashboard.web.bean.AccessLogStatisticsWithTime;
 import zk.rgw.dashboard.web.bean.TimeRangeType;
 
@@ -25,6 +26,8 @@ public interface DashboardService {
 
     Mono<Long> apisCount(String envId, String orgId);
 
-    Flux<AccessLogStatisticsWithTime> apiCallsCount(String envId, String orgId, String apiId, TimeRangeType timeRangeType);
+    Flux<AccessLogStatisticsWithTime> apiCallsCountTrend(String envId, String orgId, String apiId, TimeRangeType timeRangeType);
+
+    Mono<AccessLogStatistics> apiCallsCount(String envId, String orgId, String apiId);
 
 }

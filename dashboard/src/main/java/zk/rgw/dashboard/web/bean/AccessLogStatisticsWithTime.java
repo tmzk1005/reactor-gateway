@@ -18,14 +18,20 @@ package zk.rgw.dashboard.web.bean;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.codecs.pojo.annotations.BsonId;
+
+import zk.rgw.common.util.JsonUtil;
 
 @Getter
 @Setter
 public class AccessLogStatisticsWithTime extends AccessLogStatistics {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = JsonUtil.DEFAULT_DATE_TIME_PATTERN)
     @BsonId
     private Instant timestampMillis;
 
