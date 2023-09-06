@@ -280,7 +280,6 @@ public class MongodbContext {
         BaseMongodbRepository<Environment> repository = new BaseMongodbRepository<>(mongoClient, database, Environment.class);
         return createEnvironment(repository, adminUser, "开发环境")
                 .then(createEnvironment(repository, adminUser, "测试环境"))
-                .then(createEnvironment(repository, adminUser, "预生产环境"))
                 .then(createEnvironment(repository, adminUser, "生产环境"));
     }
 
