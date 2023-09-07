@@ -54,7 +54,7 @@ public class LineChartVo {
         }
     }
 
-    public static LineChartVo fromAccessLogStatisticsWithTimeList(List<AccessLogStatisticsWithTime> dataList) {
+    public static LineChartVo apiCallsCountTrend(List<AccessLogStatisticsWithTime> dataList) {
         LineChartVo lineChartVo = new LineChartVo();
         lineChartVo.setTitle("请求数趋势");
         lineChartVo.axisX.setName("时间");
@@ -88,6 +88,39 @@ public class LineChartVo {
         lineChartVo.series.add(seriesCount4xx);
         lineChartVo.series.add(seriesCount3xx);
         lineChartVo.series.add(seriesCount1xx);
+
+        return lineChartVo;
+    }
+
+    public static LineChartVo apiCallsDelayTrend(List<AccessLogStatisticsWithTime> dataList) {
+        LineChartVo lineChartVo = new LineChartVo();
+        lineChartVo.setTitle("请求平均耗时趋势");
+        lineChartVo.axisX.setName("时间");
+        lineChartVo.axisY.setName("耗时");
+        NamedArray seriesAvgDelay = new NamedArray("耗时");
+        for (AccessLogStatisticsWithTime item : dataList) {
+            lineChartVo.axisX.add(JsonUtil.formatInstant(item.getTimestampMillis()));
+            seriesAvgDelay.add(item.avgMillisCost());
+        }
+        lineChartVo.series.add(seriesAvgDelay);
+        return lineChartVo;
+    }
+
+    public static LineChartVo apiCallsFlowTrend(List<AccessLogStatisticsWithTime> dataList) {
+        LineChartVo lineChartVo = new LineChartVo();
+        lineChartVo.setTitle("流量趋势");
+        lineChartVo.axisX.setName("时间");
+        lineChartVo.axisY.setName("流量");
+        NamedArray seriesUpFlow = new NamedArray("上行流量");
+        NamedArray seriesDownFlow = new NamedArray("下行流量");
+        for (AccessLogStatisticsWithTime item : dataList) {
+            lineChartVo.axisX.add(JsonUtil.formatInstant(item.getTimestampMillis()));
+            seriesUpFlow.add(item.getUpFlow());
+            seriesDownFlow.add(item.getDownFlow());
+        }
+
+        lineChartVo.series.add(seriesUpFlow);
+        lineChartVo.series.add(seriesDownFlow);
 
         return lineChartVo;
     }
