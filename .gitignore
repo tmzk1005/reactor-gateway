@@ -30,3 +30,6 @@ qa/format/java.importorder
 logs/
 
 dev/.tmp
+
+# frontedn code in another repo
+reactor-gateway-ui/
