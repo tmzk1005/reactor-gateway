@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 /*
  * Copyright 2023 zoukang, All Rights Reserved.
  *
@@ -43,3 +46,13 @@ def findAndIncludePluginsProjects() {
 }
 
 findAndIncludePluginsProjects()
+
+def includeUiProject() {
+    def uiProjectPath = rootDir.toPath().resolve("reactor-gateway-ui");
+    if (!Files.exists(uiProjectPath)) {
+       throw new RuntimeException("directory reactor-gateway-ui not exist, please clone it from https://github.com/tmzk1005/reactor-gateway-ui.git")
+    }
+    include "reactor-gateway-ui"
+}
+
+includeUiProject()
