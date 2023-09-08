@@ -17,6 +17,7 @@ package zk.rgw.dashboard.web.repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.Objects;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 import lombok.extern.slf4j.Slf4j;
@@ -143,11 +143,11 @@ public class AccessLogStatisticsRepository {
                 )
         );
 
-        aggPipeline.add(Aggregates.sort(Sorts.ascending("timestampMillis")));
-
         Mono<List<AccessLogStatisticsWithTime>> resultMono = Flux.from(
                 collection.withDocumentClass(AccessLogStatisticsWithTime.class).aggregate(aggPipeline)
         ).collectList();
+
+        resultMono = resultMono.doOnNext(list -> list.sort(Comparator.comparing(AccessLogStatisticsWithTime::getTimestampMillis)));
 
         if (step == 0) {
             return resultMono;
