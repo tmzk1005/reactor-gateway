@@ -16,6 +16,7 @@
 
 package zk.rgw.dashboard;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import zk.rgw.dashboard.framework.mongodb.MongodbContext;
 import zk.rgw.dashboard.framework.security.UserJwtUtil;
 import zk.rgw.dashboard.web.schedule.AccessLogArchiveScheduler;
 import zk.rgw.http.route.locator.RouteLocator;
+import zk.rgw.http.server.HttpHandler;
 import zk.rgw.http.server.ReactorHttpServer;
 
 @Slf4j
@@ -47,6 +49,12 @@ public class DashboardServer extends ReactorHttpServer {
     public DashboardServer(DashboardConfiguration configuration) {
         super(configuration.getServerHost(), configuration.getServerPort());
         this.configuration = configuration;
+    }
+
+    @Override
+    protected HttpHandler getHttpHandler() {
+        Path staticResourceRoot = configuration.getRgwHome().resolve("static");
+        return new DashboardHttpHandler(getRouteLocator(), configuration.getApiContextPath(), staticResourceRoot);
     }
 
     @Override

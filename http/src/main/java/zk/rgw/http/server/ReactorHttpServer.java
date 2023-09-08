@@ -48,7 +48,7 @@ public abstract class ReactorHttpServer implements Server {
             return;
         }
         beforeStart();
-        HttpHandler httpHandler = new HttpHandler(this.getRouteLocator());
+        HttpHandler httpHandler = getHttpHandler();
         try {
             this.httpd = HttpServer.create().host(host).port(port).handle(httpHandler).bindNow();
         } catch (Exception exception) {
@@ -73,6 +73,10 @@ public abstract class ReactorHttpServer implements Server {
         this.httpd = null;
         afterStop();
         log.info("{} stopped.", this.getClass().getSimpleName());
+    }
+
+    protected HttpHandler getHttpHandler() {
+        return new HttpHandler(this.getRouteLocator());
     }
 
     protected abstract RouteLocator getRouteLocator();
