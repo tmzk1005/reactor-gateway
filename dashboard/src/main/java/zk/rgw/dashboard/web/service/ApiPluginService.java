@@ -18,6 +18,7 @@ package zk.rgw.dashboard.web.service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.PluginInstanceDefinition;
 import zk.rgw.dashboard.framework.security.HasRole;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
@@ -29,5 +30,7 @@ public interface ApiPluginService {
     Mono<Void> installPlugin(ApiPluginDto apiPluginDto);
 
     Flux<ApiPlugin> getAllPlugins();
+
+    Mono<Boolean> checkPluginDefinition(PluginInstanceDefinition definition);
 
 }

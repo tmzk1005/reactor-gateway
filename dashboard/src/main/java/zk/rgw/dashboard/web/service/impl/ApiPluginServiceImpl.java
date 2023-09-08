@@ -16,12 +16,22 @@
 
 package zk.rgw.dashboard.web.service.impl;
 
+import java.util.Set;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.Filters;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.PluginInstanceDefinition;
+import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.BizException;
 import zk.rgw.dashboard.web.bean.dto.ApiPluginDto;
@@ -52,6 +62,26 @@ public class ApiPluginServiceImpl implements ApiPluginService {
             }
         });
         return filterMono.flatMapMany(apiPluginRepository::find);
+    }
+
+    @Override
+    public Mono<Boolean> checkPluginDefinition(PluginInstanceDefinition definition) {
+        return apiPluginRepository.findOneByNameAndVersion(definition.getName(), definition.getVersion())
+                .switchIfEmpty(Mono.error(BizException.of("引用了不存在的插件，请检查插件的名称和版本号")))
+                .map(apiPlugin -> validateJsonSchema(apiPlugin.getJsonSchema(), definition.getJsonConf()));
+    }
+
+    private boolean validateJsonSchema(String schemaDef, String jsonStr) {
+        JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        JsonSchema jsonSchema = jsonSchemaFactory.getSchema(schemaDef);
+        JsonNode jsonNode;
+        try {
+            jsonNode = JsonUtil.str2JsonNode(jsonStr);
+        } catch (JsonProcessingException exception) {
+            return false;
+        }
+        Set<ValidationMessage> errMessages = jsonSchema.validate(jsonNode);
+        return errMessages.isEmpty();
     }
 
 }

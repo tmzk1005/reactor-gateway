@@ -51,7 +51,7 @@ def lombokVersion = "1.18.26"
 def jacksonVersion = "2.15.1"
 def reactorVersion = "2022.0.7"
 def reactorNettyVersion = "1.1.7"
-def slf4jApiVersion = "1.7.36"
+def slf4jApiVersion = "2.0.9"
 def log4j2Version = "2.20.0"
 def picocliVersion = "4.7.3"
 def junitJupiterVersion = "5.9.3"
@@ -71,7 +71,7 @@ dependencies {
     implementation platform("com.auth0:java-jwt:${jwtLibVersion}")
     implementation platform("org.mongodb:mongodb-driver-reactivestreams:${mongodbReactiveDriverVersion}")
     implementation platform("org.mongodb:bson-record-codec:${mongodbReactiveDriverVersion}")
-    // implementation platform("com.networknt:json-schema-validator:${jsonSchemaVersion}")
+    implementation platform("com.networknt:json-schema-validator:${jsonSchemaVersion}")
 
     constraints {
         // noinspection ForeignDelegate

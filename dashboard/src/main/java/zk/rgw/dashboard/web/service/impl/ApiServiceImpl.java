@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.definition.PluginInstanceDefinition;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.util.ObjectUtil;
@@ -59,7 +60,9 @@ import zk.rgw.dashboard.web.repository.OrganizationRepository;
 import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.UserRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
+import zk.rgw.dashboard.web.service.ApiPluginService;
 import zk.rgw.dashboard.web.service.ApiService;
+import zk.rgw.dashboard.web.service.factory.ServiceFactory;
 
 public class ApiServiceImpl implements ApiService {
 
@@ -82,6 +85,15 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public Mono<Api> createApi(ApiDto apiDto) {
+        return checkApiDtoByJsonSchema(apiDto).then(doCreateApi(apiDto));
+    }
+
+    @Override
+    public Mono<Api> updateApi(String apiId, ApiDto apiDto) {
+        return checkApiDtoByJsonSchema(apiDto).then(doUpdateApi(apiId, apiDto));
+    }
+
+    public Mono<Api> doCreateApi(ApiDto apiDto) {
         return ContextUtil.getUser().flatMap(
                 user -> apiRepository.existOneByNameAndOrg(apiDto.getName(), user.getOrganization().getId())
                         .flatMap(exist -> {
@@ -98,8 +110,7 @@ public class ApiServiceImpl implements ApiService {
         );
     }
 
-    @Override
-    public Mono<Api> updateApi(String apiId, ApiDto apiDto) {
+    public Mono<Api> doUpdateApi(String apiId, ApiDto apiDto) {
         Mono<Api> oldApiMono = apiRepository.findOneById(apiId)
                 .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.apiNotExist(apiId))));
         Mono<User> userMono = ContextUtil.getUser();
@@ -124,6 +135,23 @@ public class ApiServiceImpl implements ApiService {
             }
             return doUpdateApiAndSave(oldApi, apiDto);
         });
+    }
+
+    private Mono<Void> checkApiDtoByJsonSchema(ApiDto apiDto) {
+        List<PluginInstanceDefinition> pluginDefinitions = apiDto.getRouteDefinition().getPluginDefinitions();
+        Mono<Boolean> mono = Mono.just(Boolean.TRUE);
+        final ApiPluginService apiPluginService = ServiceFactory.get(ApiPluginService.class);
+
+        for (PluginInstanceDefinition definition : pluginDefinitions) {
+            mono = mono.flatMap(boolValue -> {
+                if (Boolean.TRUE.equals(boolValue)) {
+                    return apiPluginService.checkPluginDefinition(definition);
+                } else {
+                    return Mono.error(BizException.of("API定义非法，部分插件定义JSON未通过JsonSchema校验"));
+                }
+            });
+        }
+        return mono.then();
     }
 
     private Mono<Api> doUpdateApiAndSave(Api api, ApiDto apiDto) {

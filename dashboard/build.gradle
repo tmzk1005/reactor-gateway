@@ -42,7 +42,7 @@ dependencies {
 
     implementation "com.auth0:java-jwt"
 
-    // implementation 'com.networknt:json-schema-validator'
+    implementation 'com.networknt:json-schema-validator'
 }
 
 tasks.register("generateBuiltinPluginsInfo") {

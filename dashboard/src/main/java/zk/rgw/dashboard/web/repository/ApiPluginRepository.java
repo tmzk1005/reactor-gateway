@@ -29,12 +29,12 @@ public class ApiPluginRepository extends BaseAuditableEntityMongodbRepository<Ap
         super(mongoClient, database, ApiPlugin.class);
     }
 
-    public Mono<Boolean> existByNameAndVersion(String name, String version) {
+    public Mono<ApiPlugin> findOneByNameAndVersion(String name, String version) {
         Bson filter = Filters.and(
                 Filters.eq("name", name),
                 Filters.eq("version", version)
         );
-        return exists(filter);
+        return findOne(filter);
     }
 
 }
