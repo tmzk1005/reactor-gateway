@@ -39,7 +39,6 @@ public class AccessLogStatisticsHelper {
     public static final Bson AGG_GROUP_MINUTE;
     public static final Bson AGG_GROUP_HOUR;
     public static final Bson AGG_GROUP_DAY;
-    public static final Bson AGG_GROUP_MONTH;
 
     public static final MergeOptions MERGE_OPTIONS = new MergeOptions().whenMatched(MergeOptions.WhenMatched.REPLACE);
 
@@ -83,7 +82,6 @@ public class AccessLogStatisticsHelper {
                 }""";
         Document groupIdHour = Document.parse(String.format(template, "hour"));
         Document groupIdDay = Document.parse(String.format(template, "day"));
-        Document groupIdMonth = Document.parse(String.format(template, "month"));
 
         AGG_GROUP_MINUTE = Aggregates.group(
                 groupIdMinute,
@@ -103,10 +101,6 @@ public class AccessLogStatisticsHelper {
         );
         AGG_GROUP_DAY = Aggregates.group(
                 groupIdDay, COUNT_1_XX, COUNT_2_XX, COUNT_3_XX, COUNT_4_XX,
-                COUNT_5_XX, MILLIS_COST_SUM, UP_FLOW_SUM, DOWN_FLOW_SUM
-        );
-        AGG_GROUP_MONTH = Aggregates.group(
-                groupIdMonth, COUNT_1_XX, COUNT_2_XX, COUNT_3_XX, COUNT_4_XX,
                 COUNT_5_XX, MILLIS_COST_SUM, UP_FLOW_SUM, DOWN_FLOW_SUM
         );
 

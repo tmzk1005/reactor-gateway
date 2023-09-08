@@ -16,7 +16,6 @@
 package zk.rgw.common.util;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,24 +24,10 @@ class TimeUtilTest {
 
     @Test
     void test() {
-        TimeUtil.Range range;
         Instant instant = Instant.now();
-
-        range = TimeUtil.lastMinuteRange(instant);
-        Assertions.assertEquals(0, range.getBegin() % 60_000L);
-
-        range = TimeUtil.lastHourRange(instant);
-        Assertions.assertEquals(0, range.getBegin() % 3600_000L);
-
-        range = TimeUtil.lastDayRange(instant);
-        ZoneOffset offset = TimeUtil.TZ_ID.getRules().getOffset(instant);
-        long offsetInMillis = offset.getTotalSeconds() * 1000L;
-        Assertions.assertEquals(0, range.getBegin() % 3600_000L);
-        Assertions.assertEquals(86400_000L - offsetInMillis, range.getBegin() % 86400_000L);
-
-        range = TimeUtil.lastMonthRange(instant);
-        Assertions.assertEquals(0, range.getBegin() % 3600_000L);
-        Assertions.assertTrue(range.getEnd() - range.getBegin() >= 28 * 24 * 3600_000L);
+        Assertions.assertEquals(0, TimeUtil.minutesAgo(instant, 1) % TimeUtil.MINUTE_IN_MILLS);
+        Assertions.assertEquals(0, TimeUtil.hoursAgo(instant, 1) % TimeUtil.HOUR_IN_MILLS);
+        Assertions.assertEquals(0, TimeUtil.daysAgo(instant, 1) % TimeUtil.DAY_IN_MILLIS);
     }
 
 }

@@ -70,9 +70,9 @@ public class AccessLogArchiveScheduler implements LifeCycle {
 
     private Mono<Void> archive(String envId, Instant instant) {
         // 对2分钟之前的数据进行归档
-        TimeUtil.Range twoMinutesAgoRange = TimeUtil.minutesAgoRange(instant, 2);
-        Instant twoMinutesAgo = Instant.ofEpochMilli(twoMinutesAgoRange.getBegin());
-        return archiveProgressRepository.save(envId, twoMinutesAgo).flatMap(succeed -> {
+        long twoMinutesAgo = TimeUtil.minutesAgo(instant, 2);
+
+        return archiveProgressRepository.save(envId, Instant.ofEpochMilli(twoMinutesAgo)).flatMap(succeed -> {
             if (Boolean.TRUE.equals(succeed)) {
                 log.debug("Going to archive access logs for environment {} and time {}", envId, twoMinutesAgo);
                 return doArchive(envId, instant);
@@ -84,40 +84,28 @@ public class AccessLogArchiveScheduler implements LifeCycle {
     }
 
     private Mono<Void> doArchive(String envId, Instant instant) {
-        TimeUtil.Range twoMinutesAgoRange = TimeUtil.minutesAgoRange(instant, 2);
+        long twoMinutesAgo = TimeUtil.minutesAgo(instant, 2);
+
         Mono<Void> mono = accessLogArchiveService.archiveAccessLog(
-                envId, twoMinutesAgoRange.getBegin(),
-                twoMinutesAgoRange.getEnd(), AccessLogStatisticsArchiveLevel.MINUTES
+                envId, twoMinutesAgo, twoMinutesAgo + TimeUtil.MINUTE_IN_MILLS, AccessLogStatisticsArchiveLevel.MINUTES
         );
 
         LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, TimeUtil.TZ_ID);
 
         if (localDateTime.getMinute() == 4) {
-            TimeUtil.Range lastHourRange = TimeUtil.lastHourRange(instant);
+            long hourAgo = TimeUtil.hoursAgo(instant, 1);
             mono = mono.then(
                     accessLogArchiveService.archiveAccessLog(
-                            envId, lastHourRange.getBegin(),
-                            lastHourRange.getEnd(), AccessLogStatisticsArchiveLevel.HOURS
+                            envId, hourAgo, hourAgo + TimeUtil.HOUR_IN_MILLS, AccessLogStatisticsArchiveLevel.HOURS
                     )
             );
         }
 
         if (localDateTime.getHour() == 0 && localDateTime.getMinute() == 5) {
-            TimeUtil.Range lastDayRange = TimeUtil.lastDayRange(instant);
+            long dayAgo = TimeUtil.daysAgo(instant, 1);
             mono = mono.then(
                     accessLogArchiveService.archiveAccessLog(
-                            envId, lastDayRange.getBegin(),
-                            lastDayRange.getEnd(), AccessLogStatisticsArchiveLevel.DAYS
-                    )
-            );
-        }
-
-        if (localDateTime.getDayOfMonth() == 1 && localDateTime.getHour() == 0 && localDateTime.getMinute() == 10) {
-            TimeUtil.Range lastMonthRange = TimeUtil.lastMonthRange(instant);
-            mono = mono.then(
-                    accessLogArchiveService.archiveAccessLog(
-                            envId, lastMonthRange.getBegin(),
-                            lastMonthRange.getEnd(), AccessLogStatisticsArchiveLevel.MONTHS
+                            envId, dayAgo, dayAgo + TimeUtil.DAY_IN_MILLIS, AccessLogStatisticsArchiveLevel.DAYS
                     )
             );
         }

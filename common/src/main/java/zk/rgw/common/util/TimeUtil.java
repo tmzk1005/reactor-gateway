@@ -17,15 +17,8 @@
 package zk.rgw.common.util;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 public class TimeUtil {
 
@@ -33,57 +26,36 @@ public class TimeUtil {
 
     public static final ZoneId TZ_ID = ZoneId.of(ZONE_ID_STR, ZoneId.SHORT_IDS);
 
+    public static final long SECOND_IN_MILLIS = 1000L;
+
+    public static final long MINUTE_IN_MILLS = 60 * SECOND_IN_MILLIS;
+
+    public static final long HOUR_IN_MILLS = 60 * MINUTE_IN_MILLS;
+
+    public static final long DAY_IN_MILLIS = 24 * HOUR_IN_MILLS;
+
     private TimeUtil() {
     }
 
-    public static Range lastMinuteRange(Instant instant) {
-        return minutesAgoRange(instant, 1);
-    }
-
-    public static Range minutesAgoRange(Instant instant, int minutes) {
-        long begin = instant.truncatedTo(ChronoUnit.MINUTES).minusSeconds(60L * minutes).toEpochMilli();
-        return new Range(begin, begin + 60_000L);
-    }
-
-    public static Range lastHourRange(Instant instant) {
-        return hoursAgeRange(instant, 1);
-    }
-
-    public static Range hoursAgeRange(Instant instant, int hourCount) {
-        long begin = instant.truncatedTo(ChronoUnit.HOURS).minusSeconds(3600L * hourCount).toEpochMilli();
-        return new Range(begin, begin + 3600_000L * hourCount);
-    }
-
-    public static Range lastDayRange(Instant instant) {
-        return daysAgeRange(instant, 1);
-    }
-
-    public static Range daysAgeRange(Instant instant, int daysCount) {
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, TZ_ID);
-        ZoneOffset offset = TZ_ID.getRules().getOffset(dateTime);
-        long begin = dateTime.truncatedTo(ChronoUnit.DAYS).minusDays(daysCount).toEpochSecond(offset) * 1000L;
-        return new Range(begin, begin + 24 * 3600_000L * daysCount);
-    }
-
-    public static Range lastMonthRange(Instant instant) {
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, TZ_ID).minusMonths(1);
-        LocalDateTime beginOfMonth = LocalDateTime.of(dateTime.getYear(), dateTime.getMonth(), 1, 0, 0);
-        ZoneOffset offset = TZ_ID.getRules().getOffset(dateTime);
-        long begin = beginOfMonth.toEpochSecond(offset) * 1000L;
-        int monthDays = beginOfMonth.getMonth().length(beginOfMonth.toLocalDate().isLeapYear());
-        return new Range(begin, begin + monthDays * 24 * 3600_000L);
+    /**
+     * 将给定的的时间的 "分钟零头" 去掉，即把时间向整分钟对齐，然后再减去一个给定的整分钟数
+     */
+    public static long minutesAgo(Instant instant, int minutes) {
+        return instant.truncatedTo(ChronoUnit.MINUTES).minusMillis(minutes * MINUTE_IN_MILLS).toEpochMilli();
     }
 
     /**
-     * 毫秒时间戳范围：[begin, end)
+     * 将给定的的时间的 "小时零头" 去掉，即把时间向整小时对齐，然后再减去一个给定的整小时数
      */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Range {
-        private long begin;
-        private long end;
+    public static long hoursAgo(Instant instant, int hours) {
+        return instant.truncatedTo(ChronoUnit.HOURS).minusMillis(hours * HOUR_IN_MILLS).toEpochMilli();
+    }
+
+    /**
+     * 将给定的的时间的 "天零头" 去掉，即把时间向整天对齐，然后再减去一个给定的整天数
+     */
+    public static long daysAgo(Instant instant, int days) {
+        return instant.truncatedTo(ChronoUnit.DAYS).minusMillis(days * DAY_IN_MILLIS).toEpochMilli();
     }
 
 }

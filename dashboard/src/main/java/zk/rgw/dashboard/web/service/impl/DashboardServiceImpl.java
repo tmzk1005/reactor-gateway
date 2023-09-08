@@ -68,7 +68,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public Mono<AccessLogStatistics> apiCallsCount(String envId, String orgId, String apiId) {
-        return apiCallsCountTrend(envId, orgId, apiId, TimeRangeType.ALL_TIME).map(list -> {
+        return apiCallsCountTrend(envId, orgId, apiId, null).map(list -> {
             if (list.isEmpty()) {
                 return new AccessLogStatisticsWithTime();
             } else {
@@ -101,6 +101,7 @@ public class DashboardServiceImpl implements DashboardService {
         } else {
             apiIdsMono = Mono.just(List.of());
         }
+
         return apiIdsMono.flatMap(apiIds -> accessLogStatisticsRepository.searchAccessLogStatistics(envId, apiIds, timeRangeType));
     }
 

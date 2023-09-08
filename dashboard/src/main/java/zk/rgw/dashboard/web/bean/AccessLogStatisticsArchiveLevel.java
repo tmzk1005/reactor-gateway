@@ -20,7 +20,6 @@ public enum AccessLogStatisticsArchiveLevel {
     MINUTES,
     HOURS,
     DAYS,
-    MONTHS,
     ALL
 
     // 不能随意改变顺序，会用到 ordinal
