@@ -52,4 +52,9 @@ public class ExchangeImpl implements Exchange {
         return attributes;
     }
 
+    @Override
+    public Builder mutate() {
+        return new DefaultExchangeBuilder(this);
+    }
+
 }

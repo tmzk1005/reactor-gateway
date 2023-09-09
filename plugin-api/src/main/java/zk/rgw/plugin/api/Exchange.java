@@ -39,6 +39,8 @@ public interface Exchange extends AttributesHolder {
 
     }
 
+    Builder mutate();
+
     default void setAuditInfo(String key, Object value) {
         String auditInfoKey = "__audit_info__";
         Map<String, Object> auditInfo = getAttribute(auditInfoKey);

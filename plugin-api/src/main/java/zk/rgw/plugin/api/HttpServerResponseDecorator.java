@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.http.exchange;
+package zk.rgw.plugin.api;
 
 import java.net.SocketAddress;
 import java.util.List;
@@ -81,6 +81,9 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
         return delegator.hasSentHeaders();
     }
 
+    protected void beforeSend() {
+    }
+
     @Override
     public @NonNull HttpServerResponse header(@NonNull CharSequence name, @NonNull CharSequence value) {
         delegator.header(name, value);
@@ -106,6 +109,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
 
     @Override
     public @NonNull Mono<Void> send() {
+        beforeSend();
         return delegator.send();
     }
 
@@ -116,11 +120,13 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
 
     @Override
     public @NonNull Mono<Void> sendNotFound() {
+        beforeSend();
         return delegator.sendNotFound();
     }
 
     @Override
     public @NonNull Mono<Void> sendRedirect(@NonNull String location) {
+        beforeSend();
         return delegator.sendRedirect(location);
     }
 
@@ -129,6 +135,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
             @NonNull BiFunction<? super WebsocketInbound, ? super WebsocketOutbound, ? extends Publisher<Void>> websocketHandler,
             @NonNull WebsocketServerSpec websocketServerSpec
     ) {
+        beforeSend();
         return delegator.sendWebsocket(websocketHandler, websocketServerSpec);
     }
 
@@ -168,6 +175,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
 
     @Override
     public @NonNull NettyOutbound send(@NonNull Publisher<? extends ByteBuf> dataStream) {
+        beforeSend();
         return delegator.send(dataStream);
     }
 
@@ -176,16 +184,19 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
             @NonNull Publisher<? extends ByteBuf> dataStream,
             @NonNull Predicate<ByteBuf> predicate
     ) {
+        beforeSend();
         return delegator.send(dataStream, predicate);
     }
 
     @Override
     public @NonNull NettyOutbound sendObject(@NonNull Object message) {
+        beforeSend();
         return delegator.sendObject(message);
     }
 
     @Override
     public @NonNull NettyOutbound sendObject(@NonNull Publisher<?> dataStream, @NonNull Predicate<Object> predicate) {
+        beforeSend();
         return delegator.sendObject(dataStream, predicate);
     }
 
@@ -195,6 +206,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
             @NonNull BiFunction<? super Connection, ? super S, ?> mappedInput,
             @NonNull Consumer<? super S> sourceCleanup
     ) {
+        beforeSend();
         return delegator.sendUsing(sourceInput, mappedInput, sourceCleanup);
     }
 

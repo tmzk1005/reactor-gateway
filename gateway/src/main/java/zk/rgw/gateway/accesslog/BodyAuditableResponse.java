@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.netty.NettyOutbound;
 import reactor.netty.http.server.HttpServerResponse;
 
-import zk.rgw.http.exchange.HttpServerResponseDecorator;
+import zk.rgw.plugin.api.HttpServerResponseDecorator;
 
 public class BodyAuditableResponse extends HttpServerResponseDecorator {
 

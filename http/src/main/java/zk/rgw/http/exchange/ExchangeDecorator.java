@@ -46,4 +46,9 @@ public class ExchangeDecorator implements Exchange {
         return this.delegator.getAttributes();
     }
 
+    @Override
+    public Builder mutate() {
+        return new DefaultExchangeBuilder(this);
+    }
+
 }

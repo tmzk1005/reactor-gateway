@@ -19,7 +19,7 @@ import lombok.NonNull;
 import reactor.netty.ByteBufFlux;
 import reactor.netty.http.server.HttpServerRequest;
 
-import zk.rgw.http.exchange.HttpServerRequestDecorator;
+import zk.rgw.plugin.api.HttpServerRequestDecorator;
 
 public class BodyAuditableRequest extends HttpServerRequestDecorator {
 

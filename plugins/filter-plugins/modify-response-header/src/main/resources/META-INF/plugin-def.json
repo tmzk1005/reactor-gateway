@@ -1,0 +1,7 @@
+{
+    "name": "响应头修改",
+    "version": "1.0.0",
+    "fullClassName": "zk.rgw.plugin.filter.modifyresponseheader.ModifyResponseHeaderFilter",
+    "tail": false,
+    "description": "修改响应头，先按配置删除指定的请求头，然后按配置添加指定的头"
+}

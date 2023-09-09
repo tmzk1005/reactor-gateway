@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zk.rgw.http.exchange;
+package zk.rgw.plugin.api;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
