@@ -1,3 +1,5 @@
 {
-    "script": ""
+    "useObjectMapper": true,
+    "useRequestHeaders": false,
+    "convertFuncDef": "def convert() { rawRequestBody }"
 }
