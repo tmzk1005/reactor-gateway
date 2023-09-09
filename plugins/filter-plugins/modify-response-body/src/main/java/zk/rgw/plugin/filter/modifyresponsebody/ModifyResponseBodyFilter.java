@@ -18,6 +18,7 @@ package zk.rgw.plugin.filter.modifyresponsebody;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.script.Invocable;
@@ -41,6 +42,7 @@ import reactor.netty.http.server.HttpServerResponse;
 import reactor.util.annotation.NonNull;
 
 import zk.rgw.common.exception.RgwRuntimeException;
+import zk.rgw.common.util.GzipCompressUtil;
 import zk.rgw.common.util.JsonUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.HttpServerResponseDecorator;
@@ -110,6 +112,11 @@ public class ModifyResponseBodyFilter implements JsonConfFilterPlugin {
             return ByteBufFlux.fromInbound(modifiedBytesMono);
         }
 
+        private boolean isRawResponseBodyGzip() {
+            String contentEncoding = responseHeaders().get(HttpHeaderNames.CONTENT_ENCODING);
+            return Objects.nonNull(contentEncoding) && HttpHeaderValues.GZIP.contentEquals(contentEncoding);
+        }
+
         private byte[] convert(byte[] rawBodyData) throws RgwRuntimeException {
             ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE_NAME);
 
@@ -123,7 +130,8 @@ public class ModifyResponseBodyFilter implements JsonConfFilterPlugin {
                 scriptEngine.put("responseHeaders", headers);
             }
 
-            scriptEngine.put("rawResponseBody", rawBodyData);
+            boolean isGzip = isRawResponseBodyGzip();
+            scriptEngine.put("rawResponseBody", isGzip ? GzipCompressUtil.decompress(rawBodyData) : rawBodyData);
 
             try {
                 scriptEngine.eval(convertFuncDef);
@@ -145,19 +153,23 @@ public class ModifyResponseBodyFilter implements JsonConfFilterPlugin {
                 throw new RgwRuntimeException(msg);
             }
 
+            byte[] modifiedBytes;
+
             if (result instanceof CharSequence charSequence) {
-                return charSequence.toString().getBytes(StandardCharsets.UTF_8);
+                modifiedBytes = charSequence.toString().getBytes(StandardCharsets.UTF_8);
             } else if (result instanceof byte[] bytes) {
-                return bytes;
+                modifiedBytes = bytes;
             } else {
                 try {
-                    return JsonUtil.toJson(result).getBytes(StandardCharsets.UTF_8);
+                    modifiedBytes = JsonUtil.toJson(result).getBytes(StandardCharsets.UTF_8);
                 } catch (JsonProcessingException exception) {
                     String msg = "响应体修改插件异常：脚本结果Json序列化失败";
                     log.error("{}", msg, exception);
                     throw new RgwRuntimeException(msg);
                 }
             }
+
+            return isGzip ? GzipCompressUtil.compress(modifiedBytes) : modifiedBytes;
         }
 
     }
