@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -46,6 +47,8 @@ import reactor.util.annotation.NonNull;
 public class HttpServerResponseDecorator implements HttpServerResponse {
 
     private final HttpServerResponse delegator;
+
+    private final AtomicBoolean beforeSendExecuted = new AtomicBoolean(false);
 
     public HttpServerResponseDecorator(@NonNull HttpServerResponse delegator) {
         Objects.requireNonNull(delegator);
@@ -81,7 +84,13 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
         return delegator.hasSentHeaders();
     }
 
-    protected void beforeSend() {
+    private void beforeSend() {
+        if (beforeSendExecuted.compareAndSet(false, true)) {
+            doBeforeSend();
+        }
+    }
+
+    protected void doBeforeSend() {
     }
 
     @Override

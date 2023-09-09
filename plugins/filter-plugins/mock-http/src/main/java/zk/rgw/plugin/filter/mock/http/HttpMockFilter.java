@@ -16,10 +16,12 @@
 
 package zk.rgw.plugin.filter.mock.http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,6 +53,7 @@ public class HttpMockFilter implements JsonConfFilterPlugin {
                 }
             });
         }
+        response.header(HttpHeaderNames.CONTENT_LENGTH, content.getBytes(StandardCharsets.UTF_8).length + "");
         // 虽然这里暂时没有用到请求体内容，但是仍然读取后才发送响应，以便可以审计到请求体
         return exchange.getRequest().receive().then(response.sendString(Mono.just(content)).then());
     }

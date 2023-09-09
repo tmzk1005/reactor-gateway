@@ -53,7 +53,7 @@ public class ModifyResponseHeaderFilter implements JsonConfFilterPlugin {
         }
 
         @Override
-        protected void beforeSend() {
+        protected void doBeforeSend() {
             if (hasSentHeaders()) {
                 return;
             }

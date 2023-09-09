@@ -1,0 +1,5 @@
+{
+    "useObjectMapper": true,
+    "useResponseHeaders": false,
+    "convertFuncDef": "def convert() { rawResponseBody }"
+}
