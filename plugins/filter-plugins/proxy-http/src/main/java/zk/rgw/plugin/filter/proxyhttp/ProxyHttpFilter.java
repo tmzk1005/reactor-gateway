@@ -82,9 +82,9 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         HttpServerRequest request = exchange.getRequest();
-        URI uriToUser = uri;
+        URI uriToUse = uri;
 
-        if (Objects.isNull(uriToUser)) {
+        if (Objects.isNull(uriToUse)) {
             String uriStr = proxyConf.upstreamEndpoint;
             Map<String, String> environment = ExchangeUtil.getEnvironment(exchange);
             for (String envName : envNames) {
@@ -99,7 +99,7 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
             }
 
             try {
-                uriToUser = new URI(uriStr);
+                uriToUse = new URI(uriStr);
             } catch (URISyntaxException exception) {
                 String message = "ProxyHttpFilter error: failed to parse " + uriStr + " to URI";
                 return ResponseUtil.sendError(exchange.getResponse(), message);
@@ -109,7 +109,7 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
         return this.httpClient.headers(headers -> {
             headers.add(request.requestHeaders());
             headers.remove(HttpHeaderNames.HOST);
-        }).request(request.method()).uri(uriToUser).send(request.receive()).responseConnection((httpClientResponse, connection) -> {
+        }).request(request.method()).uri(uriToUse).send(request.receive().retain()).responseConnection((httpClientResponse, connection) -> {
             HttpServerResponse serverResponse = exchange.getResponse();
             return serverResponse.status(httpClientResponse.status())
                     .headers(httpClientResponse.responseHeaders())
