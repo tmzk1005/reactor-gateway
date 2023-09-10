@@ -29,10 +29,14 @@ public interface JsonConfigurable extends Configurable {
     @Override
     default void configure(String conf) throws PluginConfException {
         try {
-            OM.readerForUpdating(this).readValue(conf);
+            OM.readerForUpdating(getConf()).readValue(conf);
         } catch (IOException ioException) {
             throw new PluginConfException(ioException.getMessage(), ioException);
         }
+    }
+
+    default Object getConf() {
+        return this;
     }
 
 }

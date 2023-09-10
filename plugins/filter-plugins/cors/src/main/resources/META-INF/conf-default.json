@@ -1,0 +1,24 @@
+{
+    "allowedOrigins": [
+        "*"
+    ],
+    "allowedOriginPatterns": [
+        "*"
+    ],
+    "allowedMethods": [
+        "GET",
+        "POST",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS",
+        "TRACE"
+    ],
+    "allowedHeaders": [
+        "*"
+    ],
+    "exposedHeaders": [],
+    "allowCredentials": false,
+    "maxAge": 0
+}
