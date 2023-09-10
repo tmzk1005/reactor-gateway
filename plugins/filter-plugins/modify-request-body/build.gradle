@@ -23,5 +23,5 @@ base {
 }
 
 dependencies {
-    implementation "org.codehaus.groovy:groovy-all:3.0.19"
+    implementation "org.apache.groovy:groovy-jsr223"
 }

@@ -23,9 +23,6 @@ base {
 }
 
 dependencies {
-    implementation platform("com.google.protobuf:protobuf-bom:3.24.3")
-    implementation platform("io.grpc:grpc-bom:1.58.0")
-
     implementation "io.grpc:grpc-protobuf"
     implementation "io.grpc:grpc-netty"
     implementation "io.grpc:grpc-stub"
