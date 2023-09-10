@@ -33,10 +33,14 @@ public interface JsonConfigurable extends Configurable {
         } catch (IOException ioException) {
             throw new PluginConfException(ioException.getMessage(), ioException);
         }
+        afterConfigured();
     }
 
     default Object getConf() {
         return this;
+    }
+
+    default void afterConfigured() throws PluginConfException {
     }
 
 }
