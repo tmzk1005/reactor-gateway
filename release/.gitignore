@@ -1,2 +1,4 @@
 static/
 docker/debian-rgw/reactor-gateway-*.tgz
+docker/debian-kafka/*.tgz
+docker/debian-mongodb/*.tgz

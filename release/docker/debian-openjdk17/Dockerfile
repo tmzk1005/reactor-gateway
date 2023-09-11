@@ -9,3 +9,5 @@ RUN /bin/bash /tmp/setup-apt-source.sh
 
 RUN apt-get update
 RUN apt-get install -y openjdk-17-jre
+
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime

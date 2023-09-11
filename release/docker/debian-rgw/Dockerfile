@@ -7,7 +7,6 @@ LABEL application=rgw version=${rgw_version} \
     maintainer="zoukang89105@163.com" \
     descrption="Reactor-Gateway: a reacitive http api gateway image, based on debian 12.1 and openjdk17."
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN mkdir -p /var/log/rgw
 
 ADD reactor-gateway-${rgw_version}.tgz /opt

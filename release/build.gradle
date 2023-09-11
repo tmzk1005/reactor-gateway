@@ -90,6 +90,30 @@ tasks.register("build-docker-image-openjdk17") {
     }
 }
 
+tasks.register("build-docker-image-kafka") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    dependsOn("build-docker-image-openjdk17")
+
+    doLast {
+        exec {
+            workingDir "docker/debian-kafka"
+            commandLine "bash", "build.sh", "${rootProject.version}"
+        }
+    }
+}
+
+tasks.register("build-docker-image-mongodb") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    doLast {
+        exec {
+            workingDir "docker/debian-mongodb"
+            commandLine "bash", "build.sh", "${rootProject.version}"
+        }
+    }
+}
+
 tasks.register("build-docker-image-rgw") {
     onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
 
