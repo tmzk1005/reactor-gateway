@@ -78,3 +78,33 @@ tasks.register('clean') {
         delete "build"
     }
 }
+
+tasks.register("build-docker-image-openjdk17") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    doLast {
+        exec {
+            workingDir "docker/debian-openjdk17"
+            commandLine "bash", "build.sh"
+        }
+    }
+}
+
+tasks.register("build-docker-image-rgw") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    dependsOn("tgz")
+    dependsOn("build-docker-image-openjdk17")
+
+    doLast {
+        copy {
+            from "build/reactor-gateway-${rootProject.version}.tgz"
+            into "docker/debian-rgw/"
+        }
+        exec {
+            workingDir "docker/debian-rgw"
+            commandLine "bash", "build.sh", "${rootProject.version}"
+        }
+        delete "docker/debian-rgw/reactor-gateway-${rootProject.version}.tgz"
+    }
+}
