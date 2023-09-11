@@ -29,6 +29,7 @@ clean_dir() {
 
 clean_kafka() {
     clean_dir .tmp/kafka/data-kafka
+    clean_dir .tmp/kafka/data-kafka-kraft
     clean_dir .tmp/kafka/data-zookeeper
     clean_dir .tmp/kafka/logs
 }

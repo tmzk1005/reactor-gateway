@@ -37,17 +37,30 @@ if [ ! -d .tmp/kafka ]; then
     cp config/zookeeper.properties config/zookeeper.properties.backup
 
     sed -i 's/^log.dirs=.*$/log.dirs=data-kafka/g' config/server.properties
+    sed -i 's/^log.dirs=.*$/log.dirs=data-kafka-kraft/g' config/kraft/server.properties
     sed -i 's/^dataDir=.*$/dataDir=data-zookeeper/g' config/zookeeper.properties
 
     mkdir data-kafka
+    mkdir data-kafka-kraft
     mkdir data-zookeeper
     cd ../..
 fi
 
+kafka_mode=kraft
+if [ $# -le 1 ]; then
+    kafka_mode="$1"
+    shift
+fi
+
 cd .tmp/kafka || exit 1
 
-gnome-terminal --working-directory "$(pwd)" --title zookeeper -- bin/zookeeper-server-start.sh config/zookeeper.properties
-
-sleep 2
-
-gnome-terminal --working-directory "$(pwd)" --title kafka -- bin/kafka-server-start.sh config/server.properties
+if [ "${kafka_mode}" = 'zk' ]; then
+    gnome-terminal --working-directory "$(pwd)" --title zookeeper -- bin/zookeeper-server-start.sh config/zookeeper.properties
+    sleep 2
+    gnome-terminal --working-directory "$(pwd)" --title kafka -- bin/kafka-server-start.sh config/server.properties
+else
+    if [ ! -f "data-kafka-kraft/meta.properties" ]; then
+        bin/kafka-storage.sh format -t "$(bin/kafka-storage.sh random-uuid)" -c config/kraft/server.properties
+    fi
+    gnome-terminal --working-directory "$(pwd)" --title kafka -- bin/kafka-server-start.sh config/kraft/server.properties
+fi
