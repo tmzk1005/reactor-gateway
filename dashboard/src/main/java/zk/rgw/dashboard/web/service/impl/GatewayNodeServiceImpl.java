@@ -81,6 +81,18 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     public Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload) {
         String envId = registerPayload.getEnvId();
 
+        Mono<Environment> envMono = getEnvByEnvId(envId);
+
+        return envMono.flatMap(
+                environment -> gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
+                        .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), environment)))
+                        .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
+                        .flatMap(gatewayNodeRepository::save)
+                        .map(gatewayNode -> new GwRegisterResult(gatewayNode.getId()))
+        );
+    }
+
+    private Mono<Environment> getEnvByEnvId(String envId) {
         Mono<Environment> envMono;
 
         // 这里对dev,test,prod的特殊判断主要是为了用docker compose迅速跑一个演示环境
@@ -97,16 +109,7 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
             // 应该是一个真正的环境id
             envMono = environmentRepository.findOneById(envId);
         }
-
-        envMono = envMono.switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
-
-        return envMono.flatMap(
-                environment -> gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
-                        .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), environment)))
-                        .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))
-                        .flatMap(gatewayNodeRepository::save)
-                        .map(gatewayNode -> new GwRegisterResult(gatewayNode.getId()))
-        );
+        return envMono.switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
     }
 
     @Override
@@ -182,13 +185,7 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
 
     @Override
     public Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long seq) {
-        return environmentRepository.existsById(envId).flatMapMany(exists -> {
-            if (Boolean.TRUE.equals(exists)) {
-                return doSyncRouteDefinitions(envId, seq);
-            } else {
-                throw new BizException(ErrorMsgUtil.envNotExist(envId));
-            }
-        });
+        return getEnvByEnvId(envId).flatMapMany(environment -> doSyncRouteDefinitions(environment.getId(), seq));
     }
 
     private Flux<IdRouteDefinition> doSyncRouteDefinitions(String envId, long seq) {
