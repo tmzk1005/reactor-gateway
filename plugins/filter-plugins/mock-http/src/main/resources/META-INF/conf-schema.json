@@ -1,1 +1,30 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "Http Mock插件配置json schema",
+    "definitions": {
+        "statusCode": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+        },
+        "content": {
+            "type": "string",
+            "maxLength": 40960
+        },
+        "headers": {
+            "type": "object",
+            "propertyNames": {
+                "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "patternProperties": {
+                "^.+$": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
