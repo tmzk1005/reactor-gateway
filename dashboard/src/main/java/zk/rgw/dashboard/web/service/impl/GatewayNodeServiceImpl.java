@@ -80,10 +80,27 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     @Override
     public Mono<GwRegisterResult> handleRegister(RegisterPayload registerPayload) {
         String envId = registerPayload.getEnvId();
-        Mono<Environment> checkEnvMono = environmentRepository.findOneById(envId)
-                .switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
 
-        return checkEnvMono.flatMap(
+        Mono<Environment> envMono;
+
+        // 这里对dev,test,prod的特殊判断主要是为了用docker compose迅速跑一个演示环境
+        // 配置compose时，dashboard没有启动时，gateway组件并不知道内置额度环境的id,因此这里用
+        // dev, test, prod这3个特殊代号来表示内置的3个环境
+
+        if ("dev".equals(envId)) {
+            envMono = environmentRepository.findOneByName("开发环境");
+        } else if ("test".equals(envId)) {
+            envMono = environmentRepository.findOneByName("测试环境");
+        } else if ("prod".equals(envId)) {
+            envMono = environmentRepository.findOneByName("生产环境");
+        } else {
+            // 应该是一个真正的环境id
+            envMono = environmentRepository.findOneById(envId);
+        }
+
+        envMono = envMono.switchIfEmpty(Mono.error(BizException.of(ErrorMsgUtil.envNotExist(envId))));
+
+        return envMono.flatMap(
                 environment -> gatewayNodeRepository.findOneByAddress(registerPayload.getAddress())
                         .switchIfEmpty(Mono.just(new GatewayNode(registerPayload.getAddress(), environment)))
                         .doOnNext(node -> node.setHeartbeat(System.currentTimeMillis()))

@@ -1,0 +1,98 @@
+version: "3"
+
+services:
+  dashboard:
+    image: "reactor-gateway:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.100
+    ports:
+      - "7000:7000"
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    command: [ "dashboard", "--mongodb.connection=mongodb://172.16.105.130:27017" ]
+
+  gateway-dev:
+    image: "reactor-gateway:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.110
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    depends_on:
+      - dashboard
+      - kafka
+    command: [ "gateway", "--dashboard.address=http://172.16.105.100:7000",
+               "--kafka.bootstrap.servers=172.16.105.140:9092", "--environment.id=dev", "--server.port=8000" ]
+
+  gateway-test:
+    image: "reactor-gateway:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.111
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    depends_on:
+      - dashboard
+      - kafka
+    command: [ "gateway", "--dashboard.address=http://172.16.105.100:7000",
+               "--kafka.bootstrap.servers=172.16.105.140:9092", "--environment.id=test", "--server.port=8001" ]
+
+  gateway-prod:
+    image: "reactor-gateway:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.112
+    ports:
+      - "8002:8002"
+    restart: unless-stopped
+    depends_on:
+      - dashboard
+      - kafka
+    command: [ "gateway", "--dashboard.address=http://172.16.105.100:7000",
+               "--kafka.bootstrap.servers=172.16.105.140:9092", "--environment.id=prod", "--server.port=8002" ]
+
+  access-log-consumer:
+    image: "reactor-gateway:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.120
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - kafka
+    command: [ "access-log-consumer", "--mongodb.connection=mongodb://172.16.105.130:27017",
+               "--kafka.bootstrap.servers=172.16.105.140:9092",
+               "--environments=dev,test,prod" ]
+
+  mongodb:
+    image: "reactor-gateway-mongodb:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.130
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    command: [ "--bind_ip_all" ]
+
+  kafka:
+    image: "reactor-gateway-kafka:${PROJECT_VERSION}"
+    networks:
+      reactor-gateway:
+        ipv4_address: 172.16.105.140
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    restart: unless-stopped
+
+networks:
+  reactor-gateway:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.105.0/24
+          gateway: 172.16.105.254

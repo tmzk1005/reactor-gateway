@@ -25,6 +25,7 @@ if [ "$(docker image ls --filter reference="${image}" | wc -l)" -lt 2 ]; then
         echo "Going to download mongodb installer, please wait!"
         if ! wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian11-6.0.9.tgz --output-document mongodb-linux-x86_64-debian11-6.0.9.tgz; then
             echo "Download mongodb failed, please try again later!"
+            rm mongodb-linux-x86_64-debian11-6.0.9.tgz
             exit 1
         fi
     fi

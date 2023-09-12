@@ -132,3 +132,33 @@ tasks.register("build-docker-image-rgw") {
         delete "docker/debian-rgw/reactor-gateway-${rootProject.version}.tgz"
     }
 }
+
+tasks.register("docker-compose-up") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    dependsOn("build-docker-image-kafka")
+    dependsOn("build-docker-image-mongodb")
+    dependsOn("build-docker-image-rgw")
+
+    doLast {
+        exec {
+            workingDir "docker/rgw-compose"
+            environment("PROJECT_VERSION", "${rootProject.version}")
+            environment("COMPOSE_PROJECT_NAME", "rgw-compose")
+            commandLine "docker-compose", "up"
+        }
+    }
+}
+
+tasks.register("docker-compose-down") {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isLinux() }
+
+    doLast {
+        exec {
+            workingDir "docker/rgw-compose"
+            environment("PROJECT_VERSION", "${rootProject.version}")
+            environment("COMPOSE_PROJECT_NAME", "rgw-compose")
+            commandLine "docker-compose", "down"
+        }
+    }
+}
