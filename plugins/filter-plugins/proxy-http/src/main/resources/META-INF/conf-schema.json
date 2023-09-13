@@ -1,1 +1,17 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "Http协议代理插件配置json schema",
+    "definitions": {
+        "upstreamEndpoint": {
+            "type": "string"
+        },
+        "upstreamEndpointDecideFuncDef": {
+            "type": "string"
+        },
+        "timeout": {
+            "type": "integer",
+            "minimum": 0
+        }
+    }
+}

@@ -1,4 +1,5 @@
 {
-    "upstreamEndpoint" : "",
+    "upstreamEndpoint": "",
+    "upstreamEndpointDecideFuncDef": "",
     "timeout": 0
 }

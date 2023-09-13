@@ -22,4 +22,8 @@ public class PluginConfException extends Exception {
         super(message, throwable);
     }
 
+    public PluginConfException(String message) {
+        super(message);
+    }
+
 }

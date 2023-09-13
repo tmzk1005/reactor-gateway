@@ -70,6 +70,8 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
 
     private List<String> envNames;
 
+    private ScriptEngine scriptEngine;
+
     @Override
     public void configure(String conf) throws PluginConfException {
         try {
@@ -82,15 +84,28 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
             proxyConf.timeout = Integer.MAX_VALUE;
         }
 
-        envNames = EnvNameExtractUtil.extract(proxyConf.upstreamEndpoint);
+        if (!ObjectUtil.isEmpty(proxyConf.upstreamEndpoint)) {
+            envNames = EnvNameExtractUtil.extract(proxyConf.upstreamEndpoint);
 
-        if (envNames.isEmpty() && Objects.nonNull(proxyConf.getUpstreamEndpoint())) {
-            try {
-                uri = new URI(proxyConf.getUpstreamEndpoint());
-            } catch (URISyntaxException exception) {
-                String message = "Failed to parse " + proxyConf.getUpstreamEndpoint() + " to URI";
-                throw new PluginConfException(message, exception);
+            if (envNames.isEmpty() && Objects.nonNull(proxyConf.getUpstreamEndpoint())) {
+                try {
+                    uri = new URI(proxyConf.getUpstreamEndpoint());
+                } catch (URISyntaxException exception) {
+                    String message = "Failed to parse " + proxyConf.getUpstreamEndpoint() + " to URI";
+                    throw new PluginConfException(message, exception);
+                }
             }
+        } else if (!ObjectUtil.isEmpty(proxyConf.upstreamEndpointDecideFuncDef)) {
+            this.scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE_NAME);
+            try {
+                scriptEngine.eval(proxyConf.upstreamEndpointDecideFuncDef);
+            } catch (ScriptException exception) {
+                String msg = "HTTP协议代理插件配置失败：解析动态设置上游uri的groovy方法定义失败";
+                log.error("{}", msg, exception);
+                throw new PluginConfException(msg, exception);
+            }
+        } else {
+            throw new PluginConfException("未定义合适的上游URI");
         }
     }
 
@@ -154,41 +169,21 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
     }
 
     private URI decideUpstreamUriByScript(Exchange exchange) throws RgwException {
-        ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE_NAME);
+        Map<String, String> requestHeaders = new HashMap<>();
+        exchange.getRequest().requestHeaders().forEach(entry -> requestHeaders.put(entry.getKey(), entry.getValue()));
+        scriptEngine.put("requestHeaders", requestHeaders);
 
-        if (proxyConf.useRequestHeaders) {
-            Map<String, String> requestHeaders = new HashMap<>();
-            exchange.getRequest().requestHeaders().forEach(entry -> requestHeaders.put(entry.getKey(), entry.getValue()));
-            scriptEngine.put("requestHeaders", requestHeaders);
-        }
+        scriptEngine.put("clientRequestUriPath", exchange.getRequest().uri());
 
-        if (proxyConf.useClientRequestUriPath) {
-            scriptEngine.put("clientRequestUriPath", exchange.getRequest().uri());
-        }
+        scriptEngine.put("clientRequestUriParameters", ExchangeUtil.getQueryParams(exchange));
 
-        if (proxyConf.useClientRequestUriParameters) {
-            scriptEngine.put("clientRequestUriParameters", ExchangeUtil.getQueryParams(exchange));
-        }
-
-        if (proxyConf.useEnvironmentVariables) {
-            Map<String, String> environment = ExchangeUtil.getEnvironment(exchange);
-            scriptEngine.put("environment", Map.copyOf(environment));
-        }
-
-        try {
-            scriptEngine.eval(proxyConf.upstreamEndpointDecideFuncDef);
-        } catch (ScriptException exception) {
-            String msg = "HTTP协议代理异常：解析动态设置上游uri的groovy方法定义失败";
-            log.error("{}", msg, exception);
-            throw new RgwRuntimeException(msg);
-        }
-
-        Invocable invocable = (Invocable) scriptEngine;
+        Map<String, String> environment = ExchangeUtil.getEnvironment(exchange);
+        scriptEngine.put("environment", Map.copyOf(environment));
 
         Object result;
 
         try {
-            result = invocable.invokeFunction(FUNC_NAME);
+            result = ((Invocable) scriptEngine).invokeFunction(FUNC_NAME);
         } catch (Exception exception) {
             String msg = "HTTP协议代理异常：执行动态设置上游uri的groovy方法异常";
             log.error("{}", msg, exception);
@@ -210,14 +205,6 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
         private String upstreamEndpoint;
 
         private String upstreamEndpointDecideFuncDef;
-
-        private boolean useRequestHeaders;
-
-        private boolean useClientRequestUriPath;
-
-        private boolean useClientRequestUriParameters;
-
-        private boolean useEnvironmentVariables;
 
         private int timeout = Integer.MAX_VALUE;
 
