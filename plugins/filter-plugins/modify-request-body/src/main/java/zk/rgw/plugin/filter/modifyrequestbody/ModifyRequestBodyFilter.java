@@ -24,8 +24,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +41,7 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.HttpServerRequestDecorator;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
+import zk.rgw.plugin.exception.PluginConfException;
 
 @Slf4j
 public class ModifyRequestBodyFilter implements JsonConfFilterPlugin {
@@ -53,19 +54,26 @@ public class ModifyRequestBodyFilter implements JsonConfFilterPlugin {
     @Setter
     private String convertFuncDef;
 
-    @Getter
-    @Setter
-    private boolean useObjectMapper;
-
-    @Getter
-    @Setter
-    private boolean useRequestHeaders;
+    @JsonIgnore
+    private ScriptEngine scriptEngine;
 
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         MyRequestDecorator myRequestDecorator = new MyRequestDecorator(exchange.getRequest());
         Exchange modifiedExchange = exchange.mutate().request(myRequestDecorator).build();
         return myRequestDecorator.modifyBodyAndUpdateContentLength().then(chain.filter(modifiedExchange));
+    }
+
+    @Override
+    public void afterConfigured() throws PluginConfException {
+        scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE_NAME);
+        try {
+            scriptEngine.eval(convertFuncDef);
+        } catch (ScriptException exception) {
+            String msg = "请求体修改插件配置失败：解析groovy方法定义失败";
+            log.error("{}", msg, exception);
+            throw new PluginConfException(msg);
+        }
     }
 
     private class MyRequestDecorator extends HttpServerRequestDecorator {
@@ -92,34 +100,16 @@ public class ModifyRequestBodyFilter implements JsonConfFilterPlugin {
         }
 
         private byte[] convert(byte[] rawBodyData) throws RgwRuntimeException {
-            ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE_NAME);
-
-            if (useObjectMapper) {
-                scriptEngine.put("objectMapper", new ObjectMapper());
-            }
-
-            if (useRequestHeaders) {
-                Map<String, String> requestHeaders = new HashMap<>();
-                requestHeaders().forEach(entry -> requestHeaders.put(entry.getKey(), entry.getValue()));
-                scriptEngine.put("requestHeaders", requestHeaders);
-            }
+            Map<String, String> requestHeaders = new HashMap<>();
+            requestHeaders().forEach(entry -> requestHeaders.put(entry.getKey(), entry.getValue()));
+            scriptEngine.put("requestHeaders", requestHeaders);
 
             scriptEngine.put("rawRequestBody", rawBodyData);
-
-            try {
-                scriptEngine.eval(convertFuncDef);
-            } catch (ScriptException exception) {
-                String msg = "请求体修改插件异常：解析groovy方法定义失败";
-                log.error("{}", msg, exception);
-                throw new RgwRuntimeException(msg);
-            }
-
-            Invocable invocable = (Invocable) scriptEngine;
 
             Object result;
 
             try {
-                result = invocable.invokeFunction(FUNC_NAME);
+                result = ((Invocable) scriptEngine).invokeFunction(FUNC_NAME);
             } catch (Exception exception) {
                 String msg = "请求体修改插件异常：执行convert方法异常";
                 log.error("{}", msg, exception);
