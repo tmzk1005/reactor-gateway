@@ -21,3 +21,7 @@ plugins {
 base {
     archivesName = "rgw-filter-plugin-proxy-http"
 }
+
+dependencies {
+    implementation "org.apache.groovy:groovy-jsr223"
+}
