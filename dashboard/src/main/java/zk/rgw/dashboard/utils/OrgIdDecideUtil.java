@@ -34,7 +34,7 @@ public class OrgIdDecideUtil {
         String orgId = Objects.isNull(requireOrgId) ? "" : requireOrgId;
         return ContextUtil.getUser().map(user -> {
             if (user.isSystemAdmin()) {
-                return requireOrgId;
+                return orgId;
             }
             if (!ObjectUtil.isEmpty(orgId) && !user.getOrganization().getId().equals(orgId)) {
                 throw new AccessDeniedException();
