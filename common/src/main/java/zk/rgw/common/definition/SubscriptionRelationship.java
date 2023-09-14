@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.common.definition;
 
-package zk.rgw.common.event.impl;
+import java.util.List;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import zk.rgw.common.definition.AppDefinition;
-import zk.rgw.common.event.RgwEvent;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class AppSubRouteEvent implements RgwEvent {
+public class SubscriptionRelationship {
 
     private String routeId;
 
-    private AppDefinition appDefinition;
-
-    private boolean sub = true;
+    private List<AppDefinition> appDefinitions;
 
     private long opSeq;
 

@@ -48,6 +48,7 @@ import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
 import zk.rgw.gateway.event.ApiOpSeqBehindEvent;
 import zk.rgw.gateway.event.ApiOpSeqUpdateEvent;
+import zk.rgw.gateway.event.AppOpSeqBehindEvent;
 import zk.rgw.gateway.event.EnvBehindEvent;
 import zk.rgw.gateway.event.NotificationEvent;
 import zk.rgw.plugin.util.Shuck;
@@ -205,6 +206,9 @@ public class HeartbeatReporter implements LifeCycle, RgwEventListener<RgwEvent> 
         }
         if (heartbeatResult.isEnvBehind()) {
             eventPublisher.publishEvent(new EnvBehindEvent(heartbeatResult.getEnvironments()));
+        }
+        if (heartbeatResult.isAppBehind()) {
+            eventPublisher.publishEvent(new AppOpSeqBehindEvent());
         }
 
         return Mono.empty();

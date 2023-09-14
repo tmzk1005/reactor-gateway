@@ -60,7 +60,11 @@ public class RgwSequenceRepository {
     }
 
     public Mono<Map<String, Long>> getAll(String envId) {
-        Bson filter = Filters.regex("name", "^env_" + envId + "_");
+        Bson filter = Filters.or(
+                Filters.regex("name", "^env_" + envId + "_"),
+                Filters.eq("name", RgwSequence.APP_SUB_API)
+        );
+
         return Flux.from(mongoCollection.find(filter)).collectList().map(list -> {
             Map<String, Long> map = new HashMap<>(list.size() * 2);
             for (RgwSequence rgwSequence : list) {

@@ -32,6 +32,11 @@ public class SyncState {
     private long apiOpSeq = 0L;
 
     /**
+     * app和api的订阅关系操作序列号
+     */
+    private long appOpSeq = 0L;
+
+    /**
      * 每个组织的环境操作序列号
      */
     private Map<String, Long> orgEnvOpSeqMap = new HashMap<>();

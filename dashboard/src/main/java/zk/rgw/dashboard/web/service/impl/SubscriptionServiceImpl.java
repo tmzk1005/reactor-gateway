@@ -25,6 +25,8 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -97,7 +99,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final ApiSubscriptionRepository apiSubscriptionRepository = RepositoryFactory.get(ApiSubscriptionRepository.class);
 
-    private RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
+    private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
 
     @Override
     public Mono<Void> applySubscribeApi(String apiId, String appId) {
@@ -179,18 +181,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             apiSubscribe.setHandleTime(Instant.now());
             if (approved) {
                 apiSubscribe.setState(ApiSubscribe.State.PERMITTED);
-                Mono<ApiSubscribe> saveMono = apiSubscribeRepository.save(apiSubscribe)
+                Mono<Pair> saveMono = apiSubscribeRepository.save(apiSubscribe)
                         .flatMap(
                                 savedApiApiSubscribe -> saveSubscriptionRelationship(
                                         savedApiApiSubscribe.getApi(), savedApiApiSubscribe.getApp()
-                                ).thenReturn(savedApiApiSubscribe)
+                                ).flatMap(apiSubscription -> Mono.just(new Pair(savedApiApiSubscribe, apiSubscription)))
                         );
                 return apiSubscribeRepository.doInTransaction(saveMono);
             } else {
                 apiSubscribe.setState(ApiSubscribe.State.REJECTED);
-                return apiSubscribeRepository.save(apiSubscribe);
+                return apiSubscribeRepository.save(apiSubscribe).map(rejectedApiSubscribe -> new Pair(rejectedApiSubscribe, null));
             }
-        }).flatMap(sub -> apiSubscribeRepository.findOneById(sub.getId(), LOOKUP)).doOnSuccess(this::emitEvent);
+        }).flatMap(pair -> {
+            Mono<ApiSubscribe> apiSubscribeWithDetailMono = apiSubscribeRepository.findOneById(pair.apiSubscribe.getId(), LOOKUP);
+            return apiSubscribeWithDetailMono.map(apiSubscribeWithDetail -> {
+                pair.apiSubscribe = apiSubscribeWithDetail;
+                return pair;
+            });
+        }).doOnNext(this::emitEvent).map(pair -> pair.apiSubscribe);
     }
 
     public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app) {
@@ -198,7 +206,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return rgwSequenceRepository.next(seqName).flatMap(opSeq -> apiSubscriptionRepository.saveSubscriptionRelationship(api, app, opSeq));
     }
 
-    public void emitEvent(ApiSubscribe apiSubscribe) {
+    private void emitEvent(Pair pair) {
+        ApiSubscribe apiSubscribe = pair.apiSubscribe;
         Api api = apiSubscribe.getApi();
         List<String> envIds = getEnvIdsApiPublished(api);
 
@@ -211,6 +220,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         appSubRouteEvent.setRouteId(apiSubscribe.getApi().getId());
         App app = apiSubscribe.getApp();
         appSubRouteEvent.setAppDefinition(new AppDefinition(app.getId(), app.getKey(), app.getSecret()));
+        Objects.requireNonNull(pair.apiSubscription);
+        appSubRouteEvent.setOpSeq(pair.apiSubscription.getOpSeq());
 
         AppSubApiEvent appSubApiEvent = new AppSubApiEvent(envIds, appSubRouteEvent);
         eventPublisher.publishEvent(appSubApiEvent);
@@ -232,6 +243,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             }
         }
         return envIds;
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Pair {
+        private ApiSubscribe apiSubscribe;
+        private ApiSubscription apiSubscription;
     }
 
 }

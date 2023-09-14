@@ -24,7 +24,9 @@ import java.util.Objects;
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoDatabase;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.dashboard.web.bean.entity.Api;
@@ -80,6 +82,11 @@ public class ApiSubscriptionRepository extends BaseAuditableEntityMongodbReposit
                     apiSubscription.setOpSeq(opSeq);
                     return save(apiSubscription);
                 });
+    }
+
+    public Flux<ApiSubscription> getAllByOpSeq(long opSeq) {
+        Bson filter = Filters.gt("opSeq", opSeq);
+        return find(filter);
     }
 
 }

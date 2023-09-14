@@ -68,7 +68,11 @@ public class GlobalSingletons {
         EventPublisher<RgwEvent> eventPublisher = new EventPublisherImpl<>();
         INSTANCES.put(EventPublisher.class, eventPublisher);
 
-        AppSubscribeRouteManager appSubscribeRouteManager = new AppSubscribeRouteManager();
+        AppSubscribeRouteManager appSubscribeRouteManager = new AppSubscribeRouteManager(
+                configuration.getDashboardAddress(),
+                configuration.getDashboardApiContextPath(),
+                configuration.getDashboardAuthKey()
+        );
         INSTANCES.put(AppSubscribeRouteManager.class, appSubscribeRouteManager);
 
         eventPublisher.registerListener(environmentPrepareFilter);

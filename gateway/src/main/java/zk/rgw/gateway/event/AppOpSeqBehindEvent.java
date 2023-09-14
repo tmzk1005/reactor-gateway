@@ -13,27 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.gateway.event;
 
-package zk.rgw.common.event.impl;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import zk.rgw.common.definition.AppDefinition;
 import zk.rgw.common.event.RgwEvent;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class AppSubRouteEvent implements RgwEvent {
-
-    private String routeId;
-
-    private AppDefinition appDefinition;
-
-    private boolean sub = true;
-
-    private long opSeq;
-
+public class AppOpSeqBehindEvent implements RgwEvent {
 }

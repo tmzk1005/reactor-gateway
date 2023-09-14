@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.definition.SubscriptionRelationship;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterResult;
@@ -34,5 +35,7 @@ public interface GatewayNodeService {
     Flux<GatewayNode> getNodes(String envId);
 
     Flux<IdRouteDefinition> syncRouteDefinitions(String envId, long seq);
+
+    Flux<SubscriptionRelationship> syncApiSubscriptions(long opSeq);
 
 }

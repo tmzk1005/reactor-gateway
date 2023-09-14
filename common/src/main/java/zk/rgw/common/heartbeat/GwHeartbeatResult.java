@@ -28,6 +28,8 @@ public class GwHeartbeatResult {
 
     private boolean envBehind = false;
 
+    private boolean appBehind = false;
+
     private SyncState syncState;
 
     private Map<String, Map<String, String>> environments;

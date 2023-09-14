@@ -16,6 +16,7 @@
 package zk.rgw.dashboard.web.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +31,9 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.definition.AppDefinition;
 import zk.rgw.common.definition.IdRouteDefinition;
+import zk.rgw.common.definition.SubscriptionRelationship;
 import zk.rgw.common.heartbeat.GwHeartbeatPayload;
 import zk.rgw.common.heartbeat.GwHeartbeatResult;
 import zk.rgw.common.heartbeat.GwRegisterResult;
@@ -41,10 +44,13 @@ import zk.rgw.dashboard.utils.ErrorMsgUtil;
 import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.RegisterPayload;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
+import zk.rgw.dashboard.web.bean.entity.App;
 import zk.rgw.dashboard.web.bean.entity.Environment;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.repository.ApiRepository;
+import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
+import zk.rgw.dashboard.web.repository.AppRepository;
 import zk.rgw.dashboard.web.repository.EnvBindingRepository;
 import zk.rgw.dashboard.web.repository.EnvironmentRepository;
 import zk.rgw.dashboard.web.repository.GatewayNodeMetricsRepository;
@@ -74,6 +80,10 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
     private final EnvBindingRepository envBindingRepository = RepositoryFactory.get(EnvBindingRepository.class);
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
+
+    private final AppRepository appRepository = RepositoryFactory.get(AppRepository.class);
+
+    private final ApiSubscriptionRepository apiSubscriptionRepository = RepositoryFactory.get(ApiSubscriptionRepository.class);
 
     private final RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
 
@@ -146,6 +156,11 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
         if (reportedSyncState.getApiOpSeq() < expectSyncState.getApiOpSeq()) {
             gwHeartbeatResult.setApiBehind(true);
         }
+
+        if (reportedSyncState.getAppOpSeq() < expectSyncState.getAppOpSeq()) {
+            gwHeartbeatResult.setAppBehind(true);
+        }
+
         List<String> envBehind = new ArrayList<>();
         Map<String, Long> orgEnvOpSeqMap = reportedSyncState.getOrgEnvOpSeqMap();
         for (Map.Entry<String, Long> entry : expectSyncState.getOrgEnvOpSeqMap().entrySet()) {
@@ -188,6 +203,39 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
         return getEnvByEnvId(envId).flatMapMany(environment -> doSyncRouteDefinitions(environment.getId(), seq));
     }
 
+    @Override
+    public Flux<SubscriptionRelationship> syncApiSubscriptions(long opSeq) {
+        Mono<Map<String, App>> appMapMono = appRepository.findAll().collectList().map(list -> {
+            Map<String, App> appMap = new HashMap<>(2 * list.size());
+            for (App app : list) {
+                appMap.put(app.getId(), app);
+            }
+            return appMap;
+        });
+
+        return appMapMono.flatMapMany(
+                appMap -> apiSubscriptionRepository.getAllByOpSeq(opSeq).map(apiSubscription -> {
+                    SubscriptionRelationship subscriptionRelationship = new SubscriptionRelationship();
+                    subscriptionRelationship.setOpSeq(apiSubscription.getOpSeq());
+                    subscriptionRelationship.setRouteId(apiSubscription.getApi().getId());
+
+                    List<AppDefinition> list = apiSubscription.getApps().stream().map(app -> {
+                        AppDefinition appDefinition = new AppDefinition();
+
+                        App appWithDetail = appMap.get(app.getId());
+
+                        appDefinition.setId(appWithDetail.getId());
+                        appDefinition.setKey(appWithDetail.getKey());
+                        appDefinition.setSecret(appWithDetail.getSecret());
+                        return appDefinition;
+                    }).toList();
+
+                    subscriptionRelationship.setAppDefinitions(list);
+                    return subscriptionRelationship;
+                })
+        );
+    }
+
     private Flux<IdRouteDefinition> doSyncRouteDefinitions(String envId, long seq) {
         final Bson filter = filterForSyncRouteDefinition(envId, seq);
         Bson sort = Sorts.ascending("publishSnapshots." + envId + ".opSeq");
@@ -225,11 +273,19 @@ public class GatewayNodeServiceImpl implements GatewayNodeService {
 
     private static SyncState parseSeqValuesToExpectSyncState(Map<String, Long> seqValues) {
         SyncState syncState = new SyncState();
+
         // env_${envId}_
         // envId是24个字符
         int prefixLen = 29;
+
         for (Map.Entry<String, Long> entry : seqValues.entrySet()) {
             String rawKey = entry.getKey();
+
+            if (RgwSequence.APP_SUB_API.equals(rawKey)) {
+                syncState.setAppOpSeq(entry.getValue() - 1);
+                continue;
+            }
+
             String key = rawKey.substring(prefixLen);
             if (RgwSequence.API_PUBLISH_ACTION.equals(key)) {
                 syncState.setApiOpSeq(entry.getValue() - 1);
