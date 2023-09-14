@@ -1,1 +1,35 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "客户端IP黑白名单插件配置json schema",
+    "definitions": {
+        "ipFilterRuleType": {
+            "type": "string",
+            "enum": [
+                "REJECT",
+                "ACCEPT"
+            ]
+        },
+        "singleIps": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "ipv4"
+            }
+        },
+        "subNets": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)(\\.(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)){3}/(\\d|1\\d|2\\d|30|31|32)"
+            }
+        },
+        "ipRanges": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)(\\.(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)){3}-(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)(\\.(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]?\\d)){3}"
+            }
+        }
+    }
+}
