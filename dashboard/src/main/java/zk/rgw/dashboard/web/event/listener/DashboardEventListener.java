@@ -32,6 +32,7 @@ import zk.rgw.common.heartbeat.Notification;
 import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.web.bean.entity.GatewayNode;
 import zk.rgw.dashboard.web.event.ApiPublishingEvent;
+import zk.rgw.dashboard.web.event.AppSubApiEvent;
 import zk.rgw.dashboard.web.repository.GatewayNodeRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 
@@ -55,6 +56,8 @@ public class DashboardEventListener implements RgwEventListener<RgwEvent> {
             handleApiPublishingEvent(apiPublishingEvent);
         } else if (event instanceof EnvironmentChangedEvent environmentChangedEvent) {
             handleEnvironmentChangedEvent(environmentChangedEvent);
+        } else if (event instanceof AppSubApiEvent appSubApiEvent) {
+            handleAppSubRouteEvent(appSubApiEvent);
         }
     }
 
@@ -76,6 +79,15 @@ public class DashboardEventListener implements RgwEventListener<RgwEvent> {
         executorService.submit(() -> notifyGatewayNodesEnvironmentChanged(event));
     }
 
+    private void handleAppSubRouteEvent(AppSubApiEvent event) {
+        log.info(
+                "detect an app subscribe api event, appId: {}, apiId: {}",
+                event.getAppSubRouteEvent().getAppDefinition().getId(),
+                event.getAppSubRouteEvent().getRouteId()
+        );
+        executorService.submit(() -> notifyGatewayNodesSubscriptionChanged(event));
+    }
+
     private void notifyGatewayNodesApiUpdated(String envId) {
         Notification notification = new Notification();
         notification.setApiUpdated(true);
@@ -94,6 +106,15 @@ public class DashboardEventListener implements RgwEventListener<RgwEvent> {
                 .parallel()
                 .flatMap(gatewayNode -> notifyGatewayNode(gatewayNode, notification))
                 .subscribe();
+    }
+
+    private void notifyGatewayNodesSubscriptionChanged(AppSubApiEvent event) {
+        Notification notification = new Notification();
+        notification.setSubscriptionUpdated(true);
+        notification.setAppSubRouteEvent(event.getAppSubRouteEvent());
+        for (String envId : event.getEnvIds()) {
+            notifyByEnvId(envId, notification);
+        }
     }
 
     private Mono<Void> notifyGatewayNode(GatewayNode gatewayNode, Notification notification) {

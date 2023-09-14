@@ -16,7 +16,9 @@
 package zk.rgw.dashboard.web.service.impl;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.mongodb.client.model.Aggregates;
@@ -29,16 +31,25 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
 
+import zk.rgw.common.definition.AppDefinition;
+import zk.rgw.common.event.EventPublisher;
+import zk.rgw.common.event.RgwEvent;
+import zk.rgw.common.event.impl.AppSubRouteEvent;
+import zk.rgw.common.util.ObjectUtil;
 import zk.rgw.dashboard.framework.context.ContextUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.framework.exception.BizException;
+import zk.rgw.dashboard.global.GlobalSingletons;
 import zk.rgw.dashboard.utils.ErrorMsgUtil;
+import zk.rgw.dashboard.web.bean.ApiPublishStatus;
 import zk.rgw.dashboard.web.bean.Page;
 import zk.rgw.dashboard.web.bean.PageData;
+import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
 import zk.rgw.dashboard.web.bean.entity.App;
 import zk.rgw.dashboard.web.bean.entity.User;
+import zk.rgw.dashboard.web.event.AppSubApiEvent;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
@@ -67,6 +78,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     )
             )
     );
+
+    private final EventPublisher<RgwEvent> eventPublisher;
+
+    @SuppressWarnings("unchecked")
+    public SubscriptionServiceImpl() {
+        this.eventPublisher = GlobalSingletons.get(EventPublisher.class);
+    }
 
     private final ApiRepository apiRepository = RepositoryFactory.get(ApiRepository.class);
 
@@ -167,7 +185,43 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 apiSubscribe.setState(ApiSubscribe.State.REJECTED);
                 return apiSubscribeRepository.save(apiSubscribe);
             }
-        }).flatMap(sub -> apiSubscribeRepository.findOneById(sub.getId(), LOOKUP));
+        }).flatMap(sub -> apiSubscribeRepository.findOneById(sub.getId(), LOOKUP)).doOnSuccess(this::emitEvent);
+    }
+
+    public void emitEvent(ApiSubscribe apiSubscribe) {
+        Api api = apiSubscribe.getApi();
+        List<String> envIds = getEnvIdsApiPublished(api);
+
+        if (envIds.isEmpty()) {
+            return;
+        }
+
+        AppSubRouteEvent appSubRouteEvent = new AppSubRouteEvent();
+        appSubRouteEvent.setSub(ApiSubscribe.State.PERMITTED.equals(apiSubscribe.getState()));
+        appSubRouteEvent.setRouteId(apiSubscribe.getApi().getId());
+        App app = apiSubscribe.getApp();
+        appSubRouteEvent.setAppDefinition(new AppDefinition(app.getId(), app.getKey(), app.getSecret()));
+
+        AppSubApiEvent appSubApiEvent = new AppSubApiEvent(envIds, appSubRouteEvent);
+        eventPublisher.publishEvent(appSubApiEvent);
+    }
+
+    private static List<String> getEnvIdsApiPublished(Api api) {
+        List<String> envIds = new ArrayList<>();
+        Map<String, RouteDefinitionPublishSnapshot> publishSnapshots = api.getPublishSnapshots();
+        if (ObjectUtil.isEmpty(publishSnapshots)) {
+            return envIds;
+        }
+        for (Map.Entry<String, RouteDefinitionPublishSnapshot> entry : publishSnapshots.entrySet()) {
+            RouteDefinitionPublishSnapshot publishSnapshot = entry.getValue();
+            if (
+                ApiPublishStatus.PUBLISHED.equals(publishSnapshot.getPublishStatus())
+                        || ApiPublishStatus.NOT_UPDATED.equals(publishSnapshot.getPublishStatus())
+            ) {
+                envIds.add(entry.getKey());
+            }
+        }
+        return envIds;
     }
 
 }

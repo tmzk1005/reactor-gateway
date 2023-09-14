@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package zk.rgw.common.heartbeat;
 
+package zk.rgw.dashboard.web.event;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
+import zk.rgw.common.event.RgwEvent;
 import zk.rgw.common.event.impl.AppSubRouteEvent;
-import zk.rgw.common.event.impl.EnvironmentChangedEvent;
 
 @Getter
 @Setter
-@ToString(callSuper = true)
-public class Notification {
+@NoArgsConstructor
+@AllArgsConstructor
+public class AppSubApiEvent implements RgwEvent {
 
-    private boolean apiUpdated;
-
-    private boolean subscriptionUpdated;
-
-    private boolean environmentUpdated;
-
-    private EnvironmentChangedEvent environmentChangedEvent;
+    private List<String> envIds;
 
     private AppSubRouteEvent appSubRouteEvent;
 
