@@ -21,6 +21,7 @@ import java.util.Map;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.EventPublisherImpl;
 import zk.rgw.common.event.RgwEvent;
+import zk.rgw.gateway.app.AppSubscribeRouteManager;
 import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalEndpoint;
@@ -67,9 +68,13 @@ public class GlobalSingletons {
         EventPublisher<RgwEvent> eventPublisher = new EventPublisherImpl<>();
         INSTANCES.put(EventPublisher.class, eventPublisher);
 
+        AppSubscribeRouteManager appSubscribeRouteManager = new AppSubscribeRouteManager();
+        INSTANCES.put(AppSubscribeRouteManager.class, appSubscribeRouteManager);
+
         eventPublisher.registerListener(environmentPrepareFilter);
         eventPublisher.registerListener(pullFromDashboardRouteLocator);
         eventPublisher.registerListener(heartbeatReporter);
+        eventPublisher.registerListener(appSubscribeRouteManager);
 
         gatewayInternalEndpoint.setEventPublisher(eventPublisher);
         pullFromDashboardRouteLocator.setEventPublisher(eventPublisher);
