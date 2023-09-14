@@ -1,1 +1,39 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "熔断插件配置json schema",
+    "definitions": {
+        "failureCodes": {
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+            }
+        },
+        "failureCountThreshold": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "slidingWindowSize": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "minimumCalls": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "openStateDuration": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "halfOpenStateCalls": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "halfOpenStateDuration": {
+            "type": "integer",
+            "minimum": 1
+        }
+    }
+}
