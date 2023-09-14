@@ -47,13 +47,16 @@ import zk.rgw.dashboard.web.bean.PageData;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
 import zk.rgw.dashboard.web.bean.entity.ApiSubscribe;
+import zk.rgw.dashboard.web.bean.entity.ApiSubscription;
 import zk.rgw.dashboard.web.bean.entity.App;
+import zk.rgw.dashboard.web.bean.entity.RgwSequence;
 import zk.rgw.dashboard.web.bean.entity.User;
 import zk.rgw.dashboard.web.event.AppSubApiEvent;
 import zk.rgw.dashboard.web.repository.ApiRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscribeRepository;
 import zk.rgw.dashboard.web.repository.ApiSubscriptionRepository;
 import zk.rgw.dashboard.web.repository.AppRepository;
+import zk.rgw.dashboard.web.repository.RgwSequenceRepository;
 import zk.rgw.dashboard.web.repository.factory.RepositoryFactory;
 import zk.rgw.dashboard.web.service.SubscriptionService;
 
@@ -93,6 +96,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final ApiSubscribeRepository apiSubscribeRepository = RepositoryFactory.get(ApiSubscribeRepository.class);
 
     private final ApiSubscriptionRepository apiSubscriptionRepository = RepositoryFactory.get(ApiSubscriptionRepository.class);
+
+    private RgwSequenceRepository rgwSequenceRepository = RepositoryFactory.get(RgwSequenceRepository.class);
 
     @Override
     public Mono<Void> applySubscribeApi(String apiId, String appId) {
@@ -176,7 +181,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 apiSubscribe.setState(ApiSubscribe.State.PERMITTED);
                 Mono<ApiSubscribe> saveMono = apiSubscribeRepository.save(apiSubscribe)
                         .flatMap(
-                                savedApiApiSubscribe -> apiSubscriptionRepository.saveSubscriptionRelationship(
+                                savedApiApiSubscribe -> saveSubscriptionRelationship(
                                         savedApiApiSubscribe.getApi(), savedApiApiSubscribe.getApp()
                                 ).thenReturn(savedApiApiSubscribe)
                         );
@@ -186,6 +191,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 return apiSubscribeRepository.save(apiSubscribe);
             }
         }).flatMap(sub -> apiSubscribeRepository.findOneById(sub.getId(), LOOKUP)).doOnSuccess(this::emitEvent);
+    }
+
+    public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app) {
+        String seqName = RgwSequence.APP_SUB_API;
+        return rgwSequenceRepository.next(seqName).flatMap(opSeq -> apiSubscriptionRepository.saveSubscriptionRelationship(api, app, opSeq));
     }
 
     public void emitEvent(ApiSubscribe apiSubscribe) {

@@ -37,6 +37,8 @@ public class RgwSequence {
 
     public static final String API_PUBLISH_ACTION = "api_publish_action";
 
+    public static final String APP_SUB_API = "app_sub_api";
+
     public static String generateName(String envId, String realName) {
         return String.format(NAME_PATTERN, envId, realName);
     }

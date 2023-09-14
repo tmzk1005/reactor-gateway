@@ -16,7 +16,9 @@
 package zk.rgw.dashboard.web.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.mongodb.client.model.Filters;
@@ -54,7 +56,7 @@ public class ApiSubscriptionRepository extends BaseAuditableEntityMongodbReposit
         }).switchIfEmpty(Mono.just(false));
     }
 
-    public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app) {
+    public Mono<ApiSubscription> saveSubscriptionRelationship(Api api, App app, long opSeq) {
         return findByApiId(api.getId())
                 .switchIfEmpty(Mono.just(new ApiSubscription()))
                 .flatMap(apiSubscription -> {
@@ -65,6 +67,17 @@ public class ApiSubscriptionRepository extends BaseAuditableEntityMongodbReposit
                         apiSubscription.setApps(apps);
                     }
                     apps.add(app);
+
+                    if (apps.size() > 1) {
+                        // just in case, 去重
+                        Map<String, App> map = new HashMap<>();
+                        for (App item : apps) {
+                            map.put(item.getId(), item);
+                        }
+                        apiSubscription.setApps(List.copyOf(map.values()));
+                    }
+
+                    apiSubscription.setOpSeq(opSeq);
                     return save(apiSubscription);
                 });
     }

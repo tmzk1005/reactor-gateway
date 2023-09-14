@@ -48,6 +48,8 @@ public class ApiSubscription extends BaseAuditableEntity<NoDto> {
     @DocumentReference
     private List<App> apps;
 
+    private long opSeq;
+
     @Override
     public <P extends Po<NoDto>> P initFromDto(NoDto dto) {
         throw new UnsupportedOperationException();
