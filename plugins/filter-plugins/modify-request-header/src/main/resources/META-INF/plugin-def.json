@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.modifyrequestheader.ModifyRequestHeaderFilter",
     "tail": false,
-    "description": "修改请求头，先按配置删除指定的请求头，然后按配置添加指定的头"
+    "description": "修改请求头，先按配置删除指定的请求头，然后按配置添加指定的头",
+    "uiOrder": 300
 }

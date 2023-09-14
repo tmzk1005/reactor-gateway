@@ -66,6 +66,8 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
 
     private String mdDoc;
 
+    private int uiOrder;
+
     @SuppressWarnings("unchecked")
     @Override
     public ApiPlugin initFromDto(ApiPluginDto dto) {
@@ -77,7 +79,7 @@ public class ApiPlugin extends BaseAuditableEntity<ApiPluginDto> {
         this.tail = dto.isTail();
         this.description = dto.getDescription();
         this.mdDoc = dto.getMdDoc();
-
+        this.uiOrder = dto.getUiOrder();
         this.builtin = false;
         return this;
     }

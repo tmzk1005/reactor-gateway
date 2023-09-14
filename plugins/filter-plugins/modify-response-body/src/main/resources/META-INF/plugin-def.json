@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.modifyresponsebody.ModifyResponseBodyFilter",
     "tail": false,
-    "description": "修改响应体，可用于协议转换等场景，需要使用groovy实现一段自定义的请求体字节数组转换逻辑。"
+    "description": "修改响应体，可用于协议转换等场景，需要使用groovy实现一段自定义的请求体字节数组转换逻辑。",
+    "uiOrder": 303
 }

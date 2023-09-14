@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.cors.CorsFilter",
     "tail": false,
-    "description": "按配置的跨域策略处理跨域请求"
+    "description": "按配置的跨域策略处理跨域请求",
+    "uiOrder": 900
 }

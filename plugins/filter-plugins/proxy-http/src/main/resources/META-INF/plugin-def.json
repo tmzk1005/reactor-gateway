@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.proxyhttp.ProxyHttpFilter",
     "tail": true,
-    "description": "完成HTTP协议代理逻辑，将发送到网关的HTTP请求按照配置转发到真正提供服务的HTTP后端，支持自定义负载均衡策略或者灰度发布策略。"
+    "description": "完成HTTP协议代理逻辑，将发送到网关的HTTP请求按照配置转发到真正提供服务的HTTP后端，支持自定义负载均衡策略或者灰度发布策略。",
+    "uiOrder": 100
 }

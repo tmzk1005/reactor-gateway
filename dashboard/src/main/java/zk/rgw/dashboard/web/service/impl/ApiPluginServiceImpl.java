@@ -21,6 +21,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -61,7 +62,7 @@ public class ApiPluginServiceImpl implements ApiPluginService {
                 );
             }
         });
-        return filterMono.flatMapMany(apiPluginRepository::find);
+        return filterMono.flatMapMany(filter -> apiPluginRepository.find(filter, Sorts.ascending("uiOrder")));
     }
 
     @Override

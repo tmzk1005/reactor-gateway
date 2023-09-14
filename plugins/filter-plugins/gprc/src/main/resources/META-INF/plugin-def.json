@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.grpc.GrpcFilter",
     "tail": true,
-    "description": "代理后端的Grpc服务，客户端使用http协议post json数据到网关，网关将json转换为grpc后端需要的protobuf格式数据，然后转发请求，最后将grpc服务响应的protobuf格式数据再转化为json返回给调用方。"
+    "description": "代理后端的Grpc服务，客户端使用http协议post json数据到网关，网关将json转换为grpc后端需要的protobuf格式数据，然后转发请求，最后将grpc服务响应的protobuf格式数据再转化为json返回给调用方。",
+    "uiOrder": 1000
 }

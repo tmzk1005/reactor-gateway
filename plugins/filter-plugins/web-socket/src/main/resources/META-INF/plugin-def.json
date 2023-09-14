@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.websocket.WebSocketFilter",
     "tail": true,
-    "description": "完成WebSocket协议代理逻辑，将发送到网关的WebSocket请求按照配置转发到真正提供服务的WebSocket后端。"
+    "description": "完成WebSocket协议代理逻辑，将发送到网关的WebSocket请求按照配置转发到真正提供服务的WebSocket后端。",
+    "uiOrder": 800
 }

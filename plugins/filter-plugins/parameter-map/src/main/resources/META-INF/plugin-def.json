@@ -3,5 +3,6 @@
     "version": "1.0.0",
     "fullClassName": "zk.rgw.plugin.filter.parametermap.ParameterMapFilter",
     "tail": false,
-    "description": "实现参数映射功能，可以将发送到网关的参数按照配置映射为上游HTTP服务实际需要的参数。"
+    "description": "实现参数映射功能，可以将发送到网关的参数按照配置映射为上游HTTP服务实际需要的参数。",
+    "uiOrder": 700
 }

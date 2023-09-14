@@ -18,6 +18,8 @@ package zk.rgw.dashboard.framework.mongodb;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -311,6 +313,7 @@ public class MongodbContext {
         if (Objects.isNull(apiPluginDtoArr)) {
             return Mono.empty();
         }
+        Arrays.sort(apiPluginDtoArr, Comparator.comparingInt(ApiPluginDto::getUiOrder));
         BaseMongodbRepository<ApiPlugin> repository = new BaseMongodbRepository<>(mongoClient, database, ApiPlugin.class);
         return Flux.fromArray(apiPluginDtoArr).flatMap(apiPluginDto -> {
             ApiPlugin apiPlugin = new ApiPlugin().initFromDto(apiPluginDto);

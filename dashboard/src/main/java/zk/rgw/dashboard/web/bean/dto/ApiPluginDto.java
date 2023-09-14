@@ -40,4 +40,6 @@ public class ApiPluginDto implements ValidatableDto {
 
     private String mdDoc;
 
+    private int uiOrder;
+
 }
