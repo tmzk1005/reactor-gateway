@@ -1,1 +1,19 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "限流插件配置json schema",
+    "definitions": {
+        "burstCapacity": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "replenishRate": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "cost": {
+            "type": "integer",
+            "minimum": 1
+        }
+    }
+}
