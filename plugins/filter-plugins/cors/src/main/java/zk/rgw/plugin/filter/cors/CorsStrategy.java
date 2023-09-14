@@ -29,8 +29,6 @@ import zk.rgw.common.util.ObjectUtil;
 @Setter
 public class CorsStrategy {
 
-    private static final CorsStrategy DEFAULT_INSTANCE = new CorsStrategy();
-
     public static final String ALL = "*";
 
     private List<String> allowedOrigins = new ArrayList<>(List.of(ALL));
@@ -89,10 +87,6 @@ public class CorsStrategy {
             }
         }
         return false;
-    }
-
-    public static CorsStrategy getDefaultInstance() {
-        return DEFAULT_INSTANCE;
     }
 
     private static String trimTrailingSlash(String origin) {

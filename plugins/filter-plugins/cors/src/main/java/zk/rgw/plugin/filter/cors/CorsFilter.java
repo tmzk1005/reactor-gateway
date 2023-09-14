@@ -43,7 +43,7 @@ public class CorsFilter implements JsonConfFilterPlugin {
 
     @Getter
     @Setter
-    private CorsStrategy strategy = CorsStrategy.getDefaultInstance();
+    private CorsStrategy strategy = new CorsStrategy();
 
     @Override
     public CorsStrategy getConf() {

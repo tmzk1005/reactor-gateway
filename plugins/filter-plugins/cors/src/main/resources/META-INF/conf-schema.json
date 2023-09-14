@@ -1,1 +1,58 @@
-{}
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "限流插件配置json schema",
+    "definitions": {
+        "allowedOrigins": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "allowedOriginPatterns": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "allowedMethods": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "GET",
+                    "POST",
+                    "HEAD",
+                    "PUT",
+                    "DELETE",
+                    "PATCH",
+                    "OPTIONS",
+                    "TRACE"
+                ]
+            }
+        },
+        "allowedHeaders": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "exposedHeaders": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "allowCredentials": {
+            "type": "boolean"
+        },
+        "maxAge": {
+            "type": "integer",
+            "minimum": 0
+        }
+    }
+}
