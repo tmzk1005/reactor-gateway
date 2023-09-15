@@ -16,6 +16,8 @@
 
 package zk.rgw.gateway.sdk.app;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -40,16 +42,33 @@ public class HttpRequestSigner {
         this.secret = secret;
     }
 
-    public AppAuthInfo signRequest(String method, String uri, Map<String, String> headers) throws NoSuchAlgorithmException, InvalidKeyException {
+    public AppAuthInfo signRequest(String method, String uri, Map<String, String> headers, Object body)
+            throws NoSuchAlgorithmException, InvalidKeyException, IOException {
         Signer signer = new Signer(this.secret);
         String canonicalString = convertRequestToCanonicalString(method, uri, headers);
         Date signTime = new Date();
-        String signature = signer.update(canonicalString)
+        signer.update(canonicalString)
                 .update(key)
                 .update(secret)
-                .update(AppAuthInfo.formatSignTime(signTime))
-                .finishUpdate();
+                .update(AppAuthInfo.formatSignTime(signTime));
 
+        if (Objects.nonNull(body)) {
+            if (body instanceof InputStream inputStream) {
+                byte[] buffer = new byte[1024];
+                int read;
+                while ((read = inputStream.read(buffer)) > -1) {
+                    signer.update(buffer, 0, read);
+                }
+            } else if (body instanceof String bodyStr) {
+                signer.update(bodyStr);
+            } else if (body instanceof byte[] bytes) {
+                signer.update(bytes);
+            } else {
+                throw new IllegalArgumentException("body should be input stream or string or byte array");
+            }
+        }
+
+        String signature = signer.finishUpdate();
         List<String> headerNames = new ArrayList<>(headers.keySet());
         return new AppAuthInfo(key, signTime, headerNames, signature);
     }

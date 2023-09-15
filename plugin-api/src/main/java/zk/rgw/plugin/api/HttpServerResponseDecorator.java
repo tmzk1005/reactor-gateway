@@ -173,8 +173,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
 
     @Override
     public @NonNull HttpServerResponse withConnection(@NonNull Consumer<? super Connection> withConnection) {
-        delegator.withConnection(withConnection);
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -199,14 +198,12 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
 
     @Override
     public @NonNull NettyOutbound sendObject(@NonNull Object message) {
-        beforeSend();
-        return delegator.sendObject(message);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public @NonNull NettyOutbound sendObject(@NonNull Publisher<?> dataStream, @NonNull Predicate<Object> predicate) {
-        beforeSend();
-        return delegator.sendObject(dataStream, predicate);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -215,8 +212,7 @@ public class HttpServerResponseDecorator implements HttpServerResponse {
             @NonNull BiFunction<? super Connection, ? super S, ?> mappedInput,
             @NonNull Consumer<? super S> sourceCleanup
     ) {
-        beforeSend();
-        return delegator.sendUsing(sourceInput, mappedInput, sourceCleanup);
+        throw new UnsupportedOperationException();
     }
 
     @Override

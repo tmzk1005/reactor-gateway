@@ -22,13 +22,10 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 import zk.rgw.common.bootstrap.LifeCycle;
-import zk.rgw.gateway.accesslog.AccessLogFilter;
 import zk.rgw.gateway.accesslog.AccessLogKafkaWriter;
-import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
 import zk.rgw.gateway.internal.GatewayInternalRouteLocator;
 import zk.rgw.gateway.route.PullFromDashboardRouteLocator;
-import zk.rgw.gateway.route.RouteConverter;
 import zk.rgw.http.route.locator.CompositeRouteLocator;
 import zk.rgw.http.route.locator.RouteLocator;
 import zk.rgw.http.server.ReactorHttpServer;
@@ -56,7 +53,6 @@ public class ReactorGatewayServer extends ReactorHttpServer {
     protected void beforeStart() {
         GlobalSingletons.init(this.configuration);
         initRouteLocator();
-        RouteConverter.setEnvironmentPrepareFilter(GlobalSingletons.get(EnvironmentPrepareFilter.class));
         HeartbeatReporter heartbeatReporter = GlobalSingletons.get(HeartbeatReporter.class);
         heartbeatReporter.start();
         this.lifeCycles.add(heartbeatReporter);
@@ -68,10 +64,6 @@ public class ReactorGatewayServer extends ReactorHttpServer {
 
             accessLogKafkaWriter.start();
             this.lifeCycles.add(accessLogKafkaWriter);
-
-            AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
-
-            RouteConverter.setAccessLogFilter(accessLogFilter);
         }
 
         PullFromDashboardRouteLocator pullFromDashboardRouteLocator = GlobalSingletons.get(PullFromDashboardRouteLocator.class);

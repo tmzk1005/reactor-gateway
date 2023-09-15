@@ -56,6 +56,14 @@ public class Signer {
         return this;
     }
 
+    public Signer update(byte[] bytes, int offset, int length) {
+        if (finished) {
+            throw new IllegalStateException("Already finished update.");
+        }
+        this.md.update(bytes, offset, length);
+        return this;
+    }
+
     public String finishUpdate() {
         this.finished = true;
         String hexStr = String.valueOf(HexUtil.encode(md.digest()));

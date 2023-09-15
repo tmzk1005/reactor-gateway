@@ -79,12 +79,12 @@ public class HttpServerRequestDecorator implements HttpServerRequest {
 
     @Override
     public @NonNull Flux<HttpData> receiveForm() {
-        return decorator.receiveForm();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public @NonNull Flux<HttpData> receiveForm(@NonNull Consumer<HttpServerFormDecoderProvider.Builder> formDecoderBuilder) {
-        return decorator.receiveForm(formDecoderBuilder);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -149,7 +149,7 @@ public class HttpServerRequestDecorator implements HttpServerRequest {
 
     @Override
     public @NonNull Flux<?> receiveObject() {
-        return decorator.receiveObject();
+        throw new UnsupportedOperationException();
     }
 
     @Override

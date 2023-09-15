@@ -23,12 +23,14 @@ import java.util.Objects;
 import java.util.Set;
 
 import io.netty.handler.codec.http.HttpMethod;
-import lombok.Setter;
 
+import zk.rgw.common.definition.AppAuthConf;
 import zk.rgw.common.definition.IdRouteDefinition;
 import zk.rgw.common.definition.PluginInstanceDefinition;
 import zk.rgw.common.definition.RouteDefinition;
+import zk.rgw.gateway.GlobalSingletons;
 import zk.rgw.gateway.accesslog.AccessLogFilter;
+import zk.rgw.gateway.app.AppAuthFilter;
 import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.plugin.CustomPluginClassLoader;
 import zk.rgw.http.plugin.PluginLoadException;
@@ -41,12 +43,6 @@ public class RouteConverter {
 
     private RouteConverter() {
     }
-
-    @Setter
-    private static AccessLogFilter accessLogFilter;
-
-    @Setter
-    private static EnvironmentPrepareFilter environmentPrepareFilter;
 
     public static Route convertRouteDefinition(IdRouteDefinition idRouteDefinition) throws RouteConvertException {
         Route route = new Route();
@@ -67,12 +63,21 @@ public class RouteConverter {
 
         List<Filter> filters = new ArrayList<>(routeDefinition.getPluginDefinitions().size());
 
+        AccessLogFilter accessLogFilter = GlobalSingletons.get(AccessLogFilter.class);
         if (Objects.nonNull(accessLogFilter)) {
             filters.add(accessLogFilter);
         }
 
-        if (Objects.nonNull(environmentPrepareFilter)) {
-            filters.add(environmentPrepareFilter);
+        EnvironmentPrepareFilter environmentPrepareFilter1 = GlobalSingletons.get(EnvironmentPrepareFilter.class);
+        if (Objects.nonNull(environmentPrepareFilter1)) {
+            filters.add(environmentPrepareFilter1);
+        }
+
+        AppAuthConf appAuthConf = routeDefinition.getAppAuthConf();
+        route.setAppAuthConf(appAuthConf);
+        AppAuthFilter appAuthFilter = GlobalSingletons.get(AppAuthFilter.class);
+        if (Objects.nonNull(appAuthFilter) && Objects.nonNull(appAuthConf) && appAuthConf.isEnabled()) {
+            filters.add(appAuthFilter);
         }
 
         for (PluginInstanceDefinition pluginInstanceDefinition : routeDefinition.getPluginDefinitions()) {

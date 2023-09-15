@@ -21,6 +21,7 @@ import java.util.Map;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.EventPublisherImpl;
 import zk.rgw.common.event.RgwEvent;
+import zk.rgw.gateway.app.AppAuthFilter;
 import zk.rgw.gateway.app.AppSubscribeRouteManager;
 import zk.rgw.gateway.env.EnvironmentPrepareFilter;
 import zk.rgw.gateway.heartbeat.HeartbeatReporter;
@@ -74,6 +75,9 @@ public class GlobalSingletons {
                 configuration.getDashboardAuthKey()
         );
         INSTANCES.put(AppSubscribeRouteManager.class, appSubscribeRouteManager);
+
+        AppAuthFilter appAuthFilter = new AppAuthFilter(appSubscribeRouteManager);
+        INSTANCES.put(AppAuthFilter.class, appAuthFilter);
 
         eventPublisher.registerListener(environmentPrepareFilter);
         eventPublisher.registerListener(pullFromDashboardRouteLocator);

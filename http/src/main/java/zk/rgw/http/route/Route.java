@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import zk.rgw.common.definition.AccessLogConf;
+import zk.rgw.common.definition.AppAuthConf;
 import zk.rgw.http.constant.Constants;
 import zk.rgw.plugin.api.filter.Filter;
 import zk.rgw.plugin.api.predicate.RoutePredicate;
@@ -45,5 +46,7 @@ public class Route {
     private List<Filter> filters;
 
     private AccessLogConf accessLogConf;
+
+    private AppAuthConf appAuthConf;
 
 }
