@@ -48,10 +48,15 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.HttpServerRequestDecorator;
 import zk.rgw.plugin.api.filter.Filter;
 import zk.rgw.plugin.api.filter.FilterChain;
+import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 @Slf4j
 public class AppAuthFilter implements Filter {
+
+    private static final String TAG_PASS = "APP认证通过";
+
+    private static final String TAG_FAIL = "APP认证失败";
 
     private static final int SIGN_EXPIRE_TIME_SECONDS = 600;
 
@@ -70,6 +75,10 @@ public class AppAuthFilter implements Filter {
         if (Objects.isNull(appAuthConf) || !appAuthConf.isEnabled()) {
             return chain.filter(exchange);
         }
+
+        // 先假定失败，要不然每个失败的出口都要设置TAG_FAIL
+        // 若最终成功，会删除TAG_FAIL，放入TAG_PASS
+        ExchangeUtil.addAuditTag(exchange, TAG_FAIL);
 
         String authorization = exchange.getRequest().requestHeaders().get(AppAuthInfo.APP_AUTH_HEADER_NAME);
         if (Objects.isNull(authorization)) {
@@ -136,6 +145,8 @@ public class AppAuthFilter implements Filter {
             }
 
             ClientIdUtil.setAppAuthSucceedClientId(exchange, appDefinition.getId());
+            ExchangeUtil.removeAuditTag(exchange, TAG_FAIL);
+            ExchangeUtil.addAuditTag(exchange, TAG_PASS);
 
             if (bytes.length == 0) {
                 return chain.filter(exchange);

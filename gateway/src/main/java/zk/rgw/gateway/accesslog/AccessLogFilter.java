@@ -156,6 +156,7 @@ public class AccessLogFilter implements Filter {
             }
 
             accessLog.setExtraInfo(ExchangeUtil.getAuditInfo(exchange));
+            accessLog.setTags(ExchangeUtil.getAuditTags(exchange));
 
             accessLog.setRespTimestamp(System.currentTimeMillis());
             accessLog.setMillisCost((int) (accessLog.getRespTimestamp() - accessLog.getReqTimestamp()));

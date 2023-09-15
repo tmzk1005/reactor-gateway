@@ -16,9 +16,11 @@
 package zk.rgw.plugin.util;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
 
@@ -32,7 +34,9 @@ public class ExchangeUtil {
 
     public static final String ENVIRONMENT_VARS = qualify("environmentVars");
 
-    public static final String AUDIT_INFO = qualify("audit");
+    public static final String AUDIT_INFO = qualify("auditInfo");
+
+    public static final String AUDIT_TAG = qualify("auditTag");
 
     private ExchangeUtil() {
     }
@@ -62,10 +66,28 @@ public class ExchangeUtil {
     public static Map<String, Object> getAuditInfo(Exchange exchange) {
         Map<String, Object> auditInfo = exchange.getAttribute(AUDIT_INFO);
         if (Objects.isNull(auditInfo)) {
-            auditInfo = new HashMap<>();
+            auditInfo = new HashMap<>(4);
             exchange.getAttributes().put(AUDIT_INFO, new HashMap<>());
         }
         return auditInfo;
+    }
+
+    public static void addAuditTag(Exchange exchange, String tag) {
+        Set<String> tags = getAuditTags(exchange);
+        tags.add(tag);
+    }
+
+    public static void removeAuditTag(Exchange exchange, String tag) {
+        Set<String> tags = getAuditTags(exchange);
+        tags.remove(tag);
+    }
+
+    public static Set<String> getAuditTags(Exchange exchange) {
+        Set<String> tags = exchange.getAttribute(AUDIT_TAG);
+        if (Objects.isNull(tags)) {
+            tags = new HashSet<>(4);
+        }
+        return tags;
     }
 
 }

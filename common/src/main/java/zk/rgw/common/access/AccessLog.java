@@ -15,8 +15,11 @@
  */
 package zk.rgw.common.access;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +44,16 @@ public class AccessLog {
 
     private ResponseInfo responseInfo;
 
+    private Set<String> tags;
+
     private Map<String, Object> extraInfo;
+
+    public void addTag(String tag) {
+        if (Objects.isNull(tag)) {
+            tags = new HashSet<>();
+        }
+        tags.add(tag);
+    }
 
     @Getter
     @Setter
