@@ -13,28 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package zk.rgw.common.definition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
-import lombok.Data;
+@Getter
+@Setter
+public class AppAuthConf {
 
-@Data
-public class RouteDefinition {
+    private boolean enabled;
 
-    private Set<String> methods;
-
-    private String path;
-
-    private AccessLogConf accessLogConf;
-
-    private AppAuthConf appAuthConf;
-
-    private List<PredicateDefinition> predicateDefinitions = new ArrayList<>(1);
-
-    private List<PluginInstanceDefinition> pluginDefinitions = new ArrayList<>(4);
+    private boolean bodyTamperProofingEnabled;
 
 }
