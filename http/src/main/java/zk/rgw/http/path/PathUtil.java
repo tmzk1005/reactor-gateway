@@ -16,7 +16,7 @@
 
 package zk.rgw.http.path;
 
-import java.nio.file.Paths;
+import java.net.URI;
 
 public class PathUtil {
 
@@ -26,7 +26,7 @@ public class PathUtil {
     }
 
     public static String normalize(String path) {
-        String newPath = Paths.get(path).normalize().toString();
+        String newPath = URI.create(path).normalize().toString();
         if (newPath.isEmpty()) {
             return SLASH;
         }
