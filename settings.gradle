@@ -29,6 +29,7 @@ rootProject.name = "reactor-gateway"
 include 'common'
 include "plugin-api"
 include "http"
+include "gateway-sdk"
 include "gateway"
 include "dashboard"
 include "access-log-common"

@@ -25,6 +25,7 @@ base {
 dependencies {
     implementation project(path: ":http", configuration: "default")
     implementation project(path: ":common", configuration: "default")
+    implementation project(path: ":gateway-sdk", configuration: "default")
 
     implementation "org.apache.kafka:kafka-clients"
 
