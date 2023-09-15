@@ -22,9 +22,15 @@ class PathUtilTest {
 
     @Test
     void testNormalize() {
+        Assertions.assertEquals("/", PathUtil.normalize(""));
         Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/bar"));
+        Assertions.assertEquals("/foo/{bar}", PathUtil.normalize("/foo/{bar}"));
+        Assertions.assertEquals("/foo/{bar}/", PathUtil.normalize("/foo/{bar}/"));
         Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/./bar"));
-        Assertions.assertEquals("/foo/bar", PathUtil.normalize("/foo/bar/"));
+        Assertions.assertEquals("/foo/bar/", PathUtil.normalize("/foo/bar/"));
+        Assertions.assertEquals("/foo/bar/", PathUtil.normalize("/foo/./bar/"));
+        Assertions.assertEquals("/{bar}/", PathUtil.normalize("/foo/../{bar}/"));
+        Assertions.assertEquals("/bar/", PathUtil.normalize("/foo/../bar/"));
     }
 
     @Test
