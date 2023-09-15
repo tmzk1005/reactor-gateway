@@ -13,32 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package zk.rgw.gateway.app;
 
-package zk.rgw.plugin.api;
+import zk.rgw.plugin.api.Exchange;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+public class ClientIdUtil {
 
-import reactor.netty.http.server.HttpServerRequest;
-import reactor.netty.http.server.HttpServerResponse;
+    private static final String KEY = "__app_auth_succeed_client_id__";
 
-public interface Exchange extends AttributesHolder {
-
-    HttpServerRequest getRequest();
-
-    HttpServerResponse getResponse();
-
-    interface Builder {
-
-        Builder request(HttpServerRequest request);
-
-        Builder response(HttpServerResponse response);
-
-        Exchange build();
-
+    private ClientIdUtil() {
     }
 
-    Builder mutate();
+    public static void setAppAuthSucceedClientId(Exchange exchange, String clientId) {
+        exchange.getAttributes().put(KEY, clientId);
+    }
+
+    public static String getAppAuthSucceedClientId(Exchange exchange) {
+        return exchange.getAttribute(KEY);
+    }
 
 }

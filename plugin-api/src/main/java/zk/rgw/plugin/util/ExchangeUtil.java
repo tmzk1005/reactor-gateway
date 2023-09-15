@@ -15,6 +15,7 @@
  */
 package zk.rgw.plugin.util;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +31,8 @@ public class ExchangeUtil {
     public static final String PATH_PARAMS = qualify("pathParams");
 
     public static final String ENVIRONMENT_VARS = qualify("environmentVars");
+
+    public static final String AUDIT_INFO = qualify("audit");
 
     private ExchangeUtil() {
     }
@@ -49,6 +52,20 @@ public class ExchangeUtil {
 
     public static Map<String, String> getEnvironment(Exchange exchange) {
         return exchange.getAttributeOrDefault(ENVIRONMENT_VARS, Map.of());
+    }
+
+    public static void setAuditInfo(Exchange exchange, String key, Object value) {
+        Map<String, Object> auditInfo = getAuditInfo(exchange);
+        auditInfo.put(key, value);
+    }
+
+    public static Map<String, Object> getAuditInfo(Exchange exchange) {
+        Map<String, Object> auditInfo = exchange.getAttribute(AUDIT_INFO);
+        if (Objects.isNull(auditInfo)) {
+            auditInfo = new HashMap<>();
+            exchange.getAttributes().put(AUDIT_INFO, new HashMap<>());
+        }
+        return auditInfo;
     }
 
 }

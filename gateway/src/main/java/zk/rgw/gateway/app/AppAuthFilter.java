@@ -135,6 +135,8 @@ public class AppAuthFilter implements Filter {
                 return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "X-Rgw-Authorization签名未通过校验");
             }
 
+            ClientIdUtil.setAppAuthSucceedClientId(exchange, appDefinition.getId());
+
             if (bytes.length == 0) {
                 return chain.filter(exchange);
             } else {

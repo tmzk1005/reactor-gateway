@@ -28,12 +28,14 @@ import reactor.netty.http.server.HttpServerRequest;
 
 import zk.rgw.common.access.AccessLog;
 import zk.rgw.common.definition.AccessLogConf;
+import zk.rgw.gateway.app.ClientIdUtil;
 import zk.rgw.http.exchange.DefaultExchangeBuilder;
 import zk.rgw.http.route.Route;
 import zk.rgw.http.utils.RouteUtil;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.Filter;
 import zk.rgw.plugin.api.filter.FilterChain;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 public class AccessLogFilter implements Filter {
 
@@ -148,7 +150,12 @@ public class AccessLogFilter implements Filter {
 
             accessLog.setResponseInfo(responseInfo);
 
-            accessLog.setExtraInfo(exchange.getAuditInfo());
+            String appAuthSucceedClientId = ClientIdUtil.getAppAuthSucceedClientId(exchange);
+            if (Objects.nonNull(appAuthSucceedClientId)) {
+                accessLog.getClientInfo().setAppId(appAuthSucceedClientId);
+            }
+
+            accessLog.setExtraInfo(ExchangeUtil.getAuditInfo(exchange));
 
             accessLog.setRespTimestamp(System.currentTimeMillis());
             accessLog.setMillisCost((int) (accessLog.getRespTimestamp() - accessLog.getReqTimestamp()));
