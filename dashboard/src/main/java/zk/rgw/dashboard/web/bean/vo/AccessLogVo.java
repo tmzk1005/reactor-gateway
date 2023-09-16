@@ -60,6 +60,7 @@ public class AccessLogVo extends AccessLog {
         accessLogVo.setRequestInfo(document.getRequestInfo());
         accessLogVo.setResponseInfo(document.getResponseInfo());
         accessLogVo.setExtraInfo(document.getExtraInfo());
+        accessLogVo.setTags(document.getTags());
         return accessLogVo;
     }
 

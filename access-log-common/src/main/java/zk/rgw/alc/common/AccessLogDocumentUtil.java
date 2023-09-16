@@ -118,6 +118,7 @@ public class AccessLogDocumentUtil {
         accessLogDocument.setClientInfo(accessLog.getClientInfo());
         accessLogDocument.setRequestInfo(accessLog.getRequestInfo());
         accessLogDocument.setResponseInfo(accessLog.getResponseInfo());
+        accessLogDocument.setTags(accessLog.getTags());
         accessLogDocument.setExtraInfo(accessLog.getExtraInfo());
 
         accessLogDocument.setTimestampMillis(Instant.ofEpochMilli(accessLogDocument.getReqTimestamp()));

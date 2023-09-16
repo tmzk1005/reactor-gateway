@@ -86,6 +86,7 @@ public class ExchangeUtil {
         Set<String> tags = exchange.getAttribute(AUDIT_TAG);
         if (Objects.isNull(tags)) {
             tags = new HashSet<>(4);
+            exchange.getAttributes().put(AUDIT_TAG, tags);
         }
         return tags;
     }
