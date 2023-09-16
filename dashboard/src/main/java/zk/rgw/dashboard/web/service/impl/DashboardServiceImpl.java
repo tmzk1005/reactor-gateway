@@ -24,6 +24,7 @@ import org.bson.types.ObjectId;
 import reactor.core.publisher.Mono;
 
 import zk.rgw.common.util.ObjectUtil;
+import zk.rgw.common.util.StringUtil;
 import zk.rgw.dashboard.framework.exception.AccessDeniedException;
 import zk.rgw.dashboard.utils.OrgIdDecideUtil;
 import zk.rgw.dashboard.web.bean.AccessLogStatistics;
@@ -84,7 +85,7 @@ public class DashboardServiceImpl implements DashboardService {
                     Filters.exists("publishSnapshots." + envId),
                     Filters.eq("publishSnapshots." + envId + ".publishStatus", ApiPublishStatus.PUBLISHED.name())
             );
-            if (Objects.nonNull(finalOrgId)) {
+            if (StringUtil.hasText(finalOrgId)) {
                 return Filters.and(filter, Filters.eq("organization", new ObjectId(finalOrgId)));
             } else {
                 return filter;
