@@ -85,30 +85,27 @@ public class AppAuthFilter implements Filter {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "APP认证失败，无认证头X-Rgw-Authorization");
         }
 
-        String routeId = route.getId();
-        Map<String, AppDefinition> apps = appSubscribeRouteManager.getForRouteId(routeId);
-        if (ObjectUtil.isEmpty(apps) || !apps.containsKey(routeId)) {
-            return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "订阅关系可能未同步，请稍后再尝试");
-        }
-
         final AppAuthInfo appAuthInfo = AppAuthInfo.parseAuthorization(authorization);
         if (Objects.isNull(appAuthInfo)) {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "X-Rgw-Authorization非法，解析失败");
         }
+        final String accessKey = appAuthInfo.getAccessKey();
 
-        Date signTime = appAuthInfo.getSignTime();
+        String routeId = route.getId();
+        Map<String, AppDefinition> apps = appSubscribeRouteManager.getForRouteId(routeId);
+        if (ObjectUtil.isEmpty(apps) || !apps.containsKey(accessKey)) {
+            return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "未订阅此API，或者订阅关系未及时同步");
+        }
+
+        final AppDefinition appDefinition = apps.get(accessKey);
+
+        final Date signTime = appAuthInfo.getSignTime();
         final Calendar calendar = Calendar.getInstance();
         Date curTime = new Date();
         calendar.setTime(curTime);
         calendar.add(Calendar.SECOND, -SIGN_EXPIRE_TIME_SECONDS);
         if (signTime.before(calendar.getTime())) {
             return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "X-Rgw-Authorization签名过期");
-        }
-
-        final String accessKey = appAuthInfo.getAccessKey();
-        final AppDefinition appDefinition = apps.get(accessKey);
-        if (Objects.isNull(appDefinition)) {
-            return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.UNAUTHORIZED, "未订阅此API");
         }
 
         final HttpServerRequest request = exchange.getRequest();
@@ -135,7 +132,7 @@ public class AppAuthFilter implements Filter {
         return bodyBytesMono.flatMap(bytes -> {
             AppAuthInfo expectAppAuthInfo;
             try {
-                expectAppAuthInfo = httpRequestSigner.signRequest(request.method().name(), request.uri(), partOfHeaders, bytes);
+                expectAppAuthInfo = httpRequestSigner.signRequest(request.method().name(), request.uri(), partOfHeaders, bytes, signTime);
             } catch (NoSuchAlgorithmException | InvalidKeyException | IOException exception) {
                 throw new RgwRuntimeException(exception);
             }

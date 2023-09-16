@@ -42,11 +42,13 @@ public class HttpRequestSigner {
         this.secret = secret;
     }
 
-    public AppAuthInfo signRequest(String method, String uri, Map<String, String> headers, Object body)
+    public AppAuthInfo signRequest(String method, String uriPath, Map<String, String> headers, Object body, Date signTime)
             throws NoSuchAlgorithmException, InvalidKeyException, IOException {
         Signer signer = new Signer(this.secret);
-        String canonicalString = convertRequestToCanonicalString(method, uri, headers);
-        Date signTime = new Date();
+        String canonicalString = convertRequestToCanonicalString(method, uriPath, headers);
+        if (Objects.isNull(signTime)) {
+            signTime = new Date();
+        }
         signer.update(canonicalString)
                 .update(key)
                 .update(secret)
@@ -71,6 +73,11 @@ public class HttpRequestSigner {
         String signature = signer.finishUpdate();
         List<String> headerNames = new ArrayList<>(headers.keySet());
         return new AppAuthInfo(key, signTime, headerNames, signature);
+    }
+
+    public AppAuthInfo signRequest(String method, String uri, Map<String, String> headers, Object body)
+            throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+        return signRequest(method, uri, headers, body, null);
     }
 
     private static String convertRequestToCanonicalString(String method, String uri, Map<String, String> headers) {
