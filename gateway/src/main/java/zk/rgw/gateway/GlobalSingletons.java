@@ -21,6 +21,8 @@ import java.util.Map;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.EventPublisherImpl;
 import zk.rgw.common.event.RgwEvent;
+import zk.rgw.gateway.accesslog.AccessLogFilter;
+import zk.rgw.gateway.accesslog.AccessLogKafkaWriter;
 import zk.rgw.gateway.app.AppAuthFilter;
 import zk.rgw.gateway.app.AppSubscribeRouteManager;
 import zk.rgw.gateway.env.EnvironmentPrepareFilter;
@@ -78,6 +80,13 @@ public class GlobalSingletons {
 
         AppAuthFilter appAuthFilter = new AppAuthFilter(appSubscribeRouteManager);
         INSTANCES.put(AppAuthFilter.class, appAuthFilter);
+
+        if (configuration.isAccessLogEnabled()) {
+            AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
+            AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
+            INSTANCES.put(AccessLogKafkaWriter.class, accessLogKafkaWriter);
+            INSTANCES.put(AccessLogFilter.class, accessLogFilter);
+        }
 
         eventPublisher.registerListener(environmentPrepareFilter);
         eventPublisher.registerListener(pullFromDashboardRouteLocator);

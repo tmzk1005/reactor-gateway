@@ -60,8 +60,7 @@ public class ReactorGatewayServer extends ReactorHttpServer {
 
     private void initRouteLocator() {
         if (configuration.isAccessLogEnabled()) {
-            AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
-
+            AccessLogKafkaWriter accessLogKafkaWriter = GlobalSingletons.get(AccessLogKafkaWriter.class);
             accessLogKafkaWriter.start();
             this.lifeCycles.add(accessLogKafkaWriter);
         }
