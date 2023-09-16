@@ -60,7 +60,7 @@ public class AppAuthFilter implements Filter {
 
     private static final int SIGN_EXPIRE_TIME_SECONDS = 600;
 
-    private static final int MAX_BODY_SIZE = 8096;
+    private static final int MAX_BODY_SIZE = 8192;
 
     private final AppSubscribeRouteManager appSubscribeRouteManager;
 
