@@ -15,11 +15,9 @@
  */
 package zk.rgw.common.definition;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class AppAuthConf {
 
     private boolean enabled;

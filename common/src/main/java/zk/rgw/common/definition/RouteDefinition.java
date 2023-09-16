@@ -25,6 +25,11 @@ import lombok.Data;
 @Data
 public class RouteDefinition {
 
+    // 业务上会使用此类的 equals 方法来判断2个 RouteDefinition 对象是否相等，进入判断API的逻辑有没有更新
+    // 因此必须加上 lombok.Data 注解
+    // 每个字段，如果欧式自定义类型，比如 AccessLogConf, AppAuthConf,
+    // PredicateDefinition, PluginInstanceDefinition,都要使用 lombok.Data 注解
+
     private Set<String> methods;
 
     private String path;
