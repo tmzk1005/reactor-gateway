@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import zk.rgw.common.definition.AppAuthConf;
 import zk.rgw.common.util.JsonUtil;
 import zk.rgw.dashboard.web.bean.RouteDefinitionPublishSnapshot;
 import zk.rgw.dashboard.web.bean.entity.Api;
@@ -49,6 +50,8 @@ public class ReleasedApiVo {
 
     private Set<String> methods;
 
+    private boolean appAuthEnabled;
+
     private String path;
 
     public ReleasedApiVo(Api api, String envId) {
@@ -62,6 +65,8 @@ public class ReleasedApiVo {
             this.releaseTime = publishSnapshots.get(envId).getLastModifiedDate();
             this.methods = publishSnapshots.get(envId).getRouteDefinition().getMethods();
             this.path = publishSnapshots.get(envId).getRouteDefinition().getPath();
+            AppAuthConf appAuthConf = publishSnapshots.get(envId).getRouteDefinition().getAppAuthConf();
+            this.appAuthEnabled = Objects.nonNull(appAuthConf) && appAuthConf.isEnabled();
         }
     }
 
