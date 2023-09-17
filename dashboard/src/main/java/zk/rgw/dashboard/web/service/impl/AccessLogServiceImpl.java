@@ -124,8 +124,12 @@ public class AccessLogServiceImpl implements AccessLogService {
             // No exception, is app id
             return appRepository.isIdBelongsCurrentUser(appId, asSubscriber).map(yes -> Boolean.TRUE.equals(yes) ? List.of(appNameOrId) : List.of());
         } catch (Exception exception) {
-            // Exception, is app name
-            return appRepository.findIdsBelongsCurrentUserFilterByName(appNameOrId, asSubscriber).collectList();
+            // Exception, is app name, or is empty
+            if (!asSubscriber) {
+                return Mono.just(List.of());
+            } else {
+                return appRepository.findIdsBelongsCurrentUserFilterByName(appNameOrId, true).collectList();
+            }
         }
     }
 
