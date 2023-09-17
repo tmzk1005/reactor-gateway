@@ -25,9 +25,12 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 public class RateLimiterFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "限流";
 
     private RateLimiter rateLimiter;
 
@@ -48,6 +51,7 @@ public class RateLimiterFilter implements JsonConfFilterPlugin {
             if (Boolean.TRUE.equals(isAllowed)) {
                 return chain.filter(exchange);
             } else {
+                ExchangeUtil.addAuditTag(exchange, TAG);
                 return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.TOO_MANY_REQUESTS);
             }
         });

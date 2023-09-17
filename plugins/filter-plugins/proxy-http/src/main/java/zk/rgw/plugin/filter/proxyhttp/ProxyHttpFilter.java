@@ -54,6 +54,10 @@ import zk.rgw.plugin.util.ResponseUtil;
 @Slf4j
 public class ProxyHttpFilter implements JsonConfFilterPlugin {
 
+    private static final String HTTP11_PROXY_OK = "Http1.1代理-成功";
+    private static final String HTTP11_PROXY_FAIL = "Http1.1代理-失败";
+    private static final String HTTP11_PROXY_TIMEOUT = "Http1.1代理-超时";
+
     private static final String ENGINE_NAME = "groovy";
 
     private static final String FUNC_NAME = "decideUri";
@@ -113,6 +117,9 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         HttpServerRequest request = exchange.getRequest();
 
+        // 成功的逻辑出口只有一个，失败的有多个，先假定是失败，若成功删除失败tag
+        ExchangeUtil.addAuditTag(exchange, HTTP11_PROXY_FAIL);
+
         URI uriToUse;
         try {
             uriToUse = decideUpstreamUri(exchange);
@@ -125,6 +132,10 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
             headers.remove(HttpHeaderNames.HOST);
         }).request(request.method()).uri(uriToUse).send(request.receive().retain()).responseConnection((httpClientResponse, connection) -> {
             HttpServerResponse serverResponse = exchange.getResponse();
+
+            ExchangeUtil.removeAuditTag(exchange, HTTP11_PROXY_FAIL);
+            ExchangeUtil.addAuditTag(exchange, HTTP11_PROXY_OK);
+
             return serverResponse.status(httpClientResponse.status())
                     .headers(httpClientResponse.responseHeaders())
                     .send(connection.inbound().receive().retain())
@@ -132,7 +143,10 @@ public class ProxyHttpFilter implements JsonConfFilterPlugin {
                     .thenReturn("");
         }).timeout(
                 Duration.ofSeconds(proxyConf.timeout),
-                Mono.defer(() -> ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.GATEWAY_TIMEOUT).thenReturn(""))
+                Mono.defer(() -> {
+                    ExchangeUtil.addAuditTag(exchange, HTTP11_PROXY_TIMEOUT);
+                    return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.GATEWAY_TIMEOUT).thenReturn("");
+                })
         ).then();
     }
 

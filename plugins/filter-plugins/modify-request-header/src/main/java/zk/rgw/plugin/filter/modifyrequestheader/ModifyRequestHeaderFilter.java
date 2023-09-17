@@ -27,8 +27,11 @@ import reactor.core.publisher.Mono;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 public class ModifyRequestHeaderFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "修改请求头";
 
     @Getter
     @Setter
@@ -53,7 +56,7 @@ public class ModifyRequestHeaderFilter implements JsonConfFilterPlugin {
             }
         }
 
-        return chain.filter(exchange);
+        return chain.filter(exchange).doOnSuccess(ignore -> ExchangeUtil.addAuditTag(exchange, TAG));
     }
 
 }

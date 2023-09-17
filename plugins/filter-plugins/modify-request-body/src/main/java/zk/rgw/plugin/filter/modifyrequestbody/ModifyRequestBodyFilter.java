@@ -42,9 +42,12 @@ import zk.rgw.plugin.api.HttpServerRequestDecorator;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 @Slf4j
 public class ModifyRequestBodyFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "修改请求体";
 
     private static final String ENGINE_NAME = "groovy";
 
@@ -61,7 +64,10 @@ public class ModifyRequestBodyFilter implements JsonConfFilterPlugin {
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         MyRequestDecorator myRequestDecorator = new MyRequestDecorator(exchange.getRequest());
         Exchange modifiedExchange = exchange.mutate().request(myRequestDecorator).build();
-        return myRequestDecorator.modifyBodyAndUpdateContentLength().then(chain.filter(modifiedExchange));
+        return myRequestDecorator.modifyBodyAndUpdateContentLength()
+                .then(
+                        chain.filter(modifiedExchange).doOnSuccess(ignore -> ExchangeUtil.addAuditTag(exchange, TAG))
+                );
     }
 
     @Override

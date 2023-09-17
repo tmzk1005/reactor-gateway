@@ -26,9 +26,15 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 public class ClientIpFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG_PASS_WHITE_LIST = "IP过滤-白名单-通过";
+    private static final String TAG_PASS_BLACK_LIST = "IP过滤-黑名单-通过";
+    private static final String TAG_FAIL_WHITE_LIST = "IP过滤-白名单-拒绝";
+    private static final String TAG_FAIL_BLACK_LIST = "IP过滤-黑名单-拒绝";
 
     private IpFilterRule ipFilterRule;
 
@@ -47,9 +53,14 @@ public class ClientIpFilter implements JsonConfFilterPlugin {
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         String clientIp = Objects.requireNonNull(exchange.getRequest().remoteAddress()).getAddress().getHostAddress();
         if (ipFilterRule.acceptIp(clientIp)) {
+            String tag = ipFilterRule.getIpFilterRuleType() == IpFilterRuleType.ACCEPT ? TAG_PASS_WHITE_LIST : TAG_PASS_BLACK_LIST;
+            ExchangeUtil.addAuditTag(exchange, tag);
             return chain.filter(exchange);
+        } else {
+            String tag = ipFilterRule.getIpFilterRuleType() == IpFilterRuleType.ACCEPT ? TAG_FAIL_WHITE_LIST : TAG_FAIL_BLACK_LIST;
+            ExchangeUtil.addAuditTag(exchange, tag);
+            return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.FORBIDDEN);
         }
-        return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.FORBIDDEN);
     }
 
 }

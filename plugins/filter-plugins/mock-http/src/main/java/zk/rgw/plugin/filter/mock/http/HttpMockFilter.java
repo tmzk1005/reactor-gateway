@@ -31,10 +31,13 @@ import reactor.netty.http.server.HttpServerResponse;
 import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 @Getter
 @Setter
 public class HttpMockFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "HTTP-MOCK";
 
     private int statusCode = 200;
 
@@ -55,6 +58,7 @@ public class HttpMockFilter implements JsonConfFilterPlugin {
         }
         response.header(HttpHeaderNames.CONTENT_LENGTH, content.getBytes(StandardCharsets.UTF_8).length + "");
         // 虽然这里暂时没有用到请求体内容，但是仍然读取后才发送响应，以便可以审计到请求体
+        ExchangeUtil.addAuditTag(exchange, TAG);
         return exchange.getRequest().receive().then(response.sendString(Mono.just(content)).then());
     }
 

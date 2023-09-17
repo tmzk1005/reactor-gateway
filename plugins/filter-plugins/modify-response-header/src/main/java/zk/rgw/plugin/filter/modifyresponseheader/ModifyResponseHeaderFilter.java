@@ -29,8 +29,11 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.HttpServerResponseDecorator;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 public class ModifyResponseHeaderFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "修改响应头";
 
     @Getter
     @Setter
@@ -43,7 +46,7 @@ public class ModifyResponseHeaderFilter implements JsonConfFilterPlugin {
     @Override
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         Exchange modifiedExchange = exchange.mutate().response(new MyResponseDecorator(exchange.getResponse())).build();
-        return chain.filter(modifiedExchange);
+        return chain.filter(modifiedExchange).doOnSuccess(ignore -> ExchangeUtil.addAuditTag(exchange, TAG));
     }
 
     private class MyResponseDecorator extends HttpServerResponseDecorator {

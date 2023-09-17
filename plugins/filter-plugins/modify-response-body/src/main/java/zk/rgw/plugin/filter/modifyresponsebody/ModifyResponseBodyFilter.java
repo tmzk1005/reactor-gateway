@@ -49,9 +49,12 @@ import zk.rgw.plugin.api.HttpServerResponseDecorator;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 
 @Slf4j
 public class ModifyResponseBodyFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "修改响应体";
 
     private static final String ENGINE_NAME = "groovy";
 
@@ -68,7 +71,7 @@ public class ModifyResponseBodyFilter implements JsonConfFilterPlugin {
     public Mono<Void> filter(Exchange exchange, FilterChain chain) {
         MyResponseDecorator myResponseDecorator = new MyResponseDecorator(exchange.getResponse());
         Exchange modifiedExchange = exchange.mutate().response(myResponseDecorator).build();
-        return chain.filter(modifiedExchange);
+        return chain.filter(modifiedExchange).doOnSuccess(ignore -> ExchangeUtil.addAuditTag(exchange, TAG));
     }
 
     @Override

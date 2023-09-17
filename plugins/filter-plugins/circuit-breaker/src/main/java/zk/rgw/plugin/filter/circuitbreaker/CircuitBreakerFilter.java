@@ -25,9 +25,12 @@ import zk.rgw.plugin.api.Exchange;
 import zk.rgw.plugin.api.filter.FilterChain;
 import zk.rgw.plugin.api.filter.JsonConfFilterPlugin;
 import zk.rgw.plugin.exception.PluginConfException;
+import zk.rgw.plugin.util.ExchangeUtil;
 import zk.rgw.plugin.util.ResponseUtil;
 
 public class CircuitBreakerFilter implements JsonConfFilterPlugin {
+
+    private static final String TAG = "熔断";
 
     private CircuitBreakerConf circuitBreakerConf;
 
@@ -61,6 +64,7 @@ public class CircuitBreakerFilter implements JsonConfFilterPlugin {
         if (exception instanceof CircuitBreakerException cbException) {
             CircuitBreakerState state = cbException.getCircuitBreakerState();
             if (CircuitBreakerState.OPEN == state) {
+                ExchangeUtil.addAuditTag(exchange, TAG);
                 return ResponseUtil.sendStatus(exchange.getResponse(), HttpResponseStatus.SERVICE_UNAVAILABLE);
             } else {
                 // CLOSED和HALF_OPEN状态下有错误的响应，在网关层面相当于是正常的，要把上游的响应原样仍回， 因此返回Mono.empty()即可
