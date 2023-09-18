@@ -40,12 +40,11 @@ import zk.rgw.alc.common.AccessLogDocument;
 import zk.rgw.alc.common.AccessLogDocumentUtil;
 import zk.rgw.common.access.AccessLog;
 import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.common.constant.Constants;
 import zk.rgw.common.util.JsonUtil;
 
 @Slf4j
 public class AccessLogMongodbWriter implements LifeCycle {
-
-    private static final String TOPIC_PREFIX = "rgw-access-log-";
 
     private final String kafkaBootstrapServers;
 
@@ -76,7 +75,7 @@ public class AccessLogMongodbWriter implements LifeCycle {
         this.kafkaBootstrapServers = kafkaBootstrapServers;
         this.mongoDatabase = mongoDatabase;
         this.envId = envId;
-        this.topicName = TOPIC_PREFIX + envId;
+        this.topicName = Constants.ACCESS_LOG_KAFKA_TOPIC_NAME_PREFIX + envId;
         this.executorService = executorService;
     }
 

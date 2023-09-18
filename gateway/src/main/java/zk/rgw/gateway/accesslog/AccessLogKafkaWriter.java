@@ -33,12 +33,11 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import zk.rgw.common.access.AccessLog;
 import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.common.constant.Constants;
 import zk.rgw.common.util.JsonUtil;
 
 @Slf4j
 public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
-
-    private static final String TOPIC_PREFIX = "rgw-access-log-";
 
     private static final int QUEUE_SIZE = 16384 * 2;
 
@@ -56,7 +55,7 @@ public class AccessLogKafkaWriter implements Consumer<AccessLog>, LifeCycle {
 
     public AccessLogKafkaWriter(String kafkaBootstrapServers, String envId) {
         this.kafkaBootstrapServers = kafkaBootstrapServers;
-        this.topicName = TOPIC_PREFIX + envId;
+        this.topicName = Constants.ACCESS_LOG_KAFKA_TOPIC_NAME_PREFIX + envId;
     }
 
     @Override
