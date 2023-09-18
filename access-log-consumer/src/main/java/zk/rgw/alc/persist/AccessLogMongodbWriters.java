@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import zk.rgw.common.bootstrap.LifeCycle;
+import zk.rgw.common.constant.Constants;
 
 public class AccessLogMongodbWriters implements LifeCycle {
 
@@ -49,7 +50,8 @@ public class AccessLogMongodbWriters implements LifeCycle {
     public void start() {
         executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         for (String envId : endIds) {
-            AccessLogMongodbWriter accessLogMongodbWriter = new AccessLogMongodbWriter(kafkaBootstrapServers, mongoDatabase, envId, executorService);
+            String realEvnId = Constants.BUILT_IN_ENV_IDS.getOrDefault(envId, envId);
+            AccessLogMongodbWriter accessLogMongodbWriter = new AccessLogMongodbWriter(kafkaBootstrapServers, mongoDatabase, realEvnId, executorService);
             accessLogMongodbWriter.start();
             writers.add(accessLogMongodbWriter);
         }

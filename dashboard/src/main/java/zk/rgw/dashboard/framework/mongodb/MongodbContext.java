@@ -49,6 +49,7 @@ import org.bson.conversions.Bson;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import zk.rgw.common.constant.Constants;
 import zk.rgw.common.exception.RgwRuntimeException;
 import zk.rgw.dashboard.framework.security.Role;
 import zk.rgw.dashboard.framework.security.hash.Pbkdf2PasswordEncoder;
@@ -280,14 +281,16 @@ public class MongodbContext {
 
     private Mono<Void> createBuiltinEnvironments(User adminUser) {
         BaseMongodbRepository<Environment> repository = new BaseMongodbRepository<>(mongoClient, database, Environment.class);
-        return createEnvironment(repository, adminUser, "开发环境")
-                .then(createEnvironment(repository, adminUser, "测试环境"))
-                .then(createEnvironment(repository, adminUser, "生产环境"));
+        return createEnvironment(repository, adminUser, Constants.BUILT_IN_ENV_IDS.get("dev"), "开发环境")
+                .then(createEnvironment(repository, adminUser, Constants.BUILT_IN_ENV_IDS.get("test"), "测试环境"))
+                .then(createEnvironment(repository, adminUser, Constants.BUILT_IN_ENV_IDS.get("prod"), "生产环境"));
     }
 
-    private Mono<Void> createEnvironment(BaseMongodbRepository<Environment> repository, User adminUser, String envName) {
+    private Mono<Void> createEnvironment(BaseMongodbRepository<Environment> repository, User adminUser, String envId, String envName) {
         return repository.findOne(Filters.eq("name", envName)).switchIfEmpty(Mono.defer(() -> {
             Environment environment = new Environment();
+
+            environment.setId(envId);
             environment.setName(envName);
 
             environment.setCreatedBy(adminUser);
@@ -297,7 +300,7 @@ public class MongodbContext {
             environment.setLastModifiedDate(now);
 
             log.info("Create an environment named {}", envName);
-            return repository.insert(environment);
+            return repository.insert(environment, true);
         })).then();
     }
 

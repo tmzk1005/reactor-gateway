@@ -87,7 +87,11 @@ public class MongodbOperations {
     }
 
     public static <T extends Po<?>> Mono<T> insert(MongoCollection<T> collection, T entity) {
-        if (Objects.nonNull(entity.getId())) {
+        return insert(collection, entity, false);
+    }
+
+    public static <T extends Po<?>> Mono<T> insert(MongoCollection<T> collection, T entity, boolean customId) {
+        if (!customId && Objects.nonNull(entity.getId())) {
             throw new IllegalArgumentException("Entity to insert to mongodb should not has an id already");
         }
         return Mono.from(collection.insertOne(entity))

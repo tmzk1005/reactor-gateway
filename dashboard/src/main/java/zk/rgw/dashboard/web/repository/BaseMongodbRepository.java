@@ -59,7 +59,11 @@ public class BaseMongodbRepository<E extends Po<?>> {
     }
 
     public Mono<E> insert(E entity) {
-        return MongodbOperations.insert(mongoCollection, entity);
+        return insert(entity, false);
+    }
+
+    public Mono<E> insert(E entity, boolean customId) {
+        return MongodbOperations.insert(mongoCollection, entity, customId);
     }
 
     public Mono<E> save(E entity) {

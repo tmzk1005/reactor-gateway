@@ -18,6 +18,7 @@ package zk.rgw.gateway;
 import java.util.HashMap;
 import java.util.Map;
 
+import zk.rgw.common.constant.Constants;
 import zk.rgw.common.event.EventPublisher;
 import zk.rgw.common.event.EventPublisherImpl;
 import zk.rgw.common.event.RgwEvent;
@@ -82,7 +83,9 @@ public class GlobalSingletons {
         INSTANCES.put(AppAuthFilter.class, appAuthFilter);
 
         if (configuration.isAccessLogEnabled()) {
-            AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), configuration.getEnvironmentId());
+            String envId = configuration.getEnvironmentId();
+            envId = Constants.BUILT_IN_ENV_IDS.getOrDefault(envId, envId);
+            AccessLogKafkaWriter accessLogKafkaWriter = new AccessLogKafkaWriter(configuration.getKafkaBootstrapServers(), envId);
             AccessLogFilter accessLogFilter = new AccessLogFilter(accessLogKafkaWriter);
             INSTANCES.put(AccessLogKafkaWriter.class, accessLogKafkaWriter);
             INSTANCES.put(AccessLogFilter.class, accessLogFilter);

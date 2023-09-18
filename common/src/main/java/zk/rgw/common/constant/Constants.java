@@ -16,11 +16,19 @@
 
 package zk.rgw.common.constant;
 
+import java.util.Map;
+
 public class Constants {
 
     private Constants() {
     }
 
     public static final String ACCESS_LOG_KAFKA_TOPIC_NAME_PREFIX = "rgw-access-log-";
+
+    public static final Map<String, String> BUILT_IN_ENV_IDS = Map.of(
+            "dev", "e00000000000000000000001",
+            "test", "e00000000000000000000002",
+            "prod", "e00000000000000000000003"
+    );
 
 }
