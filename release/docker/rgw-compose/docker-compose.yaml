@@ -87,6 +87,11 @@ services:
       - "9092:9092"
       - "9093:9093"
     restart: unless-stopped
+    command: [
+      "--override", "listeners=PLAINTEXT://172.16.105.140:9092,CONTROLLER://172.16.105.140:9093",
+      "--override", "advertised.listeners=PLAINTEXT://172.16.105.140:9092",
+      "--override", "controller.quorum.voters=1@172.16.105.140:9093"
+    ]
 
 networks:
   reactor-gateway:

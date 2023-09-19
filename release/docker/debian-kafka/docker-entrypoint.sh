@@ -33,4 +33,4 @@ if [ ! -f "${kafka_data_path}/meta.properties" ]; then
     bin/kafka-storage.sh format -t "$(bin/kafka-storage.sh random-uuid)" -c config/kraft/server.properties
 fi
 
-exec bin/kafka-server-start.sh config/kraft/server.properties
+exec bin/kafka-server-start.sh config/kraft/server.properties "$@"
