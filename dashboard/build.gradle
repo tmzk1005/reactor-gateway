@@ -84,6 +84,6 @@ tasks.register("generateBuiltinPluginsInfo") {
 }
 
 
-tasks.named("build") {
+tasks.named("processResources") {
     dependsOn 'generateBuiltinPluginsInfo'
 }
