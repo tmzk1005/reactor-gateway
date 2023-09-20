@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 class IpUtilTest {
 
+    @Test
     void testCheckIpV4() {
         Assertions.assertTrue(IpUtil.isIpV4("1.2.3.4"));
         Assertions.assertTrue(IpUtil.isIpV4("127.0.0.1"));

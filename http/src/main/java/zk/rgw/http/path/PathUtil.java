@@ -16,6 +16,7 @@
 
 package zk.rgw.http.path;
 
+@SuppressWarnings({ "PMD.UselessParentheses", "PMD.AvoidBranchingStatementAsLastInLoop" })
 public class PathUtil {
 
     public static final String SLASH = "/";
@@ -279,7 +280,6 @@ public class PathUtil {
     }
 
     private static int join(char[] path, int[] segs) {
-        int ns = segs.length; // Number of segments
         int end = path.length - 1; // Index of last char in path
         int p = 0; // Index of next path char to write
 

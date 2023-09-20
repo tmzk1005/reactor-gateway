@@ -11,5 +11,16 @@ subprojects {
         compileOnly 'com.fasterxml.jackson.core:jackson-databind'
         compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
         compileOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+        testImplementation project(path: ":plugin-api", configuration: "default")
+        testImplementation project(path: ":common", configuration: "default")
+        testImplementation 'io.projectreactor.netty:reactor-netty-http'
+        testImplementation "org.projectlombok:lombok"
+        testImplementation 'org.slf4j:slf4j-api'
+        testImplementation 'org.apache.logging.log4j:log4j-core'
+        testImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
+        testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+        testImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+        testImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     }
 }
