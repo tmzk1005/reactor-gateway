@@ -29,5 +29,5 @@ configurations.configureEach {
 }
 
 dependencies {
-    implementation 'io.github.tmzk1005.java-formatter:io.github.tmzk1005.java-formatter.gradle.plugin:1.0.0'
+    implementation 'io.github.tmzk1005.java-formatter:io.github.tmzk1005.java-formatter.gradle.plugin:1.0.1'
 }
