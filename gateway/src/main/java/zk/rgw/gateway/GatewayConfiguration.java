@@ -57,8 +57,8 @@ public class GatewayConfiguration extends ServerConfiguration {
 
     @Getter
     @Setter
-    @CommandLine.Option(names = "--environment.id", required = true, description = "The environment id used to fetch route definitions from dashboard.")
-    private String environmentId;
+    @CommandLine.Option(names = "--environment.id", description = "The environment id used to fetch route definitions from dashboard.")
+    private String environmentId = "dev";
 
     @Getter
     @Setter
