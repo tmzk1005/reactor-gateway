@@ -61,7 +61,8 @@ public class AlcConfiguration extends CommonConfiguration {
     @Getter
     @Setter
     @CommandLine.Option(
-            names = "--environments", required = true, split = ",", description = "Environment ids for consume access logs in kafka, split by ',' ."
+            names = "--environments", split = ",", defaultValue = "dev,test,prod",
+            description = "Environment ids for consume access logs in kafka, split by ',' ."
     )
     private List<String> environments;
 
