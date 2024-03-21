@@ -31,8 +31,9 @@ tasks.register("tgz", Tar) {
     dependsOn project(":dashboard").tasks.named("build")
     dependsOn project(":access-log-consumer").tasks.named("build")
 
-    if (!project(":reactor-gateway-ui").file("dist").exists()) {
-        dependsOn project(":reactor-gateway-ui").tasks.named("build")
+    def uiProject = rootProject.findProject(":reactor-gateway-ui")
+    if (uiProject != null && !uiProject.file("dist").exists()) {
+        dependsOn uiProject.tasks.named("build")
     }
 
     duplicatesStrategy DuplicatesStrategy.EXCLUDE
@@ -52,7 +53,11 @@ tasks.register("tgz", Tar) {
     into releaseName
     from { 'bin' } { into 'bin/' fileMode 0755 }
     from { 'conf' } { into 'conf/' fileMode 0644 }
-    from { project(":reactor-gateway-ui").file("dist") } { into 'static/' fileMode 0644 }
+
+    if (uiProject != null) {
+        from { uiProject.file("dist") } { into 'static/' fileMode 0644 }
+    }
+
     from {
         [
                 project(":gateway").configurations.runtimeClasspath,

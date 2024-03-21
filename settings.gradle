@@ -56,4 +56,11 @@ def includeUiProject() {
     include "reactor-gateway-ui"
 }
 
-includeUiProject()
+def excludeUI = System.getProperty("exclude-ui");
+// github上配置action对代码进行静态扫描时,没有必要包含前端代码,因此这里支持exclude前端代码
+// 使用 ./gradlew -Dexclude-ui $taskName 方式控制
+if (excludeUI == null) {
+    includeUiProject()
+} else {
+    println "Exclude reactor-gateway-ui"
+}
