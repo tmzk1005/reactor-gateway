@@ -21,14 +21,14 @@ if [ ! -d .tmp ]; then
 fi
 
 if [ ! -d .tmp/kafka ]; then
-    if [ ! -f .tmp/kafka_2.13-3.5.1.tgz  ]; then
+    if [ ! -f .tmp/kafka_2.13-3.5.2.tgz  ]; then
         echo "Going to download kafka, please wait!"
-        if ! wget https://mirror.tuna.tsinghua.edu.cn/apache/kafka/3.5.1/kafka_2.13-3.5.1.tgz --output-document .tmp/kafka_2.13-3.5.1.tgz; then
+        if ! wget https://mirror.tuna.tsinghua.edu.cn/apache/kafka/3.5.1/kafka_2.13-3.5.2.tgz --output-document .tmp/kafka_2.13-3.5.2.tgz; then
               echo "Download kafka failed, please try again later!"
               exit 1
         fi
     fi
-    tar -zxvf .tmp/kafka_2.13-3.5.1.tgz -C .tmp/
+    tar -zxvf .tmp/kafka_2.13-3.5.2.tgz -C .tmp/
     mv .tmp/kafka_2.13-3.5.1 .tmp/kafka
 
     cd .tmp/kafka || exit 1
