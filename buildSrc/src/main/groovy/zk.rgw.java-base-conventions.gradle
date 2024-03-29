@@ -49,8 +49,8 @@ formatter {
 
 def lombokVersion = "1.18.28"
 def jacksonVersion = "2.15.2"
-def reactorVersion = "2022.0.10"
-def reactorNettyVersion = "1.1.10"
+def reactorVersion = "2023.0.4"
+def reactorNettyVersion = "1.1.17"
 def slf4jApiVersion = "2.0.9"
 def log4j2Version = "2.20.0"
 def picocliVersion = "4.7.5"
