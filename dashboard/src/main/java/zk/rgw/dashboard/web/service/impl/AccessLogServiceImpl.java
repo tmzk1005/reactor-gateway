@@ -76,11 +76,12 @@ public class AccessLogServiceImpl implements AccessLogService {
                     if (Boolean.TRUE.equals(isAdmin)) {
                         if (ObjectUtil.isEmpty(apiNameOrId)) {
                             // 是管理员，且不需要用api过滤，api list置空，提高后续repository层查询性能
-                            apiIdList.clear();
+                            apiIdList = List.of();
                         }
-                        if (ObjectUtil.isEmpty(appIdList)) {
+                        if (!ObjectUtil.isEmpty(appIdList)) {
                             // 是管理员，且不需要用app过滤，app list置空，提高后续repository层查询性能
-                            appIdList.clear();
+                            // appIdList可能是不可变的,不能用clear方法,因此新建个空的list
+                            appIdList = List.of();
                         }
                     }
 
